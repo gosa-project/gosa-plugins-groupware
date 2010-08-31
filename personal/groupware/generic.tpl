@@ -177,16 +177,21 @@
     </tr>
     <tr>
         <td>
-            <input id='only_local' type=checkbox name="only_local" value="1" 
+            <input id='localDeliveryOnly' type=checkbox name="localDeliveryOnly" value="1" 
+                {if $localDeliveryOnly} checked {/if}
                 title="{t}Select if user can only send and receive inside his own domain{/t}" class="center">
             {t}User is only allowed to send and receive local mails{/t}
         </td>
     </tr>
     <tr>
         <td>
-            <input id='drop_own_mails' type=checkbox name="drop_own_mails" value="1"
-                 title="{t}Select if you want to forward mails without getting own copies of them{/t}">
+            <input id='dropOwnMails' type=checkbox name="dropOwnMails" value="1"    
+                {if $dropOwnMails} checked {/if}
+                title="{t}Select if you want to forward mails without getting own copies of them{/t}">
             {t}No delivery to own mailbox{/t}
         </td>
     </tr>
 </table>
+
+<input type='hidden' name='groupwarePluginPosted' value='1'>
+

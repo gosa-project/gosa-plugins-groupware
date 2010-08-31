@@ -25,7 +25,12 @@ class groupware extends plugin
             "mailBoxHardSizelimitValue",
             "mailBoxAutomaticRemovalEnabled",
             "mailBoxAutomaticRemovalValue",
+            "localDeliveryOnly",
+            "dropOwnMails"
             );
+
+    var $flagAttrinutes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
+            "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
 
     var $mailAddressSelectDialog = NULL;
     var $vacationTemplates = array();
@@ -48,6 +53,8 @@ class groupware extends plugin
     var $mailBoxHardSizelimitValue = "";
     var $mailBoxAutomaticRemovalEnabled = FALSE;
     var $mailBoxAutomaticRemovalValue = "";
+    var $localDeliveryOnly = FALSE;
+    var $dropOwnMails = FALSE;
 
     function __construct ($config, $dn= NULL)
     {
@@ -268,6 +275,17 @@ class groupware extends plugin
     /* Save data to object */
     function save_object()
     {
+        if(isset($_POST['groupwarePluginPosted'])){
+            foreach($this->attributes as $attr){
+                if(isset($_POST[$attr])){
+                    $this->$attr = get_post($attr);
+                }
+            }
+
+            foreach($this->flagAttrinutes as $attr){
+                $this->$attr = isset($_POST[$attr]);
+            }
+        }
     }
 
 
@@ -604,6 +622,8 @@ class groupware extends plugin
                         "mailBoxSendSizelimit"          => _("Send sizelimit"),
                         "mailBoxHardSizelimit"          => _("Hard sizelimit"),
                         "mailBoxAutomaticRemoval"       => _("Automatic mail removal"),
+                        "localDeliveryOnly"             => _("Local delivery only"),
+                        "dropOwnMails"                  => _("Drop own mails")
                         )
                     ));
     }

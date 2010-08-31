@@ -4,6 +4,7 @@ class groupware extends plugin
 {
     var $plHeadline     = "Mail";
     var $plDescription  = "GOsa mail extension.";
+    var $view_logged = FALSE;
 
     var $attributes = array(
             "mailAddress",
@@ -36,8 +37,8 @@ class groupware extends plugin
     var $alternateAddresses = "";
     var $forwardingAddresses = "";
     var $vacationEnabled = FALSE;
-    var $vacationStart = "";
-    var $vacationStop = "";
+    var $vacationStart = 0;
+    var $vacationStop = 0;
     var $vacationMessage = "";
     var $mailBoxWarnLimitEnabled = FALSE;
     var $mailBoxWarnLimitValue = "";
@@ -61,9 +62,13 @@ class groupware extends plugin
             }
         }
 
+        // Set vacation start/stop if not set alreasy
+        $this->vacationStart = time();
+        $this->vacationStop = time() + (14 * 60*60*24);
+
         // Prepare vacation start/stop time to be initially valid.  
-        $this->gosaVacationStart= date('d.m.Y', $this->gosaVacationStart);
-        $this->gosaVacationStop= date('d.m.Y', $this->gosaVacationStop);
+        $this->vacationStart= date('d.m.Y', $this->vacationStart);
+        $this->vacationStop= date('d.m.Y', $this->vacationStop);
     }
 
 
@@ -400,10 +405,10 @@ class groupware extends plugin
             /* Replace vacation start and end time */
             if($this->mailMethod->vacationRangeEnabled()){
                 if(preg_match("/%start/",$contents)){
-                    $contents = preg_replace("/%start/",$this->gosaVacationStart,$contents);
+                    $contents = preg_replace("/%start/",$this->vacationStart,$contents);
                 }
                 if(preg_match("/%end/",$contents)){
-                    $contents = preg_replace("/%end/",$this->gosaVacationStop,$contents);
+                    $contents = preg_replace("/%end/",$this->vacationStop,$contents);
                 }
             }else{
                 if(preg_match("/%start/",$contents)){
@@ -538,20 +543,20 @@ class groupware extends plugin
 
             /* Check date strings */
             $state= true;
-            if ($this->gosaVacationStart == "" || !tests::is_date($this->gosaVacationStart)) {
-                $message[]= msgPool::invalid(_("from"),$this->gosaVacationStart);
+            if ($this->vacationStart == "" || !tests::is_date($this->vacationStart)) {
+                $message[]= msgPool::invalid(_("from"),$this->vacationStart);
                 $state= false;
             }
-            if ($this->gosaVacationStart == "" || !tests::is_date($this->gosaVacationStop)) {
-                $message[]= msgPool::invalid(_("to"),$this->gosaVacationStop);
+            if ($this->vacationStart == "" || !tests::is_date($this->vacationStop)) {
+                $message[]= msgPool::invalid(_("to"),$this->vacationStop);
                 $state= false;
             }
 
 #TODO: take care of date format
             if ($state) {
-                list($day, $month, $year)= explode('.', $this->gosaVacationStart);
+                list($day, $month, $year)= explode('.', $this->vacationStart);
                 $start= mktime(0,0,0,$month, $day, $year);
-                list($day, $month, $year)= explode('.', $this->gosaVacationStop);
+                list($day, $month, $year)= explode('.', $this->vacationStop);
                 $stop= mktime(0,0,0,$month, $day, $year);
                 if($start > $stop){
                     $message[]= msgPool::invalid(_("Vacation interval"));

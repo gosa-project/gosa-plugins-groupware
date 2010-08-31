@@ -52,22 +52,22 @@ class groupware extends plugin
 
     var $mailAddress = "";
     var $mailLocation = "";
-    var $quotaUsage = "";
-    var $quotaSize = "";
-    var $alternateAddresses = "";
-    var $forwardingAddresses = "";
+    var $quotaUsage = 0;
+    var $quotaSize = 0;
+    var $alternateAddresses = array();
+    var $forwardingAddresses = array();
     var $vacationEnabled = FALSE;
     var $vacationStart = 0;
     var $vacationStop = 0;
     var $vacationMessage = "";
     var $mailBoxWarnLimitEnabled = FALSE;
-    var $mailBoxWarnLimitValue = "";
+    var $mailBoxWarnLimitValue = 100;
     var $mailBoxSendSizelimitEnabled = FALSE;
-    var $mailBoxSendSizelimitValue = "";
+    var $mailBoxSendSizelimitValue = 100;
     var $mailBoxHardSizelimitEnabled = FALSE;
-    var $mailBoxHardSizelimitValue = "";
+    var $mailBoxHardSizelimitValue = 100;
     var $mailBoxAutomaticRemovalEnabled = FALSE;
-    var $mailBoxAutomaticRemovalValue = "";
+    var $mailBoxAutomaticRemovalValue = 100;
     var $localDeliveryOnly = FALSE;
     var $dropOwnMails = FALSE;
 
@@ -166,11 +166,11 @@ class groupware extends plugin
 
         // Append selected forwarding addresses now.
         if (isset($_POST['mailAddressSelect_save']) && $this->mailAddressSelectDialog instanceOf mailAddressSelect){
-            if($this->acl_is_writeable("gosaMailForwardingAddress")){
+            if($this->acl_is_writeable("forwardingAddresses")){
                 $list = $this->mailAddressSelectDialog->save();
                 foreach ($list as $entry){
                     $val = $entry['mail'][0];
-                    if (!in_array ($val, $this->gosaMailAlternateAddress) && $val != $this->mail){
+                    if (!in_array ($val, $this->alternateAddresses) && $val != $this->mailAddress){
                         $this->addForwarder($val);
                         $this->is_modified= TRUE;
                     }
@@ -185,9 +185,9 @@ class groupware extends plugin
         // Display the address selection dialog.
         if($this->mailAddressSelectDialog instanceOf mailAddressSelect){
             $used  = array();
-            $used['mail'] = array_values($this->gosaMailAlternateAddress);  
-            $used['mail'] = array_merge($used['mail'], array_values($this->gosaMailForwardingAddress));  
-            $used['mail'][] = $this->mail;
+            $used['mail'] = array_values($this->alternateAddresses);  
+            $used['mail'] = array_merge($used['mail'], array_values($this->forwardingAddresses));  
+            $used['mail'][] = $this->mailAddress;
 
             // Build up blocklist
             session::set('filterBlacklist', $used);
@@ -208,14 +208,13 @@ class groupware extends plugin
                                         "","","your-address@your-domain.com"),ERROR_DIALOG);
                         }
                     }
-                } elseif ($address == $this->mail
-                        || in_array($address, $this->gosaMailAlternateAddress)) {
+                } elseif ($address == $this->mailAddress || in_array($address, $this->alternateAddresses)) {
                     msg_dialog::display(_("Error"),_("Cannot add primary address to the list of forwarders!") , ERROR_DIALOG);
                 } else {
                     $valid= TRUE;
                 }
                 if ($valid){
-                    if($this->acl_is_writeable("gosaMailForwardingAddress")){
+                    if($this->acl_is_writeable("forwardingAddresses")){
                         $this->addForwarder ($address);
                         $this->is_modified= TRUE;
                     }
@@ -357,11 +356,11 @@ class groupware extends plugin
     function addForwarder($address)
     {
         if(empty($address)) return;
-        if($this->acl_is_writeable("gosaMailForwardingAddress")){
-            $this->gosaMailForwardingAddress[]= $address;
-            $this->gosaMailForwardingAddress= array_unique ($this->gosaMailForwardingAddress);
-            sort ($this->gosaMailForwardingAddress);
-            reset ($this->gosaMailForwardingAddress);
+        if($this->acl_is_writeable("forwardingAddresses")){
+            $this->forwardingAddresses[]= $address;
+            $this->forwardingAddresses= array_unique ($this->forwardingAddresses);
+            sort ($this->forwardingAddresses);
+            reset ($this->forwardingAddresses);
             $this->is_modified= TRUE;
         }else{
             msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
@@ -373,8 +372,8 @@ class groupware extends plugin
      */ 
     function delForwarder($addresses)
     {
-        if($this->acl_is_writeable("gosaMailForwardingAddress")){
-            $this->gosaMailForwardingAddress= array_remove_entries ($addresses, $this->gosaMailForwardingAddress);
+        if($this->acl_is_writeable("forwardingAddresses")){
+            $this->forwardingAddresses= array_remove_entries ($addresses, $this->forwardingAddresses);
             $this->is_modified= TRUE;
         }else{
             msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
@@ -388,7 +387,7 @@ class groupware extends plugin
     function addAlternate($address)
     {
         if(empty($address)) return;
-        if($this->acl_is_writeable("gosaMailAlternateAddress")){
+        if($this->acl_is_writeable("alternateAddresses")){
             $ldap= $this->config->get_ldap_link();
             $address= strtolower($address);
 
@@ -403,12 +402,12 @@ class groupware extends plugin
                 }
                 return ($attrs["uid"][0]);
             }
-            if (!in_array($address, $this->gosaMailAlternateAddress)){
-                $this->gosaMailAlternateAddress[]= $address;
+            if (!in_array($address, $this->alternateAddresses)){
+                $this->alternateAddresses[]= $address;
                 $this->is_modified= TRUE;
             }
-            sort ($this->gosaMailAlternateAddress);
-            reset ($this->gosaMailAlternateAddress);
+            sort ($this->alternateAddresses);
+            reset ($this->alternateAddresses);
             return ("");
         }else{
             msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
@@ -420,8 +419,8 @@ class groupware extends plugin
      */ 
     function delAlternate($addresses)
     {
-        if($this->acl_is_writeable("gosaMailAlternateAddress")){
-            $this->gosaMailAlternateAddress= array_remove_entries ($addresses,$this->gosaMailAlternateAddress);
+        if($this->acl_is_writeable("alternateAddresses")){
+            $this->alternateAddresses= array_remove_entries ($addresses,$this->alternateAddresses);
             $this->is_modified= TRUE;
         }else{
             msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
@@ -519,7 +518,7 @@ class groupware extends plugin
         }
 
         /* Mail address checks */
-        $mail = $this->mail;
+        $mail = $this->mailAddress;
         if(!(!$this->mailMethod->isModifyableMail() && $this->initially_was_account)){
 
             if($this->mailMethod->domainSelectionEnabled()){

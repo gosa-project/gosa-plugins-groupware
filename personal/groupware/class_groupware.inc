@@ -504,110 +504,7 @@ class groupware extends plugin
      */
     function check()
     {
-        if(!$this->is_account){
-            return(array());
-        }
-
-        $ldap= $this->config->get_ldap_link();
-
-        /* Call common method to give check the hook */
-        $message= plugin::check();
-
-        if(empty($this->gosaMailServer)){
-            $message[]= msgPool::noserver(_("Mail"));
-        }
-
-        /* Mail address checks */
-        $mail = $this->mailAddress;
-        if(!(!$this->mailMethod->isModifyableMail() && $this->initially_was_account)){
-
-            if($this->mailMethod->domainSelectionEnabled()){
-                $mail.= "@".$this->mailDomainPart;
-            }
-
-            if (empty($mail)){
-                $message[]= msgPool::required(_("Primary address"));
-            }
-            if ($this->is_template){
-                if (!tests::is_email($mail, TRUE)){
-                    $message[]= msgPool::invalid(_("Mail address"),"","","%givenName.%sn@your-domain.com");
-                }
-            } else {
-                if (!tests::is_email($mail)){
-                    $message[]= msgPool::invalid(_("Mail address"),"","","your-address@your-domain.com");
-                }
-            }
-
-            /* Check if this mail address is already in use */
-            $ldap->cd($this->config->current['BASE']);
-            $filter = "(&(!(objectClass=gosaUserTemplate))(!(uid=".$this->uid."))".
-                "(objectClass=gosaMailAccount)".
-                "(|(mail=".$mail.")(alias=".$mail.")(gosaMailAlternateAddress=".$mail.")))";
-            $ldap->search($filter,array("uid", "cn"));
-            if ($ldap->count() != 0){
-                $entry= $ldap->fetch();
-                $addon= "";
-                if (!isset($entry['uid'])) {
-                    $addon= sprintf(_("Address is already in use by group '%s'."), $entry['cn'][0]);
-                } else {
-                    $addon= sprintf(_("Address is already in use by user '%s'."), $entry['uid'][0]);
-                }
-                $message[]= msgPool::duplicated(_("Mail address"))."<br><br><i>$addon</i>";
-            }
-        }
-
-
-        /* Check quota */
-        if ($this->gosaMailQuota != '' && $this->acl_is_writeable("gosaMailQuota")){
-            if (!is_numeric($this->gosaMailQuota)) {
-                $message[]= msgPool::invalid(_("Quota size"),$this->gosaMailQuota,"/^[0-9]*/");
-            } else {
-                $this->gosaMailQuota= (int) $this->gosaMailQuota;
-            }
-        }
-
-        /* Check rejectsize for integer */
-        if ($this->gosaMailMaxSize != '' && $this->acl_is_writeable("gosaMailMaxSize")){
-            if (!is_numeric($this->gosaMailMaxSize)){
-                $message[]= msgPool::invalid(_("Mail reject size"),$this->gosaMailMaxSize,"/^[0-9]*/");
-            } else {
-                $this->gosaMailMaxSize= (int) $this->gosaMailMaxSize;
-            }
-        }
-
-        /* Need gosaMailMaxSize if use_mailsize_limit is checked */
-        if (is_integer(strpos($this->gosaMailDeliveryMode, "R")) && $this->gosaMailMaxSize == ""){
-            $message[]= msgPool::required(_("Mail reject size"));
-        }
-
-        if((preg_match("/S/", $this->gosaMailDeliveryMode))&&(empty($this->gosaSpamMailbox))) {
-            $message[]= msgPool::required(_("Spam folder"));
-        }
-
-        if ($this->mailMethod->vacationRangeEnabled() && preg_match('/V/', $this->gosaMailDeliveryMode)){ 
-
-            /* Check date strings */
-            $state= true;
-            if ($this->vacationStart == "" || !tests::is_date($this->vacationStart)) {
-                $message[]= msgPool::invalid(_("from"),$this->vacationStart);
-                $state= false;
-            }
-            if ($this->vacationStart == "" || !tests::is_date($this->vacationStop)) {
-                $message[]= msgPool::invalid(_("to"),$this->vacationStop);
-                $state= false;
-            }
-
-#TODO: take care of date format
-            if ($state) {
-                list($day, $month, $year)= explode('.', $this->vacationStart);
-                $start= mktime(0,0,0,$month, $day, $year);
-                list($day, $month, $year)= explode('.', $this->vacationStop);
-                $stop= mktime(0,0,0,$month, $day, $year);
-                if($start > $stop){
-                    $message[]= msgPool::invalid(_("Vacation interval"));
-                }
-            }
-        }
+        $mssages = plugin::check();
         return($message);
     }
 
@@ -626,8 +523,8 @@ class groupware extends plugin
     static function plInfo()
     {
         return (array(
-                    "plShortName"     => _("Mail"),
-                    "plDescription"   => _("Mail settings"),
+                    "plShortName"     => _("Groupware"),
+                    "plDescription"   => _("Groupware settings"),
                     "plSelfModify"    => TRUE,
                     "plDepends"       => array("user"),                     // This plugin depends on
                     "plPriority"      => 4,                                 // Position in tabs

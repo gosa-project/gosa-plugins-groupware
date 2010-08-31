@@ -29,6 +29,21 @@ class groupware extends plugin
             "dropOwnMails"
             );
 
+    var $enabledFeatures = array(
+            "quotaUsage"                => FALSE,
+            "quotaSize"                 => FALSE,
+            "mailFilter"                => FALSE,
+            "alternateAddresses"        => FALSE,
+            "forwardingAddresses"       => FALSE,
+            "vacationMessage"           => FALSE,
+            "mailBoxWarnLimit"          => FALSE,
+            "mailBoxSendSizelimit"      => FALSE,
+            "alternateAddresses"        => FALSE,
+            "mailBoxHardSizelimit"      => FALSE,
+            "mailBoxAutomaticRemoval"   => FALSE,
+            "localDeliveryOnly"         => FALSE,
+            "dropOwnMails"              => FALSE);
+
     var $flagAttrinutes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
             "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
 
@@ -81,6 +96,19 @@ class groupware extends plugin
 
     function execute()
     {
+    $this->enabledFeatures = array(
+            "quotaUsage"                => TRUE,
+            "quotaSize"                 => TRUE,
+            "mailFilter"                => TRUE,
+            "alternateAddresses"        => TRUE,
+            "forwardingAddresses"       => TRUE,
+            "vacationMessage"           => TRUE,
+            "mailBoxWarnLimit"          => TRUE,
+            "mailBoxSendSizelimit"      => TRUE,
+            "mailBoxHardSizelimit"      => TRUE,
+            "mailBoxAutomaticRemoval"   => TRUE,
+            "localDeliveryOnly"         => TRUE,
+            "dropOwnMails"              => TRUE);
 
         // Register plugin execution 
         $display = plugin::execute();
@@ -252,6 +280,9 @@ class groupware extends plugin
         $plInfo = $this->plInfo();
         foreach($plInfo['plProvidedAcls'] as $acl => $name){
             $smarty->assign($acl."ACL", $this->getacl($acl));
+        }
+        foreach($this->enabledFeatures as $feature => $state){
+            $smarty->assign($feature."_isActive", $state);
         }
 
         $smarty->assign("mailLocations", array("tester"));

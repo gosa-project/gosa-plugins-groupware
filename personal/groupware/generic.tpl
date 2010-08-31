@@ -23,6 +23,7 @@
                         {/render}
                     </td>
                 </tr>
+                {if $quotaUsage_isActive}
                 <tr>
                     <td><label for='quotaUsage_dummy'>{t}Quota usage{/t}</label></td>
                     <td>
@@ -31,6 +32,8 @@
                         {/render}
                     </td>
                 </tr>
+                {/if}
+                {if $quotaSize_isActive}
                 <tr>
                     <td><label for="quotaSize">{t}Quota size{/t}</label></td>
                     <td>
@@ -39,6 +42,8 @@
                         {/render}
                     </td>
                 </tr>
+                {/if}
+                {if $mailFilter_isActive}
                 <tr>
                     <td><label for="mailFilter">{t}Mail filter{/t}</label></td>
                     <td>
@@ -47,156 +52,179 @@
                         {/render}
                     </td>
                 </tr>
+                {/if}
             </table>
 
         </td>
-        <td class='left-border'>&nbsp;</td>
-        <td>
-            <h3><label for="alternateAddressList">{t}Alternative addresses{/t}</label></h3>
-            {render acl=$alternateAddressesACL}
-                <select id="alternateAddressList" style="width:100%;height:100px;" name="alternateAddressList[]" size="15" multiple
-                    title="{t}List of alternative mail addresses{/t}">
-                    {html_options values=$alternateAddresses output=$alternateAddresses}
-                    <option disabled>&nbsp;</option>
-                </select>
-                <br>
-            {/render}
-            {render acl=$alternateAddressesACL}
-                <input type='text' name="alternateAddressInput">
-            {/render}
-            {render acl=$alternateAddressesACL}
-                <button type='submit' name='addAlternateAddress'>{msgPool type=addButton}</button>
-            {/render}
-            {render acl=$alternateAddressesACL}
-                <button type='submit' name='deleteAlternateAddress'>{msgPool type=delButton}</button>
-            {/render}
-        </td>
+        
+        {if !$alternateAddresses_isActive}
+            <td></td>
+        {else}
+            <td class='left-border'>&nbsp;</td>
+            <td>
+                <h3><label for="alternateAddressList">{t}Alternative addresses{/t}</label></h3>
+                {render acl=$alternateAddressesACL}
+                    <select id="alternateAddressList" style="width:100%;height:100px;" name="alternateAddressList[]" size="15" multiple
+                        title="{t}List of alternative mail addresses{/t}">
+                        {html_options values=$alternateAddresses output=$alternateAddresses}
+                        <option disabled>&nbsp;</option>
+                    </select>
+                    <br>
+                {/render}
+                {render acl=$alternateAddressesACL}
+                    <input type='text' name="alternateAddressInput">
+                {/render}
+                {render acl=$alternateAddressesACL}
+                    <button type='submit' name='addAlternateAddress'>{msgPool type=addButton}</button>
+                {/render}
+                {render acl=$alternateAddressesACL}
+                    <button type='submit' name='deleteAlternateAddress'>{msgPool type=delButton}</button>
+                {/render}
+            </td>
+        {/if}
     </tr>
 </table>
+
+{if $vacationMessage_isActive || $forwardingAddresses_isActive}
 <hr> 
+    <table>
+        <tr>
+            <td style='width:50%'>
 
-<table>
-    <tr>
-        <td style='width:50%'>
+                {if $vacationMessage_isActive}
+                <h3><label for="vacationMessage">{t}Vacation message{/t}</label></h3>
 
-            <h3><label for="vacationMessage">{t}Vacation message{/t}</label></h3>
-
-            <table summary="{t}Spam filter configuration{/t}">
-                <tr>
-                    <td style='width:20px;'>
-                        {render acl=$vacationEnabledACL}
-                        <input type=checkbox name="vacationEnabled" value="1" 
-                            {if $vacationEnabled} checked {/if}
-                            id="vacationEnabled" 
-                            title="{t}Select to automatically response with the vacation message defined below{/t}" 
-                            class="center" 
-                            onclick="changeState('vacationStart'); changeState('vacationStop'); changeState('vacationMessage');">
-                        {/render}
-                    </td>
-                    <td colspan="4">
-                        {t}Activate vacation message{/t}
-                    </td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td style='width:30px;'>{t}from{/t}</td>
-                    <td>
-                        {render acl=$vacationStartACL}
-                            <input type="text" id="vacationStart" name="vacationStart" class="date" 
-                                style='width:100px' value="{$vacationStart}"
-                                {if !$vacationEnabled} disabled {/if}
-                                >
-                        {/render}
-                        {if $vacationStartACL|regex_replace:"/[cdmr]/":"" == "w"}
-                            <script type="text/javascript">
-                                {literal}
-                                    var datepicker  = new DatePicker({ 
-                                        relative : 'vacationStart', 
-                                        language : '{/literal}{$lang}{literal}', 
-                                        keepFieldEmpty : true, 
-                                        enableCloseEffect : false, 
-                                        enableShowEffect : false });
-                                {/literal}
-                            </script>
-                        {/if}
-                    </td>
-                    <td style='width:30px;'>{t}till{/t}</td>
-                    <td>
-                        {render acl=$vacationStartACL}
-                            <input type="text" id="vacationStop" name="vacationStop" class="date" 
-                                style='width:100px' value="{$vacationStop}"i
-                                {if !$vacationEnabled} disabled {/if}
-                                >
-                        {/render}
-                        {if $vacationStopACL|regex_replace:"/[cdmr]/":"" == "w"}
-                            <script type="text/javascript">
-                                {literal}
-                                    var datepicker2  = new DatePicker({ 
-                                        relative : 'vacationStop', 
-                                        language : '{/literal}{$lang}{literal}', 
-                                        keepFieldEmpty : true, 
-                                        enableCloseEffect : false,  
-                                        enableShowEffect : false });
-                                {/literal}
-                            </script>
-                        {/if}
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan=5>
-                        {render acl=$vacationMessageACL}
-                        <textarea id="vacationMessage" style="width:99%; height:100px;" 
-                            {if !$vacationEnabled} disabled {/if}
-                            name="vacationMessage" rows="4" cols="512">{$vacationMessage}</textarea>
-                        {/render}
-                        <br>
-                        {if $displayTemplateSelector eq "true"}
-                            {render acl=$vacationMessageACL}
-                                <select id='vacation_template' name="vacation_template" size=1>
-                                    {html_options options=$vacationTemplates selected=$vacationTemplate}
-                                    <option disabled>&nbsp;</option>
-                                </select>
+                <table summary="{t}Spam filter configuration{/t}">
+                    <tr>
+                        <td style='width:20px;'>
+                            {render acl=$vacationEnabledACL}
+                            <input type=checkbox name="vacationEnabled" value="1" 
+                                {if $vacationEnabled} checked {/if}
+                                id="vacationEnabled" 
+                                title="{t}Select to automatically response with the vacation message defined below{/t}" 
+                                class="center" 
+                                onclick="changeState('vacationStart'); changeState('vacationStop'); changeState('vacationMessage');">
                             {/render}
-                            {render acl=$vacationMessageACL}
-                                <button type='submit' name='import_vacation' id="import_vacation">{t}Import{/t}</button>
+                        </td>
+                        <td colspan="4">
+                            {t}Activate vacation message{/t}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td style='width:30px;'>{t}from{/t}</td>
+                        <td>
+                            {render acl=$vacationStartACL}
+                                <input type="text" id="vacationStart" name="vacationStart" class="date" 
+                                    style='width:100px' value="{$vacationStart}"
+                                    {if !$vacationEnabled} disabled {/if}
+                                    >
                             {/render}
-                        {/if}
-                    </td>
-                </tr>
-            </table>
+                            {if $vacationStartACL|regex_replace:"/[cdmr]/":"" == "w"}
+                                <script type="text/javascript">
+                                    {literal}
+                                        var datepicker  = new DatePicker({ 
+                                            relative : 'vacationStart', 
+                                            language : '{/literal}{$lang}{literal}', 
+                                            keepFieldEmpty : true, 
+                                            enableCloseEffect : false, 
+                                            enableShowEffect : false });
+                                    {/literal}
+                                </script>
+                            {/if}
+                        </td>
+                        <td style='width:30px;'>{t}till{/t}</td>
+                        <td>
+                            {render acl=$vacationStartACL}
+                                <input type="text" id="vacationStop" name="vacationStop" class="date" 
+                                    style='width:100px' value="{$vacationStop}"i
+                                    {if !$vacationEnabled} disabled {/if}
+                                    >
+                            {/render}
+                            {if $vacationStopACL|regex_replace:"/[cdmr]/":"" == "w"}
+                                <script type="text/javascript">
+                                    {literal}
+                                        var datepicker2  = new DatePicker({ 
+                                            relative : 'vacationStop', 
+                                            language : '{/literal}{$lang}{literal}', 
+                                            keepFieldEmpty : true, 
+                                            enableCloseEffect : false,  
+                                            enableShowEffect : false });
+                                    {/literal}
+                                </script>
+                            {/if}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan=5>
+                            {render acl=$vacationMessageACL}
+                            <textarea id="vacationMessage" style="width:99%; height:100px;" 
+                                {if !$vacationEnabled} disabled {/if}
+                                name="vacationMessage" rows="4" cols="512">{$vacationMessage}</textarea>
+                            {/render}
+                            <br>
+                            {if $displayTemplateSelector eq "true"}
+                                {render acl=$vacationMessageACL}
+                                    <select id='vacation_template' name="vacation_template" size=1>
+                                        {html_options options=$vacationTemplates selected=$vacationTemplate}
+                                        <option disabled>&nbsp;</option>
+                                    </select>
+                                {/render}
+                                {render acl=$vacationMessageACL}
+                                    <button type='submit' name='import_vacation' id="import_vacation">{t}Import{/t}</button>
+                                {/render}
+                            {/if}
+                        </td>
+                    </tr>
+                </table>
 
-        </td>
-        <td class='left-border'>&nbsp;</td>
-        <td>
-            <h3><label for="forwardingAddressList">{t}Forward messages to{/t}</label></h3>
-            {render acl=$forwardingAddressesACL}
-                <select id="forwardingAddressList" style="width:100%; height:100px;" name="forwardingAddressList[]" size=15 multiple>
-                    {html_options values=$forwardingAddresses output=$forwardingAddresses}
-                    <option disabled>&nbsp;</option>
-                </select>
-            {/render}
-            <br>
-            {render acl=$forwardingAddressesACL}
-                <input type='text' id='forwardingAddressInput' name="forwardingAddressInput">
-            {/render}
-            {render acl=$forwardingAddressesACL}
-                <button type='submit' name='addForwardingAddress' id="addForwardingAddress">{msgPool type=addButton}</button>&nbsp;
-            {/render}
-            {render acl=$forwardingAddressesACL}
-                <button type='submit' name='addLocalForwardingAddress' id="addLocalForwardingAddress">{t}Add local{/t}</button>&nbsp;
-            {/render}
-            {render acl=$forwardingAddressesACL}
-                <button type='submit' name='deleteForwardingAddress' id="deleteForwardingAddress">{msgPool type=delButton}</button>
-            {/render}
+                {/if}
 
-        </td>
-    </tr>
-</table>
+            </td>
+            {if !$forwardingAddresses_isActive}
+                <td></td>
+            {else}
+                <td class='left-border'>&nbsp;</td>
+                <td>
+                    <h3><label for="forwardingAddressList">{t}Forward messages to{/t}</label></h3>
+                    {render acl=$forwardingAddressesACL}
+                        <select id="forwardingAddressList" style="width:100%; height:100px;" 
+                            name="forwardingAddressList[]" size=15 multiple>
+                            {html_options values=$forwardingAddresses output=$forwardingAddresses}
+                            <option disabled>&nbsp;</option>
+                        </select>
+                    {/render}
+                    <br>
+                    {render acl=$forwardingAddressesACL}
+                        <input type='text' id='forwardingAddressInput' name="forwardingAddressInput">
+                    {/render}
+                    {render acl=$forwardingAddressesACL}
+                        <button type='submit' name='addForwardingAddress' 
+                            id="addForwardingAddress">{msgPool type=addButton}</button>&nbsp;
+                    {/render}
+                    {render acl=$forwardingAddressesACL}
+                        <button type='submit' name='addLocalForwardingAddress' 
+                            id="addLocalForwardingAddress">{t}Add local{/t}</button>&nbsp;
+                    {/render}
+                    {render acl=$forwardingAddressesACL}
+                        <button type='submit' name='deleteForwardingAddress' 
+                            id="deleteForwardingAddress">{msgPool type=delButton}</button>
+                    {/render}
+                </td>
+            {/if}
+        </tr>
+    </table>
+{/if}
     
-<hr>
+{* Do not render the Flag list while there are none! *}
+{if $mailBoxWarnLimit_isActive || $mailBoxSendSizelimit_isActive ||
+    $mailBoxHardSizelimit_isActive || $mailBoxAutomaticRemoval_isActive ||
+    $localDeliveryOnly_isActive || $dropOwnMails_isActive}
 
+<hr>
 <h3>{t}Mailbox options{/t}</h3>
 <table summary="{t}Flags{/t}">
+    {if $mailBoxWarnLimit_isActive}
     <tr>
         <td>
             {render acl=$mailBoxWarnLimitACL}
@@ -210,6 +238,8 @@
             {/render}
         </td>
     </tr>
+    {/if}
+    {if $mailBoxSendSizelimit_isActive}
     <tr>
         <td>
             {render acl=$mailBoxSendSizelimitACL}
@@ -223,6 +253,8 @@
             {/render}
         </td>
     </tr>
+    {/if}
+    {if $mailBoxHardSizelimit_isActive}
     <tr>
         <td>
             {render acl=$mailBoxHardSizelimitACL}
@@ -236,6 +268,8 @@
             {/render}
         </td>
     </tr>
+    {/if}
+    {if $mailBoxAutomaticRemoval_isActive}
     <tr>
         <td>
             {render acl=$mailBoxAutomaticRemovalACL}
@@ -249,6 +283,8 @@
             {/render}
         </td>
     </tr>
+    {/if}
+    {if $localDeliveryOnly_isActive}
     <tr>
         <td>
             {render acl=$localDeliveryOnlyACL}
@@ -259,6 +295,8 @@
             {t}User is only allowed to send and receive local mails{/t}
         </td>
     </tr>
+    {/if}
+    {if $dropOwnMails_isActive}
     <tr>
         <td>
             {render acl=$dropOwnMailsACL}
@@ -269,7 +307,9 @@
             {t}No delivery to own mailbox{/t}
         </td>
     </tr>
+    {/if}
 </table>
+{/if}
 
 <input type='hidden' name='groupwarePluginPosted' value='1'>
 

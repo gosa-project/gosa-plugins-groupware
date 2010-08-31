@@ -30,24 +30,25 @@ class groupware extends plugin
             );
 
     var $enabledFeatures = array(
-            "quotaUsage"                => FALSE,
-            "quotaSize"                 => FALSE,
-            "mailFilter"                => FALSE,
-            "alternateAddresses"        => FALSE,
-            "forwardingAddresses"       => FALSE,
-            "vacationMessage"           => FALSE,
-            "mailBoxWarnLimit"          => FALSE,
-            "mailBoxSendSizelimit"      => FALSE,
-            "alternateAddresses"        => FALSE,
-            "mailBoxHardSizelimit"      => FALSE,
-            "mailBoxAutomaticRemoval"   => FALSE,
-            "localDeliveryOnly"         => FALSE,
-            "dropOwnMails"              => FALSE);
+            "quotaUsage"                => TRUE,
+            "quotaSize"                 => TRUE,
+            "mailFilter"                => TRUE,
+            "alternateAddresses"        => TRUE,
+            "forwardingAddresses"       => TRUE,
+            "vacationMessage"           => TRUE,
+            "mailBoxWarnLimit"          => TRUE,
+            "mailBoxSendSizelimit"      => TRUE,
+            "mailBoxHardSizelimit"      => TRUE,
+            "mailBoxAutomaticRemoval"   => TRUE,
+            "localDeliveryOnly"         => TRUE,
+            "dropOwnMails"              => TRUE);
 
     var $flagAttrinutes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
             "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
 
     var $mailAddressSelectDialog = NULL;
+    var $filterEditor = NULL;
+    var $filterRules = array();
     var $vacationTemplates = array();
 
     var $mailAddress = "";
@@ -96,19 +97,6 @@ class groupware extends plugin
 
     function execute()
     {
-    $this->enabledFeatures = array(
-            "quotaUsage"                => TRUE,
-            "quotaSize"                 => TRUE,
-            "mailFilter"                => TRUE,
-            "alternateAddresses"        => TRUE,
-            "forwardingAddresses"       => TRUE,
-            "vacationMessage"           => TRUE,
-            "mailBoxWarnLimit"          => TRUE,
-            "mailBoxSendSizelimit"      => TRUE,
-            "mailBoxHardSizelimit"      => TRUE,
-            "mailBoxAutomaticRemoval"   => TRUE,
-            "localDeliveryOnly"         => TRUE,
-            "dropOwnMails"              => TRUE);
 
         // Register plugin execution 
         $display = plugin::execute();
@@ -117,6 +105,21 @@ class groupware extends plugin
         if($this->is_account && !$this->view_logged){
             $this->view_logged = TRUE;
             new log("view","users/".get_class($this),$this->dn);
+        }
+
+        /****************
+          Filter editor
+         ****************/
+
+        if(isset($_POST['filterEditor_cancel'])) $this->filterEditor = NULL;
+        if(isset($_POST['configureFilter'])){
+            $this->filterEditor = new filterEditor($this->config, $this->filterRules);
+        }
+        $this->dialog = FALSE;
+        if($this->filterEditor instanceOf filterEditor){
+            $this->filterEditor->save_object();
+            $this->dialog = TRUE;
+            return($this->filterEditor->execute());
         }
 
 

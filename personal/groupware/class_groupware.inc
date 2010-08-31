@@ -249,13 +249,10 @@ class groupware extends plugin
             $smarty->assign($attr, $this->$attr);
         }
 
-        /****************
-          SMARTY- Assign flags 
-         ****************/
-
-        /****************
-          Smarty- Vacation settings 
-         ****************/
+        $plInfo = $this->plInfo();
+        foreach($plInfo['plProvidedAcls'] as $acl => $name){
+            $smarty->assign($acl."ACL", $this->getacl($acl));
+        }
 
         $smarty->assign("mailLocations", array("tester"));
         if (count($this->vacationTemplates)){
@@ -611,6 +608,7 @@ class groupware extends plugin
                         "mailAddress"                   => _("Mail address"),
                         "mailLocation"                  => _("Mail location"),
                         "quotaUsage"                    => _("Quota usage"),
+                        "mailFilter"                    => _("Mail filter"),
                         "quotaSize"                     => _("Quota size"),
                         "alternateAddresses"            => _("Alternate mail addresses"),
                         "forwardingAddresses"           => _("Forwarding mail addresses"),

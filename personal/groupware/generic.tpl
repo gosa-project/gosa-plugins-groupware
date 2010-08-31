@@ -58,11 +58,12 @@
             <table summary="{t}Spam filter configuration{/t}">
                 <tr>
                     <td style='width:20px;'>
-                        <input type=checkbox name="vacationEnabled" value="1" {$vacationEnabled} 
+                        <input type=checkbox name="vacationEnabled" value="1" 
+                            {if $vacationEnabled} checked {/if}
                             id="vacationEnabled" 
                             title="{t}Select to automatically response with the vacation message defined below{/t}" 
                             class="center" 
-                            onclick="changeStates()">
+                            onclick="changeState('vacationStart'); changeState('vacationStop'); changeState('vacationMessage');">
                     </td>
                     <td colspan="4">
                         {t}Activate vacation message{/t}
@@ -73,7 +74,9 @@
                     <td style='width:30px;'>{t}from{/t}</td>
                     <td>
                         <input type="text" id="vacationStart" name="vacationStart" class="date" 
-                            style='width:100px' value="{$vacationStart}">
+                            style='width:100px' value="{$vacationStart}"
+                            {if !$vacationEnabled} disabled {/if}
+                        >
                         <script type="text/javascript">
                             {literal}
                                 var datepicker  = new DatePicker({ 
@@ -88,7 +91,9 @@
                     <td style='width:30px;'>{t}till{/t}</td>
                     <td>
                         <input type="text" id="vacationStop" name="vacationStop" class="date" 
-                            style='width:100px' value="{$vacationStop}"></div>
+                            style='width:100px' value="{$vacationStop}"i
+                            {if !$vacationEnabled} disabled {/if}
+                            >
                         <script type="text/javascript">
                             {literal}
                                 var datepicker2  = new DatePicker({ 
@@ -104,6 +109,7 @@
                 <tr>
                     <td colspan=5>
                         <textarea id="vacationMessage" style="width:99%; height:100px;" 
+                            {if !$vacationEnabled} disabled {/if}
                             name="vacationMessage" rows="4" cols="512">{$vacationMessage}</textarea>
                         <br>
                         {if $displayTemplateSelector eq "true"}

@@ -128,9 +128,9 @@ class groupware extends plugin
          ****************/
 
         if(isset($_POST['modify_state'])){
-            if($this->is_account && $this->acl_is_removeable() && $this->mailMethod->accountRemoveAble()){
+            if($this->is_account && $this->acl_is_removeable()){
                 $this->is_account= FALSE;
-            }elseif(!$this->is_account && $this->acl_is_createable() && $this->mailMethod->accountCreateable()){
+            }elseif(!$this->is_account && $this->acl_is_createable()){
                 $this->is_account= TRUE;
             }
         }
@@ -451,7 +451,7 @@ class groupware extends plugin
         if($obj){
 
             /* Replace vacation start and end time */
-            if($this->mailMethod->vacationRangeEnabled()){
+            if($this->enabledFeatures['vacationMessage']){
                 if(preg_match("/%start/",$contents)){
                     $contents = preg_replace("/%start/",$this->vacationStart,$contents);
                 }

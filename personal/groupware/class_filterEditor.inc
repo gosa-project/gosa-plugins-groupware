@@ -22,6 +22,8 @@ class filterEditor extends plugin{
     {
         $smarty = get_smarty();
 
+
+
         $smarty->assign('list', $this->filterListing->render());
 
         return($smarty->fetch(get_template_path('filterEditor.tpl',TRUE,dirname(__FILE__))));

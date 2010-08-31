@@ -589,7 +589,22 @@ class groupware extends plugin
                     "plSection"     => array("personal" => _("My account")),
                     "plCategory"    => array("users"),
                     "plOptions"       => array(),
-                    "plProvidedAcls"  => array()
+                    "plProvidedAcls"  => array(
+                        "mailAddress"                   => _("Mail address"),
+                        "mailLocation"                  => _("Mail location"),
+                        "quotaUsage"                    => _("Quota usage"),
+                        "quotaSize"                     => _("Quota size"),
+                        "alternateAddresses"            => _("Alternate mail addresses"),
+                        "forwardingAddresses"           => _("Forwarding mail addresses"),
+                        "vacationEnabled"               => _("Vaction switch"),
+                        "vacationStart"                 => _("Vacation start time"),
+                        "vacationStop"                  => _("Vacation stop time"),
+                        "vacationMessage"               => _("Vacation message"),
+                        "mailBoxWarnLimit"              => _("Warn sizelimit"),
+                        "mailBoxSendSizelimit"          => _("Send sizelimit"),
+                        "mailBoxHardSizelimit"          => _("Hard sizelimit"),
+                        "mailBoxAutomaticRemoval"       => _("Automatic mail removal"),
+                        )
                     ));
     }
 }

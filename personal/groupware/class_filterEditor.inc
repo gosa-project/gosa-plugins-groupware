@@ -19,10 +19,6 @@ class filterEditor extends plugin{
         $this->filterListing->setWidth("100%");
         $this->filterListing->setHeight("200px;");
         $this->filterListing->setAcl($this->parent->getacl('mailFilter'));
-    }
-
-    function execute()
-    {
 
 
         $this->filter = array(); 
@@ -66,6 +62,10 @@ class filterEditor extends plugin{
                     )
                 );
 
+    }
+
+    function execute()
+    {
 
         $smarty = get_smarty();
 
@@ -84,6 +84,31 @@ class filterEditor extends plugin{
         return($smarty->fetch(get_template_path('filterEditor.tpl',TRUE,dirname(__FILE__))));
     }
 
+    function save_object()
+    {
+        $this->filterListing->save_object();
+        $action = $this->filterListing->getAction();
+
+        // Remove filter was requested.
+        if($action['action'] == 'delete'){
+            $key = $action['targets'][0];
+            $key = $this->filterListing->getKey($key);
+            if(isset($this->filter[$key])){
+                unset($this->filter[$key]);
+                $this->filter = array_values($this->filter);
+            }
+        }
+
+        // Edit filter was requested.
+        if($action['action'] == 'edit'){
+            $key = $action['targets'][0];
+            $key = $this->filterListing->getKey($key);
+            if(isset($this->filter[$key])){
+                
+                echo "edit";
+            }
+        }
+    }
 }
 
 ?>

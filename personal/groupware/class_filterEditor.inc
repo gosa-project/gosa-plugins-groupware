@@ -60,6 +60,12 @@ class filterEditor extends plugin
 
         $cnt = count($filter['CONDITIONS']);
         $str = "<h3>"._("Filter conditions")."</h3>";
+        $str .= _("Condition type")."&nbsp;\n<select name='cType' onChange='document.mainform.submit();'>";
+        foreach($this->types as $type => $desc){
+            $checked = ($type == $filter['TYPE'])? ' selected ' : '';
+            $str.= "\n<option {$checked} value=\"".set_post($type)."\">".set_post($desc)."</option>";
+        }
+        $str .= "\n</select>";
         $str.= "<ul>";
         foreach($filter['CONDITIONS'] as $id => $cond){
             $str .= "<li>";
@@ -102,7 +108,7 @@ class filterEditor extends plugin
                 $str.= "\n<option {$checked} value=\"".set_post($act)."\">".set_post($desc)."</option>";
             }
             $str .= "</select>";
-            if(!in_array($action['ACTION'], array('remove'))){
+            if(!in_array($action['ACTION'], array('DROP'))){
                 $str .= "<input type='text' name='cValue_{$id}' value=\"".set_post($action['VALUE'])."\">";
             }
             $str .= "</li>";
@@ -120,15 +126,17 @@ class filterEditor extends plugin
 
     function save_object()
     {
+
+        $this->filter['TYPE'] = (isset($_POST['cType']))? get_post('cType'): $this->filter['TYPE'];
+
         foreach($this->filter['CONDITIONS'] as $id => $value){
-            if(isset($_POST['cField_'.$id])){
-                $this->filter['CONDITIONS'][$id]['FIELD'] = get_post('cField_'.$id);
-            }
-            if(isset($_POST['cComparator_'.$id])){
-                $this->filter['CONDITIONS'][$id]['COMPARATOR'] = get_post('cComparator_'.$id);
-            }
-            if(isset($_POST['cMatch_'.$id])){
-                $this->filter['CONDITIONS'][$id]['MATCH'] = get_post('cMatch_'.$id);
+            foreach(array(
+                        'cField_' => 'FIELD',
+                        'cComparator_'=>'COMPARATOR',
+                        'cMatch_'=>'MATCH') as $post => $name){
+                if(isset($_POST[$post.$id])){
+                    $this->filter['CONDITIONS'][$id][$name] = get_post($post.$id);
+                }
             }
         }
         foreach($this->filter['ACTION'] as $id => $value){
@@ -140,18 +148,18 @@ class filterEditor extends plugin
             }
         }
 
+        // Add / remove conditions
         if(isset($_POST['removeCondition']) && count($this->filter['CONDITIONS']) >= 2){
             array_pop($this->filter['CONDITIONS']);
         }
-
         if(isset($_POST['addCondition'])){
             $this->filter['CONDITIONS'][] = array('FIELD' => key($this->fields),'COMPARATOR' => key($this->comparators), 'MATCH' => '');
         }
     
+        // Add / remove actions
         if(isset($_POST['removeAction']) && count($this->filter['ACTION']) >= 2){
             array_pop($this->filter['ACTION']);
         }
-
         if(isset($_POST['addAction'])){
             $this->filter['ACTION'][] = array('ACTION' => 'MOVE', 'VALUE' => '');
         }

@@ -1,5 +1,7 @@
+<h3>{t}Filter editor{/t}</h3>
 
-asdf
+
+{$filterStr}
 
 <hr>
 <div class="plugin-actions">

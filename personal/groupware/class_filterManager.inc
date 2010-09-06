@@ -4,6 +4,7 @@ class filterManager extends plugin{
 
     var $filterListing   = NULL;
     var $filterRules = array();
+    var $filterEditor = NULL;
 
     function __construct($config,$parent,$rules)
     {

@@ -116,7 +116,9 @@ class groupware extends plugin
 
         if(isset($_POST['filterEditor_cancel'])) $this->filterEditor = NULL;
         if(isset($_POST['configureFilter'])){
-            $this->filterEditor = new filterEditor($this->config, $this->filterRules);
+            $this->filterEditor = new filterEditor($this->config, $this,$this->filterRules);
+            $this->filterEditor->acl_base = $this->acl_base;
+            $this->filterEditor->acl_category = $this->acl_category;
         }
         $this->dialog = FALSE;
         if($this->filterEditor instanceOf filterEditor){

@@ -5,21 +5,25 @@ class filterEditor extends plugin{
     var $filterListing   = NULL;
     var $filterRules = array();
 
-    function __construct($config, $rules)
+    function __construct($config,$parent,$rules)
     {
         plugin::plugin($config);
-        $this->filterRules = $rules;
+        
+        $this->parent = &$parent;
 
+        $this->filterRules = $rules;
         $this->filterListing= new sortableListing();
         $this->filterListing->setDeleteable(true);
         $this->filterListing->setEditable(true);
         $this->filterListing->setColspecs(array('*'));
         $this->filterListing->setWidth("100%");
         $this->filterListing->setHeight("200px;");
+        $this->filterListing->setAcl($this->parent->getacl('mailFilter'));
     }
 
     function execute()
     {
+
 
         $this->filter = array(); 
         $this->filter[] =   array (
@@ -64,6 +68,14 @@ class filterEditor extends plugin{
 
 
         $smarty = get_smarty();
+
+        $data = $lData = array();
+        foreach($this->filter as $key => $filter){
+            $data[$key] = $filter;
+            $lData[$key] = array('data' => array($filter['NAME'], $filter['DESC']));
+        }
+        $this->filterListing->setListData($data,$lData);
+        $this->filterListing->update();
 
 
 

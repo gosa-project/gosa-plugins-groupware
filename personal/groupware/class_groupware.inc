@@ -85,6 +85,9 @@ class groupware extends plugin
             }
         }
 
+        // TODO: Detect if we've a valid groupware account here.
+        $this->is_account = FALSE;
+
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
         $this->vacationStop = time() + (14 * 60*60*24);

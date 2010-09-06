@@ -20,6 +20,49 @@ class filterEditor extends plugin{
 
     function execute()
     {
+
+        $this->filter = array(); 
+        $this->filter[] =   array (
+                'TYPE' => 'AND',
+                'NAME' => 'MuellRaus',
+                'DESC' => 'Spam loeschen',
+                'CONDITIONS' => array  (
+                    array('FIELD' => 'from',
+                        'COMPARATOR' => 'equals',
+                        'MATCH' => 'herbert'),
+                    array('FIELD' => 'subject',
+                        'COMPARATOR' => 'contains',
+                        'MATCH' => 'advertising'),
+                    ),
+                'ACTION' => array (
+                    array('ACTION'=>'MARK',
+                        'VALUE' => 'SPAM'),
+                    array('ACTION'=>'MOVE',
+                        'VALUE' => 'gosa+shared/hickert/trash')
+                    )
+                );
+
+        $this->filter[] =   array (
+                'TYPE' => 'OR',
+                'NAME' => 'Kunden',
+                'DESC' => 'Kunden Mails in Wichtig schieben',
+                'CONDITIONS' => array  (
+                    array('FIELD' => 'from',
+                        'COMPARATOR' => 'contains',
+                        'MATCH' => 'gonicus'),
+                    array('FIELD' => 'from',
+                        'COMPARATOR' => 'contains',
+                        'MATCH' => 'lka'),
+                    ),
+                'ACTION' => array (
+                    array('ACTION'=>'MARK',
+                        'VALUE' => 'HAM'),
+                    array('ACTION'=>'MOVE',
+                        'VALUE' => 'gosa+shared/hickert/wichtig')
+                    )
+                );
+
+
         $smarty = get_smarty();
 
 

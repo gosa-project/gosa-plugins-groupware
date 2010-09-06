@@ -47,7 +47,7 @@ class groupware extends plugin
             "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
 
     var $mailAddressSelectDialog = NULL;
-    var $filterEditor = NULL;
+    var $filterManager = NULL;
     var $filterRules = array();
     var $vacationTemplates = array();
 
@@ -114,17 +114,17 @@ class groupware extends plugin
           Filter editor
          ****************/
 
-        if(isset($_POST['filterEditor_cancel'])) $this->filterEditor = NULL;
+        if(isset($_POST['filterManager_cancel'])) $this->filterManager = NULL;
         if(isset($_POST['configureFilter'])){
-            $this->filterEditor = new filterEditor($this->config, $this,$this->filterRules);
-            $this->filterEditor->acl_base = $this->acl_base;
-            $this->filterEditor->acl_category = $this->acl_category;
+            $this->filterManager = new filterManager($this->config, $this,$this->filterRules);
+            $this->filterManager->acl_base = $this->acl_base;
+            $this->filterManager->acl_category = $this->acl_category;
         }
         $this->dialog = FALSE;
-        if($this->filterEditor instanceOf filterEditor){
-            $this->filterEditor->save_object();
+        if($this->filterManager instanceOf filterManager){
+            $this->filterManager->save_object();
             $this->dialog = TRUE;
-            return($this->filterEditor->execute());
+            return($this->filterManager->execute());
         }
 
 

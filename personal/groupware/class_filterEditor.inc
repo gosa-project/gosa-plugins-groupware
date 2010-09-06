@@ -1,6 +1,6 @@
 <?php
 
-class filterEditor extends plugin{
+class filterManager extends plugin{
 
     var $filterListing   = NULL;
     var $filterRules = array();
@@ -81,7 +81,7 @@ class filterEditor extends plugin{
 
         $smarty->assign('list', $this->filterListing->render());
 
-        return($smarty->fetch(get_template_path('filterEditor.tpl',TRUE,dirname(__FILE__))));
+        return($smarty->fetch(get_template_path('filterManager.tpl',TRUE,dirname(__FILE__))));
     }
 
     function save_object()
@@ -105,7 +105,7 @@ class filterEditor extends plugin{
             $key = $this->filterListing->getKey($key);
             if(isset($this->filter[$key])){
                 
-                echo "edit";
+            
             }
         }
     }

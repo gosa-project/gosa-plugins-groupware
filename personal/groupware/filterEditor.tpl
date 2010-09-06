@@ -13,6 +13,6 @@
 
 <hr>
 <div class="plugin-actions">
-    <button name='filterEditor_ok'>{msgPool type='okButton'}</button>
-    <button name='filterEditor_cancel'>{msgPool type='cancelButton'}</button>
+    <button name='filterManager_ok'>{msgPool type='okButton'}</button>
+    <button name='filterManager_cancel'>{msgPool type='cancelButton'}</button>
 </div>

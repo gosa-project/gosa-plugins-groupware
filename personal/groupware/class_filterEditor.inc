@@ -7,6 +7,41 @@ class filterEditor extends plugin
         $this->config = &$config;
         $this->parent = &$parent;
         $this->filter = $filter;
+
+        $this->types = array('OR' => _("or"), 'AND' => _("and"));
+        $this->actions = array(
+                "MOVE" => _("move mail to"),
+                "COPY" => _("copy mail to"),
+                "FORWARD" => _("forward message to"),
+                "MARK" => _("mark mail as "),
+                "DROP" => _("remove mail"),
+                "REPLY" => _("reply"));
+
+        $this->fields = array(
+                'subject' => _("Subject"),
+                'from'=> _("From"),
+                'body'=> _("Body"),
+                'date'=> _("Date"),
+                'priority'=> _("Priority"),
+                'status'=> _("Status"),
+                'to'=> _("To"),
+                'cc'=> _("CC"),
+                'age'=> _("Age"),
+                'size'=> _("Size"));
+
+        $this->comparators = array(
+                "is" => _("is"),
+                "is not" => _("is not"), 
+                "equal" => _("is equal"),       
+                "not equal" => _("is not equal"),   
+                "is empty" => _("is empty"),
+                "is not empty" => _("is not empty"),
+                "contains" => _("contains"),
+                "contains not" => _("does not contain"),
+                "is in addressbook" => _("is in the addressbook"),
+                "is not in addressbook" => _("is not in the addressbook"),
+                "greater than" => _("is greater than"),
+                "less than" => _("smaller than"));
     }
 
     function execute()
@@ -23,42 +58,6 @@ class filterEditor extends plugin
     {
         $filter = $this->filter;
 
-        $actions = array(
-                "MOVE" => _("move mail to"),
-                "COPY" => _("copy mail to"),
-                "FORWARD" => _("forward message to"),
-                "MARK" => _("mark mail as "),
-                "DROP" => _("remove mail"),
-                "REPLY" => _("reply"));
-
-        $fields = array(
-                'subject' => _("Subject"),
-                'from'=> _("From"),
-                'body'=> _("Body"),
-                'date'=> _("Date"),
-                'priority'=> _("Priority"),
-                'status'=> _("Status"),
-                'to'=> _("To"),
-                'cc'=> _("CC"),
-                'age'=> _("Age"),
-                'size'=> _("Size"));
-
-        $comparators = array(
-                "is" => _("is"),
-                "is not" => _("is not"), 
-                "equal" => _("is equal"),       
-                "not equal" => _("is not equal"),   
-                "is empty" => _("is empty"),
-                "is not empty" => _("is not empty"),
-                "contains" => _("contains"),
-                "contains not" => _("does not contain"),
-                "is in addressbook" => _("is in the addressbook"),
-                "is not in addressbook" => _("is not in the addressbook"),
-                "greater than" => _("is greater than"),
-                "less than" => _("smaller than"));
-
-        
-
         $cnt = count($filter['CONDITIONS']);
         $str = "<h3>"._("Filter conditions")."</h3>";
         $str.= "<ul>";
@@ -66,14 +65,14 @@ class filterEditor extends plugin
             $str .= "<li>";
             $str .= _("Check field")."&nbsp;";
             $str .= "\n<select name='cField_{$id}' onChange='document.mainform.submit();'>";
-            foreach($fields as $field => $desc){
+            foreach($this->fields as $field => $desc){
                 $checked = ($field == $cond['FIELD'])? ' selected ' : '';
                 $str.= "\n<option {$checked} value=\"".set_post($field)."\">".set_post($desc)."</option>";
             }
             $str .= "\n</select>";
             $str .= "&nbsp;"._("if it")."&nbsp;";
             $str .= "\n<select name='cComparator_{$id}' onChange='document.mainform.submit();'>";
-            foreach($comparators as $comparator => $desc){
+            foreach($this->comparators as $comparator => $desc){
                 $checked = ($comparator == $cond['COMPARATOR'])? ' selected ' : '';
                 $str.= "\n<option {$checked} value=\"".set_post($comparator)."\">".set_post($desc)."</option>";
             }
@@ -83,9 +82,13 @@ class filterEditor extends plugin
             }
             $cnt --;
             $str .= "</li>";
-            if($cnt) $str .= $filter['TYPE'];
+            if($cnt) $str .= $this->types[$filter['TYPE']];
         } 
         $str .= "</ul>";
+        $str .= "<button name='addCondition'>".msgPool::addButton()."</button> ";
+        if(count($filter['CONDITIONS']) >= 2){
+            $str .= "<button name='removeCondition'>".msgPool::delButton()."</button> ";
+        }
        
         $str .= "<hr>";
         $str .= "<h3>"._("Filter actions")."</h3>";
@@ -94,7 +97,7 @@ class filterEditor extends plugin
         foreach($filter['ACTION'] as $id => $action){
             $str .= "<li>";
             $str .= "\n<select name='cAction_{$id}' onChange='document.mainform.submit();'>";
-            foreach($actions as $act => $desc){
+            foreach($this->actions as $act => $desc){
                 $checked = ($act == $action['ACTION'])? ' selected ' : '';
                 $str.= "\n<option {$checked} value=\"".set_post($act)."\">".set_post($desc)."</option>";
             }
@@ -106,6 +109,10 @@ class filterEditor extends plugin
         }
         $str.= "</ul>";
     
+        $str .= "<button name='addAction'>".msgPool::addButton()."</button> ";
+        if(count($filter['ACTION']) >= 2){
+            $str .= "<button name='removeAction'>".msgPool::delButton()."</button> ";
+        }
 
         return($str);
     }
@@ -131,6 +138,22 @@ class filterEditor extends plugin
             if(isset($_POST['cValue_'.$id])){
                 $this->filter['ACTION'][$id]['VALUE'] = get_post('cValue_'.$id);
             }
+        }
+
+        if(isset($_POST['removeCondition']) && count($this->filter['CONDITIONS']) >= 2){
+            array_pop($this->filter['CONDITIONS']);
+        }
+
+        if(isset($_POST['addCondition'])){
+            $this->filter['CONDITIONS'][] = array('FIELD' => key($this->fields),'COMPARATOR' => key($this->comparators), 'MATCH' => '');
+        }
+    
+        if(isset($_POST['removeAction']) && count($this->filter['ACTION']) >= 2){
+            array_pop($this->filter['ACTION']);
+        }
+
+        if(isset($_POST['addAction'])){
+            $this->filter['ACTION'][] = array('ACTION' => 'MOVE', 'VALUE' => '');
         }
     }
 }

@@ -17,12 +17,13 @@ class filterManager extends plugin{
         $this->filterListing->setEditable(true);
         $this->filterListing->setColspecs(array('*'));
         $this->filterListing->setWidth("100%");
-        $this->filterListing->setHeight("200px;");
+        $this->filterListing->setHeight("150px;");
         $this->filterListing->setAcl($this->parent->getacl('mailFilter'));
 
 
         $this->filter = array(); 
         $this->filter[] =   array (
+                'STATUS' => 'EXISTS',
                 'TYPE' => 'AND',
                 'NAME' => 'MuellRaus',
                 'DESC' => 'Spam loeschen',
@@ -43,6 +44,7 @@ class filterManager extends plugin{
                 );
 
         $this->filter[] =   array (
+                'STATUS' => 'NEW',
                 'TYPE' => 'OR',
                 'NAME' => 'Kunden',
                 'DESC' => 'Kunden Mails in Wichtig schieben',
@@ -66,13 +68,25 @@ class filterManager extends plugin{
 
     function execute()
     {
+        // Display filter editor while a filter rule is edited
+        if($this->filterEditor instanceOf filterEditor){
+            $this->filterEditor->save_object();
+            return($this->filterEditor->execute());
+        }
+        
 
         $smarty = get_smarty();
-
         $data = $lData = array();
         foreach($this->filter as $key => $filter){
             $data[$key] = $filter;
-            $lData[$key] = array('data' => array($filter['NAME'], $filter['DESC']));
+
+            switch($filter['STATUS']){
+                case 'NEW' : $img = image('images/lists/element.png[new]');break;
+                case 'EXISTS' : $img = image('images/lists/element.png');break;
+                default : $img = "";
+            }
+
+            $lData[$key] = array('data' => array($img,$filter['NAME'], $filter['DESC']));
         }
         $this->filterListing->setListData($data,$lData);
         $this->filterListing->update();
@@ -104,9 +118,22 @@ class filterManager extends plugin{
             $key = $action['targets'][0];
             $key = $this->filterListing->getKey($key);
             if(isset($this->filter[$key])){
-                
-            
+                $filter = $this->filter[$key];
+                $this->filterEditor = new filterEditor($this->config,$this->parent, $filter);
+                $this->currentFilter = $key;
             }
+        }
+
+        // Close filter editor 
+        if(isset($_POST['filterEditor_cancel'])){
+            $this->currentFilter = NULL;
+            $this->filterEditor = NULL;
+        }
+
+        // Save filter modifications and close the dialog
+        if(isset($_POST['filterEditor_ok'])){
+            $this->filterEditor = NULL;
+            $this->currentFilter = NULL;
         }
     }
 }

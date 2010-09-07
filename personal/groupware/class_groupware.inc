@@ -149,6 +149,14 @@ class groupware extends plugin
             }
         }
 
+        // Check if we were able to initialize the account already.
+        if($this->rpcError){
+            $smarty = get_smarty();
+            $smarty->assign("initFailed", !$this->accountInitialized);
+            $smarty->assign("rpcError", $this->rpcError);
+            return($smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
+        }
+
         /****************
           Filter editor
          ****************/
@@ -363,6 +371,14 @@ class groupware extends plugin
     function save_object()
     {
         if(isset($_POST['groupwarePluginPosted'])){
+
+            // We ran into a communication error with the backend. 
+            // Try a simple communication operation with the backend 
+            //  again and let us see if it works.
+            if(isset($_POST['retry'])){
+                $this->rpcExec('getCapabilities');
+            }
+
             foreach($this->attributes as $attr){
                 if(isset($_POST[$attr])){
                     $this->$attr = get_post($attr);

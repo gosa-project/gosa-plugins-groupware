@@ -318,6 +318,5 @@
     {/if}
 </table>
 {/if}
-
-<input type='hidden' name='groupwarePluginPosted' value='1'>
 {/if}
+<input type='hidden' name='groupwarePluginPosted' value='1'>

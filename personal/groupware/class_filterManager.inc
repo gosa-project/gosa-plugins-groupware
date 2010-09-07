@@ -12,13 +12,18 @@ class filterManager extends plugin{
         $this->parent = &$parent;
 
         $this->filter = $rules;
+
+        // If we've read permissions then allow to edit the entries
+        $acl = $this->parent->getacl('mailFilter');
+        $acl = preg_replace("/r/","rw", $acl);
+    
         $this->filterListing= new sortableListing();
         $this->filterListing->setDeleteable(true);
         $this->filterListing->setEditable(true);
         $this->filterListing->setColspecs(array('*'));
         $this->filterListing->setWidth("100%");
         $this->filterListing->setHeight("150px;");
-        $this->filterListing->setAcl($this->parent->getacl('mailFilter'));
+        $this->filterListing->setAcl($acl);
         $this->filterListing->setColspecs(array('30px','200px','*'));
         $this->filterListing->setHeader(array('-',_("Name"),_("Description")));
         $this->filterListing->setDefaultSortColumn(1);
@@ -26,6 +31,10 @@ class filterManager extends plugin{
 
     function execute()
     {
+        // If we've read permissions then allow to edit the entries
+        $acl = $this->parent->getacl('mailFilter');
+        $acl = preg_replace("/r/","rw", $acl);
+        $this->filterListing->setAcl($acl);
         // Display filter editor while a filter rule is edited
         if($this->filterEditor instanceOf filterEditor){
             $this->filterEditor->save_object();
@@ -51,7 +60,7 @@ class filterManager extends plugin{
         $this->filterListing->update();
 
 
-
+        $smarty->assign('acl', $this->parent->getacl('mailFilter'));
         $smarty->assign('list', $this->filterListing->render());
 
         return($smarty->fetch(get_template_path('filterManager.tpl',TRUE,dirname(__FILE__))));

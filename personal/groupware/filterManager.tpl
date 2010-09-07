@@ -2,11 +2,14 @@
 
 {$list}
 
-<button name='addFilter'>{msgPool type='addButton'}</button>
-
+{render acl=$acl}
+    <button name='addFilter'>{msgPool type='addButton'}</button>
+{/render}
 
 <hr>
 <div class="plugin-actions">
-    <button name='filterManager_ok'>{msgPool type='okButton'}</button>
+    {render acl=$acl}
+        <button name='filterManager_ok'>{msgPool type='okButton'}</button>
+    {/render}
     <button name='filterManager_cancel'>{msgPool type='cancelButton'}</button>
 </div>

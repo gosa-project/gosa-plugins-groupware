@@ -53,6 +53,7 @@ class filterEditor extends plugin
         $smarty->assign('NAME',set_post($this->filter['NAME']));    
         $smarty->assign('DESC',set_post($this->filter['DESC']));    
         $smarty->assign('filterStr', $this->renderFilter());    
+        $smarty->assign('acl', $this->parent->getacl('mailFilter'));    
 
         return($smarty->fetch(get_template_path('filterEditor.tpl',TRUE,dirname(__FILE__))));
     }

@@ -47,7 +47,7 @@
                 <tr>
                     <td><label for="mailFilter">{t}Mail filter{/t}</label></td>
                     <td>
-                        {render acl=$mailFilterACL}
+                        {render acl=$mailFilterACL mode=read_active}
                             <button name='configureFilter'>{t}Configure filter{/t}</button>
                         {/render}
                     </td>

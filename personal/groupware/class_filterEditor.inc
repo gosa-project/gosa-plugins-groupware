@@ -106,15 +106,15 @@ class filterEditor extends plugin
             if(!in_array($cond['COMPARATOR'], array('is in addressbook','is not in addressbook','is empty','is not empty'))){
                 $str .= "<input style='width:400px;' type='text' name='cMatch_{$id}' value=\"".set_post($cond['MATCH'])."\">";
             }
+            if(count($filter['CONDITIONS']) >= 2){
+                $str .= "<button name='removeCondition_{$id}'>".msgPool::delButton()."</button> ";
+            }
             $cnt --;
             $str .= "</li>";
 #            if($cnt) $str .= $this->types[$filter['TYPE']];
         } 
         $str .= "</ul>";
         $str .= "<button style='margin-left:40px;' name='addCondition'>".msgPool::addButton()."</button> ";
-        if(count($filter['CONDITIONS']) >= 2){
-            $str .= "<button name='removeCondition'>".msgPool::delButton()."</button> ";
-        }
        
         $str .= "<hr>";
         $str .= "<h3>"._("Filter actions")."</h3>";
@@ -131,14 +131,14 @@ class filterEditor extends plugin
             if(!in_array($action['ACTION'], array('DROP'))){
                 $str .= "<input style='width:500px;' type='text' name='cValue_{$id}' value=\"".set_post($action['VALUE'])."\">";
             }
+
+            if(count($filter['ACTION']) >= 2){
+                $str .= "<button name='removeAction_{$id}'>".msgPool::delButton()."</button>";
+            }
             $str .= "</li>";
         }
         $str.= "</ul>";
-    
         $str .= "<button style='margin-left:40px;' name='addAction'>".msgPool::addButton()."</button> ";
-        if(count($filter['ACTION']) >= 2){
-            $str .= "<button name='removeAction'>".msgPool::delButton()."</button> ";
-        }
 
         return($str);
     }
@@ -161,6 +161,9 @@ class filterEditor extends plugin
                     $this->filter['CONDITIONS'][$id][$name] = get_post($post.$id);
                 }
             }
+            if(isset($_POST['removeCondition_'.$id]) && count($this->filter['CONDITIONS']) >= 2){
+                unset($this->filter['CONDITIONS'][$id]);
+            }
         }
 
         // Get Action modifications 
@@ -170,24 +173,21 @@ class filterEditor extends plugin
                     $this->filter['ACTION'][$id][$name] = get_post($post.$id);
                 }
             }
+            if(isset($_POST['removeAction_'.$id]) && count($this->filter['ACTION']) >= 2){
+                unset($this->filter['ACTION'][$id]);
+            }
         }
 
         // Get NAME and DESC if posted
         if(isset($_POST['NAME'])) $this->filter['NAME'] = get_post('NAME');
         if(isset($_POST['DESC'])) $this->filter['DESC'] = get_post('DESC');
 
-        // Add / remove conditions
-        if(isset($_POST['removeCondition']) && count($this->filter['CONDITIONS']) >= 2){
-            array_pop($this->filter['CONDITIONS']);
-        }
+        // Add conditions
         if(isset($_POST['addCondition'])){
             $this->filter['CONDITIONS'][] = array('FIELD' => key($this->fields),'COMPARATOR' => key($this->comparators), 'MATCH' => '');
         }
     
-        // Add / remove actions
-        if(isset($_POST['removeAction']) && count($this->filter['ACTION']) >= 2){
-            array_pop($this->filter['ACTION']);
-        }
+        // Add actions
         if(isset($_POST['addAction'])){
             $this->filter['ACTION'][] = array('ACTION' => 'MOVE', 'VALUE' => '');
         }

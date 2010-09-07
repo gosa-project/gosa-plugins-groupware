@@ -19,6 +19,9 @@ class filterManager extends plugin{
         $this->filterListing->setWidth("100%");
         $this->filterListing->setHeight("150px;");
         $this->filterListing->setAcl($this->parent->getacl('mailFilter'));
+        $this->filterListing->setColspecs(array('30px','200px','*'));
+        $this->filterListing->setHeader(array('-',_("Name"),_("Description")));
+        $this->filterListing->setDefaultSortColumn(1);
     }
 
     function execute()

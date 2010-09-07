@@ -115,6 +115,16 @@ class groupware extends plugin
          ****************/
 
         if(isset($_POST['filterManager_cancel'])) $this->filterManager = NULL;
+        if(isset($_POST['filterManager_ok'])){
+            $this->filterManager->save_object();
+            $msgs = $this->filterManager->check();
+            if(count($msgs)){
+                msg_dialog::displayChecks($msgs);
+            }else{
+                $this->filterRules = $this->filterManager->save();
+                $this->filterManager = NULL;
+            }
+        }
         if(isset($_POST['configureFilter'])){
             $this->filterManager = new filterManager($this->config, $this,$this->filterRules);
             $this->filterManager->acl_base = $this->acl_base;
@@ -512,8 +522,8 @@ class groupware extends plugin
      */
     function check()
     {
-        $mssages = plugin::check();
-        return($message);
+        $messages = plugin::check();
+        return($messages);
     }
 
 

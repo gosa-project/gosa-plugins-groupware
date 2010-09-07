@@ -3,7 +3,6 @@
 class filterManager extends plugin{
 
     var $filterListing   = NULL;
-    var $filterRules = array();
     var $filterEditor = NULL;
 
     function __construct($config,$parent,$rules)
@@ -12,7 +11,7 @@ class filterManager extends plugin{
         
         $this->parent = &$parent;
 
-        $this->filterRules = $rules;
+        $this->filter = $rules;
         $this->filterListing= new sortableListing();
         $this->filterListing->setDeleteable(true);
         $this->filterListing->setEditable(true);
@@ -20,9 +19,6 @@ class filterManager extends plugin{
         $this->filterListing->setWidth("100%");
         $this->filterListing->setHeight("150px;");
         $this->filterListing->setAcl($this->parent->getacl('mailFilter'));
-
-
-        $this->filter = array(); 
     }
 
     function execute()
@@ -133,6 +129,12 @@ class filterManager extends plugin{
                 $this->currentFilter = NULL;
             }
         }
+    }
+
+
+    function save()
+    {
+        return($this->filter);
     }
 }
 

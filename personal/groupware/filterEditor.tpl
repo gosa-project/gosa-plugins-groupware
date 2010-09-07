@@ -3,11 +3,11 @@
 <table summary="{t}Generic settings{/t}">
     <tr>
         <td><LABEL for='name'>{t}Name{/t}</LABEL>:</td>
-        <td><input type='text' id='name' name="DESC" value="{$NAME}"></td>
+        <td><input style='width:300px;' type='text' id='name' name="DESC" value="{$NAME}"></td>
     </tr>
     <tr>
         <td><LABEL for='desc'>{t}Description{/t}:</LABEL></td>
-        <td><input type='text' id='desc' name="DESC" value="{$DESC}"></td>
+        <td><input style='width:300px;' type='text' id='desc' name="DESC" value="{$DESC}"></td>
     </tr>
 </table>
 

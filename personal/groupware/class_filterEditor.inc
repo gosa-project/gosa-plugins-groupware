@@ -8,7 +8,9 @@ class filterEditor extends plugin
         $this->parent = &$parent;
         $this->filter = $filter;
 
-        $this->types = array('OR' => _("or"), 'AND' => _("and"));
+        $this->types = array(
+                'OR' => _("At least one of the following conditions has to match"), 
+                'AND' => _("All conditions have to match"));
         $this->actions = array(
                 "MOVE" => _("move mail to"),
                 "COPY" => _("copy mail to"),
@@ -60,7 +62,8 @@ class filterEditor extends plugin
 
         $cnt = count($filter['CONDITIONS']);
         $str = "<h3>"._("Filter conditions")."</h3>";
-        $str .= _("Condition type")."&nbsp;\n<select name='cType' onChange='document.mainform.submit();'>";
+        $str .= _("Condition type")."&nbsp;";
+        $str .="\n<select size='1' name='cType' onChange='document.mainform.submit();'>";
         foreach($this->types as $type => $desc){
             $checked = ($type == $filter['TYPE'])? ' selected ' : '';
             $str.= "\n<option {$checked} value=\"".set_post($type)."\">".set_post($desc)."</option>";
@@ -69,29 +72,29 @@ class filterEditor extends plugin
         $str.= "<ul>";
         foreach($filter['CONDITIONS'] as $id => $cond){
             $str .= "<li>";
-            $str .= _("Check field")."&nbsp;";
-            $str .= "\n<select name='cField_{$id}' onChange='document.mainform.submit();'>";
+#            $str .= _("Check field")."&nbsp;";
+            $str .= "\n<select size='1' style='width:100px;' name='cField_{$id}' onChange='document.mainform.submit();'>";
             foreach($this->fields as $field => $desc){
                 $checked = ($field == $cond['FIELD'])? ' selected ' : '';
                 $str.= "\n<option {$checked} value=\"".set_post($field)."\">".set_post($desc)."</option>";
             }
             $str .= "\n</select>";
-            $str .= "&nbsp;"._("if it")."&nbsp;";
-            $str .= "\n<select name='cComparator_{$id}' onChange='document.mainform.submit();'>";
+#            $str .= "&nbsp;"._("if it")."&nbsp;";
+            $str .= "\n<select size='1' style='width:200px;' name='cComparator_{$id}' onChange='document.mainform.submit();'>";
             foreach($this->comparators as $comparator => $desc){
                 $checked = ($comparator == $cond['COMPARATOR'])? ' selected ' : '';
                 $str.= "\n<option {$checked} value=\"".set_post($comparator)."\">".set_post($desc)."</option>";
             }
-            $str .= "\n</select>";
+            $str .= "\n</select>&nbsp;";
             if(!in_array($cond['COMPARATOR'], array('is in addressbook','is not in addressbook','is empty','is not empty'))){
-                $str .= "<input type='text' name='cMatch_{$id}' value=\"".set_post($cond['MATCH'])."\">";
+                $str .= "<input style='width:400px;' type='text' name='cMatch_{$id}' value=\"".set_post($cond['MATCH'])."\">";
             }
             $cnt --;
             $str .= "</li>";
-            if($cnt) $str .= $this->types[$filter['TYPE']];
+#            if($cnt) $str .= $this->types[$filter['TYPE']];
         } 
         $str .= "</ul>";
-        $str .= "<button name='addCondition'>".msgPool::addButton()."</button> ";
+        $str .= "<button style='margin-left:40px;' name='addCondition'>".msgPool::addButton()."</button> ";
         if(count($filter['CONDITIONS']) >= 2){
             $str .= "<button name='removeCondition'>".msgPool::delButton()."</button> ";
         }
@@ -102,20 +105,20 @@ class filterEditor extends plugin
         $str.= "<ul>";
         foreach($filter['ACTION'] as $id => $action){
             $str .= "<li>";
-            $str .= "\n<select name='cAction_{$id}' onChange='document.mainform.submit();'>";
+            $str .= "\n<select style='width:200px;' size='1' name='cAction_{$id}' onChange='document.mainform.submit();'>";
             foreach($this->actions as $act => $desc){
                 $checked = ($act == $action['ACTION'])? ' selected ' : '';
                 $str.= "\n<option {$checked} value=\"".set_post($act)."\">".set_post($desc)."</option>";
             }
-            $str .= "</select>";
+            $str .= "</select>&nbsp;";
             if(!in_array($action['ACTION'], array('DROP'))){
-                $str .= "<input type='text' name='cValue_{$id}' value=\"".set_post($action['VALUE'])."\">";
+                $str .= "<input style='width:500px;' type='text' name='cValue_{$id}' value=\"".set_post($action['VALUE'])."\">";
             }
             $str .= "</li>";
         }
         $str.= "</ul>";
     
-        $str .= "<button name='addAction'>".msgPool::addButton()."</button> ";
+        $str .= "<button style='margin-left:40px;' name='addAction'>".msgPool::addButton()."</button> ";
         if(count($filter['ACTION']) >= 2){
             $str .= "<button name='removeAction'>".msgPool::delButton()."</button> ";
         }

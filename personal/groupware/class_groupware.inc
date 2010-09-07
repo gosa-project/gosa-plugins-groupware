@@ -98,7 +98,7 @@ class groupware extends plugin
         $params = func_get_args();
         unset($params[0]);
         $rpc = $this->config->getRpcHandle();
-        $res = call_user_func_array(array($rpc,$function),$params);
+        $res = call_user_func_array(array($rpc,$function),array_values($params));
         $this->rpcError = !$rpc->success();
         if($this->rpcError){
             $this->rpcErrorMessage = $rpc->getError();

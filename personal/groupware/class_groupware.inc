@@ -6,6 +6,10 @@ class groupware extends plugin
     var $plDescription  = "GOsa mail extension.";
     var $view_logged = FALSE;
 
+    var $accountInitialized = FALSE;
+    var $rpcError = FALSE;
+    var $rpcErrorMessage = "";
+
     var $attributes = array(
             "mailAddress",
             "mailLocation",
@@ -85,9 +89,34 @@ class groupware extends plugin
             }
         }
 
-        // Get rpc handle to fetch account info and feature availability.
+        // Initialize the plugin using rpc.
+        $this->init();
+    }
+
+    function rpcExec($function)
+    {
+        $params = func_get_args();
+        unset($params[0]);
         $rpc = $this->config->getRpcHandle();
-        $this->initially_was_account = $this->is_account = $rpc->gwAcctExists($this->uid); 
+        $res = call_user_func_array(array($rpc,$function),$params);
+        $this->rpcError = !$rpc->success();
+        if($this->rpcError){
+            $this->rpcErrorMessage = $rpc->getError();
+            return(NULL);
+        }
+        return($res);
+    }
+
+
+    function init()
+    {
+        // Get rpc handle to fetch account info and feature availability.
+        $status = $this->rpcExec('gwAcctExists', $this->uid);
+        if($status !== NULL){
+            $this->initially_was_account = $this->is_account = $status;
+            $this->accountInitialized = TRUE;
+        }
+        
 
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
@@ -108,6 +137,16 @@ class groupware extends plugin
         if($this->is_account && !$this->view_logged){
             $this->view_logged = TRUE;
             new log("view","users/".get_class($this),$this->dn);
+        }
+
+        // Check if we were able to initialize the account already.
+        if(!$this->accountInitialized){
+            $this->init();
+            if(!$this->accountInitialized){
+                $smarty = get_smarty();
+                $smarty->assign("initFailed", !$this->accountInitialized);
+                return($smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
+            }
         }
 
         /****************
@@ -312,6 +351,9 @@ class groupware extends plugin
             $smarty->assign("displayTemplateSelector", "false");
         }
 
+        $smarty->assign("initFailed", !$this->accountInitialized);
+        $smarty->assign("rpcError", $this->rpcError);
+        $smarty->assign("rpcErrorMessage", $this->rpcErrorMessage);
         return($display.$smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
     }
 
@@ -507,10 +549,8 @@ class groupware extends plugin
     {
         // Get rpc handle to remove the account
         if($this->initially_was_account){
-            $rpc = $this->config->getRpcHandle();
-            $rpc->gwAcctDel($this->uid,TRUE);
-            if(!$rpc->success()){
-                echo $rpc->getError();
+            if($this->rpcExec('gwAcctDel', $this->uid) === NULL){
+                msg_dialog::display(_("Error"), _("Groupware account removal failed!"), ERROR_DIALOG);
             }
         }
     }
@@ -520,10 +560,8 @@ class groupware extends plugin
     {
         // Get rpc handle to create or update the account
         if(!$this->initially_was_account){
-            $rpc = $this->config->getRpcHandle();
-            $rpc->gwAcctAdd($this->uid,$this->mailAddress);
-            if(!$rpc->success()){
-                echo $rpc->getError();
+            if($this->rpcExec('gwAcctAdd', $this->uid, $this->mailAddress) === NULL){
+                msg_dialog::display(_("Error"), _("Groupware account creation failed!"), ERROR_DIALOG);
             }
         }
     }

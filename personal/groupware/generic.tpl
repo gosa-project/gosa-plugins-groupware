@@ -1,3 +1,11 @@
+{if $initFailed}
+    <h3>{t}Communication with backend failed, please check the rpc connection and try again!{/t}</h3>
+    <button name="retry">{t}Retry{/t}</button>
+{elseif $rpcError}
+    <h3>{t}Communication with backend failed, please check the rpc connection and try again!{/t}</h3>
+    <button name="retry">{t}Retry{/t}</button>
+{else}
+
 <table summary="{t}Mail settings{/t}" style='width:100%;'>
     <tr>
         <td style='width:50%; '>  
@@ -312,4 +320,4 @@
 {/if}
 
 <input type='hidden' name='groupwarePluginPosted' value='1'>
-
+{/if}

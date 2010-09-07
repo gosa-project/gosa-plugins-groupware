@@ -1,13 +1,7 @@
 <h3>{t}Available filter rules {/t}</h3>
 
 {$list}
-<select name='filterTemplate' size=1>
-    <option>Mails von bestimmten Sendern in einen Ordner verschieben</option>
-    <option>Mails von bekannten Sender (Adressbuch) in Ordner verschieben</option>
-    <option>Mails löschen (Alle und immer!)</option>
-    <option>Bla</option>
-    <option>Manuelle Regel</option>
-</select>
+
 <button name='addFilter'>{msgPool type='addButton'}</button>
 
 

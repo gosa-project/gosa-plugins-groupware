@@ -23,48 +23,6 @@ class filterManager extends plugin{
 
 
         $this->filter = array(); 
-        $this->filter[] =   array (
-                'STATUS' => 'EXISTS',
-                'TYPE' => 'AND',
-                'NAME' => 'MuellRaus',
-                'DESC' => 'Spam loeschen',
-                'CONDITIONS' => array  (
-                    array('FIELD' => 'from',
-                        'COMPARATOR' => 'equals',
-                        'MATCH' => 'herbert'),
-                    array('FIELD' => 'subject',
-                        'COMPARATOR' => 'contains',
-                        'MATCH' => 'advertising'),
-                    ),
-                'ACTION' => array (
-                    array('ACTION'=>'MARK',
-                        'VALUE' => 'SPAM'),
-                    array('ACTION'=>'MOVE',
-                        'VALUE' => 'gosa+shared/hickert/trash')
-                    )
-                );
-
-        $this->filter[] =   array (
-                'STATUS' => 'NEW',
-                'TYPE' => 'OR',
-                'NAME' => 'Kunden',
-                'DESC' => 'Kunden Mails in Wichtig schieben',
-                'CONDITIONS' => array  (
-                    array('FIELD' => 'from',
-                        'COMPARATOR' => 'contains',
-                        'MATCH' => 'gonicus'),
-                    array('FIELD' => 'from',
-                        'COMPARATOR' => 'contains',
-                        'MATCH' => 'lka'),
-                    ),
-                'ACTION' => array (
-                    array('ACTION'=>'MARK',
-                        'VALUE' => 'HAM'),
-                    array('ACTION'=>'MOVE',
-                        'VALUE' => 'gosa+shared/hickert/wichtig')
-                    )
-                );
-
     }
 
     function execute()
@@ -83,6 +41,7 @@ class filterManager extends plugin{
 
             switch($filter['STATUS']){
                 case 'NEW' : $img = image('images/lists/element.png[new]');break;
+                case 'MODIFIED' : $img = image('images/lists/element.png[new]');break;
                 case 'EXISTS' : $img = image('images/lists/element.png');break;
                 default : $img = "";
             }
@@ -125,6 +84,30 @@ class filterManager extends plugin{
             }
         }
 
+        // Add new filter
+        if(isset($_POST['addFilter'])){
+            $filter =   array (
+                    'STATUS' => 'NEW',
+                    'TYPE' => 'AND',
+                    'NAME' => _('name'),
+                    'DESC' => _('description'),
+                    'CONDITIONS' => array  (
+                        array('FIELD' => 'from',
+                            'COMPARATOR' => 'equals',
+                            'MATCH' => 'example@domain.com'),
+                        array('FIELD' => 'subject',
+                            'COMPARATOR' => 'contains',
+                            'MATCH' => _('advertising')),
+                        ),
+                    'ACTION' => array (
+                        array('ACTION'=>'MARK',
+                            'VALUE' => 'SPAM'),
+                        array('ACTION'=>'MOVE',
+                            'VALUE' => '')
+                        )
+                    );
+            $this->filterEditor = new filterEditor($this->config,$this->parent, $filter);
+        }
 
         // Close filter editor 
         if(isset($_POST['filterEditor_cancel']) && $this->filterEditor instanceOf filterEditor){
@@ -140,7 +123,12 @@ class filterManager extends plugin{
                 msg_dialog::displayChecks($msgs);
             }else{
                 $filter = $this->filterEditor->save();
-                $this->filter[$this->currentFilter] = $filter;
+                if($filter['STATUS'] == 'NEW'){
+                    $this->filter[] = $filter;
+                }else{
+                    if($filter['STATUS'] != 'NEW') $filter['STATUS'] = 'MODIFIED';
+                    $this->filter[$this->currentFilter] = $filter;
+                }
                 $this->filterEditor = NULL;
                 $this->currentFilter = NULL;
             }

@@ -40,9 +40,9 @@ class filterManager extends plugin{
             $data[$key] = $filter;
 
             switch($filter['STATUS']){
-                case 'NEW' : $img = image('images/lists/element.png[new]');break;
-                case 'MODIFIED' : $img = image('images/lists/element.png[new]');break;
-                case 'EXISTS' : $img = image('images/lists/element.png');break;
+                case 'NEW' : $img = image('images/lists/edit.png[new]');break;
+                case 'MODIFIED' : $img = image('images/lists/edit.png');break;
+                case 'EXISTS' : $img = image('images/lists/edit.png');break;
                 default : $img = "";
             }
 

@@ -11,6 +11,7 @@ class filterEditor extends plugin
         $this->types = array(
                 'OR' => _("At least one of the following conditions has to match"), 
                 'AND' => _("All conditions have to match"));
+
         $this->actions = array(
                 "MOVE" => _("move mail to"),
                 "COPY" => _("copy mail to"),
@@ -55,6 +56,22 @@ class filterEditor extends plugin
 
         return($smarty->fetch(get_template_path('filterEditor.tpl',TRUE,dirname(__FILE__))));
     }
+
+
+
+    function check()
+    {
+        $msgs = array();
+        return($msgs);
+    }
+
+
+    function save()
+    {
+        // Just return the filter array we've modified
+        return($this->filter);
+    }
+
 
     function renderFilter()
     {
@@ -129,12 +146,15 @@ class filterEditor extends plugin
 
     function save_object()
     {
+        // Do nothing if the dialog wasn't submitted yet
+        if(!isset($_POST['filterEditorPosted'])) return;
 
+        // Get the filter confition type if posted
         $this->filter['TYPE'] = (isset($_POST['cType']))? get_post('cType'): $this->filter['TYPE'];
 
+        // Get condition modifications
         foreach($this->filter['CONDITIONS'] as $id => $value){
-            foreach(array(
-                        'cField_' => 'FIELD',
+            foreach(array('cField_' => 'FIELD',
                         'cComparator_'=>'COMPARATOR',
                         'cMatch_'=>'MATCH') as $post => $name){
                 if(isset($_POST[$post.$id])){
@@ -142,14 +162,19 @@ class filterEditor extends plugin
                 }
             }
         }
+
+        // Get Action modifications 
         foreach($this->filter['ACTION'] as $id => $value){
-            if(isset($_POST['cAction_'.$id])){
-                $this->filter['ACTION'][$id]['ACTION'] = get_post('cAction_'.$id);
-            }
-            if(isset($_POST['cValue_'.$id])){
-                $this->filter['ACTION'][$id]['VALUE'] = get_post('cValue_'.$id);
+            foreach(array('cAction_' => 'ACTIOB','cValue_' => 'VALUE') as $post => $name){
+                if(isset($_POST[$post.$id])){
+                    $this->filter['ACTION'][$id][$name] = get_post($post.$id);
+                }
             }
         }
+
+        // Get NAME and DESC if posted
+        if(isset($_POST['NAME'])) $this->filter['NAME'] = get_post('NAME');
+        if(isset($_POST['DESC'])) $this->filter['DESC'] = get_post('DESC');
 
         // Add / remove conditions
         if(isset($_POST['removeCondition']) && count($this->filter['CONDITIONS']) >= 2){

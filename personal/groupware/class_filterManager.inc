@@ -125,16 +125,25 @@ class filterManager extends plugin{
             }
         }
 
+
         // Close filter editor 
-        if(isset($_POST['filterEditor_cancel'])){
+        if(isset($_POST['filterEditor_cancel']) && $this->filterEditor instanceOf filterEditor){
             $this->currentFilter = NULL;
             $this->filterEditor = NULL;
         }
 
         // Save filter modifications and close the dialog
-        if(isset($_POST['filterEditor_ok'])){
-            $this->filterEditor = NULL;
-            $this->currentFilter = NULL;
+        if(isset($_POST['filterEditor_ok']) && $this->filterEditor instanceOf filterEditor){
+            $this->filterEditor->save_object();
+            $msgs = $this->filterEditor->check();
+            if(count($msgs)){
+                msg_dialog::displayChecks($msgs);
+            }else{
+                $filter = $this->filterEditor->save();
+                $this->filter[$this->currentFilter] = $filter;
+                $this->filterEditor = NULL;
+                $this->currentFilter = NULL;
+            }
         }
     }
 }

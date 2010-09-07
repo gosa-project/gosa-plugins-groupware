@@ -85,8 +85,9 @@ class groupware extends plugin
             }
         }
 
-        // TODO: Detect if we've a valid groupware account here.
-        $this->is_account = FALSE;
+        // Get rpc handle to fetch account info and feature availability.
+        $rpc = $this->config->getRpcHandle();
+        $this->initially_was_account = $this->is_account = $rpc->gwAcctExists($this->uid); 
 
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
@@ -100,7 +101,6 @@ class groupware extends plugin
 
     function execute()
     {
-
         // Register plugin execution 
         $display = plugin::execute();
 
@@ -505,16 +505,27 @@ class groupware extends plugin
 
     function remove_from_parent()
     {
-        /* Cancel if there's nothing to do here */
-        if (!$this->initially_was_account){
-            return;
+        // Get rpc handle to remove the account
+        if($this->initially_was_account){
+            $rpc = $this->config->getRpcHandle();
+            $rpc->gwAcctDel($this->uid,TRUE);
+            if(!$rpc->success()){
+                echo $rpc->getError();
+            }
         }
-
     }
 
 
     function save()
     {
+        // Get rpc handle to create or update the account
+        if(!$this->initially_was_account){
+            $rpc = $this->config->getRpcHandle();
+            $rpc->gwAcctAdd($this->uid,$this->mailAddress);
+            if(!$rpc->success()){
+                echo $rpc->getError();
+            }
+        }
     }
 
 

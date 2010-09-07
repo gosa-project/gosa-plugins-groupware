@@ -47,7 +47,7 @@ class groupware extends plugin
             "localDeliveryOnly"         => TRUE,
             "dropOwnMails"              => TRUE);
 
-    var $flagAttrinutes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
+    var $flagAttributes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
             "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
 
     var $mailAddressSelectDialog = NULL;
@@ -93,6 +93,14 @@ class groupware extends plugin
         $this->init();
     }
 
+
+    /*! \brief  Try to execute a function on the gosa backend using json-rpc.
+     *          This method also takes care about errors and sets the required
+     *           class members, such as rpcError and rpcErrorMessage. 
+     *  @param  String  function    The name of the function to call.
+     *  @param  Mixed   args[0-n]   The parameter to use.
+     *  @return Mixed   The result of the function call on success else NULL.
+     */
     function rpcExec($function)
     {
         $params = func_get_args();
@@ -108,6 +116,10 @@ class groupware extends plugin
     }
 
 
+    /*! \brief  Try initialize the groupware account.
+     *          This method fetches all required information to manage the
+     *           account using the GOsa gui.
+     */
     function init()
     {
         // Get rpc handle to fetch account info and feature availability.
@@ -116,7 +128,6 @@ class groupware extends plugin
             $this->initially_was_account = $this->is_account = $status;
             $this->accountInitialized = TRUE;
         }
-        
 
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
@@ -128,6 +139,10 @@ class groupware extends plugin
     }
 
 
+    /*! \brief  Generates the HTML user interface for the groupware plugin
+     *           and take of several ui actions like adding or removing 
+     *           forward addresses, filters and the account itself.
+     */
     function execute()
     {
         // Register plugin execution 
@@ -367,7 +382,11 @@ class groupware extends plugin
 
 
 
-    /* Save data to object */
+    /*! \brief      This method handles potential _POST and _GET values.
+     *              It captures modifcations from the ui, like changing 
+     *               the mailAddress.
+     *              This method respects the attribute permissions.
+     */    
     function save_object()
     {
         if(isset($_POST['groupwarePluginPosted'])){
@@ -379,13 +398,16 @@ class groupware extends plugin
                 $this->rpcExec('getCapabilities');
             }
 
+            // Get ui modifications and store them in the class.
             foreach($this->attributes as $attr){
-                if(isset($_POST[$attr])){
+                if(isset($_POST[$attr]) && $this->acl_is_writeable($attr)){
                     $this->$attr = get_post($attr);
                 }
             }
 
-            foreach($this->flagAttrinutes as $attr){
+            echo 'ACL checks missing!';
+
+            foreach($this->flagAttributes as $attr){
                 $this->$attr = isset($_POST[$attr]);
             }
         }

@@ -139,7 +139,8 @@ class groupware extends plugin
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "dropOwnMails"              => array(
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'));
-       
+      
+        // Check if all required methods cann be called! 
         foreach($featureReq as $name => $requires){
             $active = TRUE;
             foreach($requires as $methodName){
@@ -147,7 +148,6 @@ class groupware extends plugin
             }
             $this->enabledFeatures[$name] = $active;
         }
- 
 
         // Get rpc handle to fetch account info and feature availability.
         $status = $this->rpcExec('gwAcctExists', $this->uid);

@@ -33,19 +33,7 @@ class groupware extends plugin
             "dropOwnMails"
             );
 
-    var $enabledFeatures = array(
-            "quotaUsage"                => TRUE,
-            "quotaSize"                 => TRUE,
-            "mailFilter"                => TRUE,
-            "alternateAddresses"        => TRUE,
-            "forwardingAddresses"       => TRUE,
-            "vacationMessage"           => TRUE,
-            "mailBoxWarnLimit"          => TRUE,
-            "mailBoxSendSizelimit"      => TRUE,
-            "mailBoxHardSizelimit"      => TRUE,
-            "mailBoxAutomaticRemoval"   => TRUE,
-            "localDeliveryOnly"         => TRUE,
-            "dropOwnMails"              => TRUE);
+    var $enabledFeatures = array();
 
     var $flagAttributes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
             "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
@@ -122,6 +110,45 @@ class groupware extends plugin
      */
     function init()
     {
+        // Detect feature availability and enable/disable services correspondingly.
+        $features = $this->rpcExec('gwGetCapabilities');
+        $featureReq = array(
+                "quotaUsage"                => array(
+                    'acctGetQuota'),
+                "quotaSize"                 => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailFilter"                => array(
+                    'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+                "alternateAddresses"        => array(
+                    'acctDelAlternateMailAddress','acctSetAlternateMailAddresses',
+                    'acctAddAlternateMailAddress','acctGetAlternateMailAddresses'),
+                "forwardingAddresses"       => array(
+                    'acctAddMailForwardAddress','acctDelMailForwardAddress',
+                    'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
+                "vacationMessage"           => array(
+                    'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+                "mailBoxWarnLimit"          => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailBoxSendSizelimit"      => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailBoxHardSizelimit"      => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailBoxAutomaticRemoval"   => array(
+                        'acctSetQuota','acctGetQuota'),
+                "localDeliveryOnly"         => array(
+                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+                "dropOwnMails"              => array(
+                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'));
+       
+        foreach($featureReq as $name => $requires){
+            $active = TRUE;
+            foreach($requires as $methodName){
+                $active &= $features[$methodName];
+            }
+            $this->enabledFeatures[$name] = $active;
+        }
+ 
+
         // Get rpc handle to fetch account info and feature availability.
         $status = $this->rpcExec('gwAcctExists', $this->uid);
         if($status !== NULL){
@@ -147,6 +174,10 @@ class groupware extends plugin
     {
         // Register plugin execution 
         $display = plugin::execute();
+
+        
+        $this->accountInitialized = FALSE;
+
 
         // Log plugin execution.
         if($this->is_account && !$this->view_logged){

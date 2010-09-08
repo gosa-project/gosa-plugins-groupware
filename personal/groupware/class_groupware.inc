@@ -449,7 +449,9 @@ class groupware extends plugin
             // Get posted flag changes 
             $flagAttrs = array("localDeliveryOnly","dropOwnMails");
             foreach($flagAttrs as $attr){
-                $this->$attr = isset($_POST[$attr]);
+                if($this->acl_is_writeable($attr)){
+                    $this->$attr = isset($_POST[$attr]);
+                }
             }
         }
     }

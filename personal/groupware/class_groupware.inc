@@ -175,10 +175,6 @@ class groupware extends plugin
         // Register plugin execution 
         $display = plugin::execute();
 
-        
-        $this->accountInitialized = FALSE;
-
-
         // Log plugin execution.
         if($this->is_account && !$this->view_logged){
             $this->view_logged = TRUE;

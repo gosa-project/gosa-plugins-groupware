@@ -35,9 +35,6 @@ class groupware extends plugin
 
     var $enabledFeatures = array();
 
-    var $flagAttributes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
-            "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
-
     var $mailAddressSelectDialog = NULL;
     var $filterManager = NULL;
     var $filterRules = array();
@@ -426,15 +423,32 @@ class groupware extends plugin
             }
 
             // Get ui modifications and store them in the class.
-            foreach($this->attributes as $attr){
+            $testAttrs = array("mailAddress","mailLocation","quotaUsage","quotaSize",
+                    "alternateAddresses","forwardingAddresses","vacationEnabled","vacationStart",
+                    "vacationStop","vacationMessage");
+            foreach($testAttrs as $attr){
                 if(isset($_POST[$attr]) && $this->acl_is_writeable($attr)){
                     $this->$attr = get_post($attr);
                 }
             }
 
-            echo 'ACL checks missing!';
+            // Detect checkbox states 
+            $checkAttrs = array("mailBoxWarnLimit","mailBoxSendSizelimit",
+                    "mailBoxHardSizelimit","mailBoxAutomaticRemoval");
+            foreach($checkAttrs as $boxname){
+                if($this->acl_is_writeable($boxname)){
+                    $v = $boxname."Value"; 
+                    $e = $boxname."Enabled"; 
+                    $this->$e = isset($_POST[$e]);
+                    if($this->$e){
+                        $this->$v = get_post($v);
+                    }
+                }
+            }
 
-            foreach($this->flagAttributes as $attr){
+            // Get posted flag changes 
+            $flagAttrs = array("localDeliveryOnly","dropOwnMails");
+            foreach($flagAttrs as $attr){
                 $this->$attr = isset($_POST[$attr]);
             }
         }

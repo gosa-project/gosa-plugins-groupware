@@ -109,9 +109,9 @@ class groupware extends plugin
      */
     function rpcExec($function)
     {
-    	echo "Calling function:".$function."<br>";
         $params = func_get_args();
         unset($params[0]);
+    	echo "Calling function:".$function." Params".var_dump($params)."<br>";
      
         $rpc = $this->config->getRpcHandle();
         $res = call_user_func_array(array($rpc,$function),array_values($params));
@@ -142,7 +142,7 @@ class groupware extends plugin
         $features = array();
         $featureReq = array(
         		"primaryMail" 				=> array(
-        			'acctGetPrimaryMail'),
+        			'acctGetPrimaryMailAddress'),
                 "quotaUsage"                => array(
                     'acctGetQuota'),
                 "quotaSize"                 => array(
@@ -819,9 +819,8 @@ class groupware_dao{
 	
 	
 	private static $gwFeatures  = array(
-		"primaryAddress" => array(	"get"=>"acctGetUser", 
-									"save"=>"acctSetUser",
-									"delete"=>"acctDelUser")
+		"primaryMail" => array(	"get"=>"gwAcctGetPrimaryMailAddress", 
+									"save"=>"gwAcctSetPrimaryMailAddress")
 		
 		
 	);
@@ -865,12 +864,17 @@ class groupware_dao{
 		 * check if feture available
 		 * get and return the result.
 		 */
-		
-		if($this->gwFeatureAvailable($feature)){
-			$result = $this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
+		$function = groupware_dao::$gwFeatures[$feature]["get"];
+		if(true){
+			$valueArray = array_merge(array($function), $valueArray);
+			$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
 			
 			return $result;
 		}
+		else{
+			echo "Feature not available.";
+		}
+		//Throw an error?
 		return false;
 	}
 	public function del($feature, $valueArray){
@@ -891,7 +895,9 @@ class groupware_dao{
 	public function getComprehensiverUser($uid){
 		//$hi = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
 		if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
-		$pMail = $this->groupwarePluginRef->rpcExec("gwAcctGetPrimaryMailAddress",$uid);
+			$pMail = $this->get("primaryMail", array($uid));
+			 
+			//= $this->groupwarePluginRef->rpcExec("gwAcctGetPrimaryMailAddress",$uid);
 			echo "pMail for $uid<pre>";
 			print_r($pMail);
 			echo "</pre>";

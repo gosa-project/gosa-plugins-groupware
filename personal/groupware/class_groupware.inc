@@ -52,6 +52,9 @@ class groupware extends plugin
 
     var $enabledFeatures = array();
 
+    var $flagAttributes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
+            "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
+
     var $mailAddressSelectDialog = NULL;
     var $filterManager = NULL;
     var $filterRules = array();
@@ -109,6 +112,7 @@ class groupware extends plugin
     	echo "Calling function:".$function."<br>";
         $params = func_get_args();
         unset($params[0]);
+     
         $rpc = $this->config->getRpcHandle();
         $res = call_user_func_array(array($rpc,$function),array_values($params));
         $this->rpcError = !$rpc->success();
@@ -118,7 +122,12 @@ class groupware extends plugin
         }
         return($res);
     }
-
+	public function isFeatureEnabled($featureName){
+		if(!empty($this->enabledFeatures[$featureName]) &&  $this->enabledFeatures[$featureName]){
+			return TRUE;
+		}
+		return FALSE;
+	}
 
     /*! \brief  Try initialize the groupware account.
      *          This method fetches all required information to manage the
@@ -132,6 +141,8 @@ class groupware extends plugin
      
         $features = array();
         $featureReq = array(
+        		"primaryMail" 				=> array(
+        			'acctGetPrimaryMail'),
                 "quotaUsage"                => array(
                     'acctGetQuota'),
                 "quotaSize"                 => array(
@@ -175,6 +186,7 @@ class groupware extends plugin
 				
 	    	var_dump($this->rpcExec('gwAcctGetLocation',$this->uid));
 	    	$User =$this->groupwareDao->getComprehensiverUser($this->uid);
+	    	
 			$response = array("mailAddress"=>"hape@exdom.de",
             "mailLocation"=>"hape@exdom.de",
             "quotaUsage"=>10,
@@ -197,7 +209,9 @@ class groupware extends plugin
             "dropOwnMails"=>0 );
 			$this->mapComprehensiveUserData($response);
             $this->initially_was_account = $this->is_account = $status;
-            $this->accountInitialized = TRUE;
+        
+           	$this->accountInitialized = TRUE;
+	    
         }
 
         // Set vacation start/stop if not set alreasy
@@ -470,10 +484,7 @@ class groupware extends plugin
             }
 
             // Get ui modifications and store them in the class.
-            $testAttrs = array("mailAddress","mailLocation","quotaUsage","quotaSize",
-                    "alternateAddresses","forwardingAddresses","vacationEnabled","vacationStart",
-                    "vacationStop","vacationMessage");
-            foreach($testAttrs as $attr){
+            foreach($this->attributes as $attr){
                 if(isset($_POST[$attr]) && $this->acl_is_writeable($attr)){
                     $this->$attr = get_post($attr);
                 }
@@ -481,26 +492,10 @@ class groupware extends plugin
 			/*
 			 * TODO: ACL check is missing
 			 */
-            // Detect checkbox states 
-            $checkAttrs = array("mailBoxWarnLimit","mailBoxSendSizelimit",
-                    "mailBoxHardSizelimit","mailBoxAutomaticRemoval");
-            foreach($checkAttrs as $boxname){
-                if($this->acl_is_writeable($boxname)){
-                    $v = $boxname."Value"; 
-                    $e = $boxname."Enabled"; 
-                    $this->$e = isset($_POST[$e]);
-                    if($this->$e){
-                        $this->$v = get_post($v);
-                    }
-                }
-            }
+            echo 'ACL checks missing!';
 
-            // Get posted flag changes 
-            $flagAttrs = array("localDeliveryOnly","dropOwnMails");
-            foreach($flagAttrs as $attr){
-                if($this->acl_is_writeable($attr)){
-                    $this->$attr = isset($_POST[$attr]);
-                }
+            foreach($this->flagAttributes as $attr){
+                $this->$attr = isset($_POST[$attr]);
             }
         }
     }
@@ -817,10 +812,17 @@ class groupware extends plugin
  */
 class groupware_dao{
 	private $availableMethods;
+	/*
+	 * TODO: fill the following vars on init.
+	 */
+	private $accountLocations;
+	
+	
 	private static $gwFeatures  = array(
-		"user" => array("get"=>"acctGetUser", 
-						"save"=>"acctSetUser",
-						"delete"=>"acctDelUser")
+		"primaryAddress" => array(	"get"=>"acctGetUser", 
+									"save"=>"acctSetUser",
+									"delete"=>"acctDelUser")
+		
 		
 	);
 	private $groupwarePluginRef = False;
@@ -830,7 +832,7 @@ class groupware_dao{
 		$this->groupwarePluginRef = &$pluginRef;
 		
 		
-		$this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
+		
 		/*
 		 * TODO:
 		 * Remove all echos 
@@ -844,7 +846,8 @@ class groupware_dao{
 	 * groupware rpc. 
 	 */
 	public function init(){
-		
+		$this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
+		echo "Got the capabilities.";
 	}
 	public function save($feature, $valueArray){
 		
@@ -865,6 +868,7 @@ class groupware_dao{
 		
 		if($this->gwFeatureAvailable($feature)){
 			$result = $this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
+			
 			return $result;
 		}
 		return false;
@@ -876,7 +880,6 @@ class groupware_dao{
 		 * del and return the result.
 		 */
 		return false;
-		
 	}
 	public function gwFeatureAvailable($methodName){
 		return $this->availableMethods[$methodName];
@@ -886,9 +889,14 @@ class groupware_dao{
 		return $this->groupwarePluginRef->rpcExec("acctGetMailboxLocations");
 	}
 	public function getComprehensiverUser($uid){
-		$location = $this->groupwarePluginRef->rpcExec("gwGetLocation");
-		
-		return $location;
+		//$hi = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
+		if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
+		$pMail = $this->groupwarePluginRef->rpcExec("gwAcctGetPrimaryMailAddress",$uid);
+			echo "pMail for $uid<pre>";
+			print_r($pMail);
+			echo "</pre>";
+		}
+		return $pMail;
 	}
 }
 ?>

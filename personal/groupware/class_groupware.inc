@@ -466,7 +466,7 @@ class groupware extends plugin
             // Try a simple communication operation with the backend 
             //  again and let us see if it works.
             if(isset($_POST['retry'])){
-                $this->rpcExec('getCapabilities');
+                $this->rpcExec('gwGetCapabilities');
             }
 
             // Get ui modifications and store them in the class.

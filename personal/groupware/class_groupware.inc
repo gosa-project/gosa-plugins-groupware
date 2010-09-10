@@ -113,10 +113,11 @@ class groupware extends plugin
     	echo "------<br>Calling function:".$function."<br>";
      
         $rpc = $this->config->getRpcHandle();
+        echo get_class($rpc);
         $res = call_user_func_array(array($rpc,$function),array_values($params));
         $this->rpcError = !$rpc->success();
         if($this->rpcError){
-            $this->rpcErrorMessage = $rpc->getError();
+            $this->rpcErrorMessage = $rpc->get_error();
             return(NULL);
         }
         return($res);
@@ -692,12 +693,9 @@ class groupware extends plugin
          * Trying to save the primary Email Address.
          */
         if(!empty($this->mailAddress)){
-        	$this->groupwareDao->save("primaryMail", $this->mailAddress);
+        	$this->groupwareDao->save("primaryMail", array($this->uid, $this->mailAddress));
         }
-        if(!empty($this->mailAddress)){
-        	$this->groupwareDao->save("primaryMail", $this->mailAddress);
-        }
-        
+      
     }
 
 

@@ -864,10 +864,7 @@ class groupware_dao{
 	
 	private $groupwarePluginRef = False;
 	function __construct(&$pluginRef){
-		
-		$this->debug = true;
-		
-		echo "init Dao";
+
 		$this->groupwarePluginRef = &$pluginRef;
 		
 		/*

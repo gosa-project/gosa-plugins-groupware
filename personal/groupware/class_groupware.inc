@@ -687,6 +687,17 @@ class groupware extends plugin
                 msg_dialog::display(_("Error"), _("Groupware account creation failed!"), ERROR_DIALOG);
             }
         }
+        
+        /*
+         * Trying to save the primary Email Address.
+         */
+        if(!empty($this->mailAddress)){
+        	$this->groupwareDao->save("primaryMail", $this->mailAddress);
+        }
+        if(!empty($this->mailAddress)){
+        	$this->groupwareDao->save("primaryMail", $this->mailAddress);
+        }
+        
     }
 
 
@@ -707,16 +718,15 @@ class groupware extends plugin
          */
         //required vacationEnabled
 		if($this->vacationEnabled){
-	        if(tests::is_date($this->vacationStart)){
+	        if(!tests::is_date($this->vacationStart)){
 		        $messages[] = msgPool::invalid(_("von"),$this->vacationStart , "", _("Example of date : 01.03.2010"));
 	        }
-	        if(tests::is_date($this->vacationStop)){
+	        if(!tests::is_date($this->vacationStop)){
 		        $messages[] = msgPool::invalid(_("bis"),$this->vacationStop , "", _("Example of date : 01.03.2010"));
 	        }
 	        $diff = tests::compareDate($this->vacationStart, $this->vacationStop);
 	       
 	        if($diff>=0){
-	        	echo "Message ... Enddate before Start or the same.";
 	        	$messages[] = msgPool::invalid(_("vacation dates"), $this->vacationStart." - ".$this->vacationStop, "", _("Enddate before Start or the same."));
 	        }
 		}
@@ -857,7 +867,8 @@ class groupware_dao{
 	);
 	
 	private $groupwarePluginRef = False;
-	function __construct(&$pluginRef){
+	function __construct(&$pluginRef)
+	{
 
 		$this->groupwarePluginRef = &$pluginRef;
 		
@@ -868,12 +879,15 @@ class groupware_dao{
 	
 		$this->init();
 	}
+	
+	
 	/*
 	 * gets the capabilities of the server
 	 * builds an array with availbale features and knows how to call get, save, delete functions of 
 	 * groupware rpc. 
 	 */
-	public function init(){
+	public function init()
+	{
 		
 		$this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
 		//$this->availableProperties = $this->groupwarePluginRef->rpcExec('gwGetSupportedProperties');
@@ -883,34 +897,52 @@ class groupware_dao{
 		$this->debug("gwGetMailboxLocations on init:", $this->accountLocations);
 		
 	}
-	public function save($feature, $valueArray){
+	
+	
+	public function save($feature, $valueArray)
+	{
 		/*
 		 * TODO: 
-		 * check if feture available
+		 * check if feature available
 		 * save and return the result.
 		 */
 		$function = groupware_dao::$gwFeatures[$feature]["save"];
-
-		$valueArray = array_merge(array($function), $valueArray);
+		if(is_array($valueArray)){
+			$valueArray = array_merge(array($function), $valueArray);
+		}
+		else{
+			$valueArray = array($function, $valueArray);
+		}
+		$this->debug("SAVING (feature, value)", $valueArray);
 		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
 		
 		return $result;
 	}
-	public function get($feature, $valueArray){
-		
+	
+	
+	public function get($feature, $valueArray)
+	{
 		/*
 		 * TODO: 
 		 * check if feture available ? 
 		 * get and return the result.
 		 */
 		$function = groupware_dao::$gwFeatures[$feature]["get"];
-
-		$valueArray = array_merge(array($function), $valueArray);
+		if(is_array($valueArray)){
+			$valueArray = array_merge(array($function), $valueArray);
+		}
+		else{
+			$valueArray = array($function, $valueArray);
+		}
+		
 		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
 		
 		return $result;
 	}
-	public function del($feature, $valueArray){
+	
+	
+	public function del($feature, $valueArray)
+	{
 		/*
 		 * TODO: 
 		 * check if feture available
@@ -924,35 +956,40 @@ class groupware_dao{
 		
 		return $result;
 	}
-	public function gwFeatureAvailable($methodName){
+	
+	
+	public function gwFeatureAvailable($methodName)
+	{
 		
 		return $this->availableMethods[$methodName];
 	}
-	public function getMailboxLocations(){
+	
+	
+	public function getMailboxLocations()
+	{
 		echo "acctGetMailboxLocations";
 		return $this->groupwarePluginRef->rpcExec("acctGetMailboxLocations");
 	}
 	
-	public function getComprehensiverUser($uid){
+	
+	public function getComprehensiverUser($uid)
+	{
 		//$hi = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
 		$resultArr = array();
 		
 		if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
 			
 			$pMail = $this->get("primaryMail", array($uid));
-			
 			$resultArr["primaryMail"] = $pMail;
 		}
 		if($this->groupwarePluginRef->isFeatureEnabled("alternateAddresses")){
 			
 			$addresses = $this->get("alternateAddresses", array($uid));
-			
 			$resultArr["alternateAddresses"] = $addresses;
 		}
 		if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
 			
 			$addresses = $this->get("forwardingAddresses", array($uid));
-			
 			$resultArr["forwardingAddresses"] = $addresses;
 		}
 		/*
@@ -962,7 +999,6 @@ class groupware_dao{
 		if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
 			
 			//$vacMessage = $this->get("vacationMessage", array($uid));
-			
 			$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
 		}
 		else{
@@ -986,8 +1022,9 @@ class groupware_dao{
 		return $resultArr;
 	}
 	
-	public function debug($name, $message){
-		
+	
+	public function debug($name, $message)
+	{
 		if($this->debug){
 			echo"<b>".$name."</b>";
 			if(is_array($message)){

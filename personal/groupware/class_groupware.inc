@@ -109,7 +109,8 @@ class groupware extends plugin
     {
         $params = func_get_args();
         unset($params[0]);
-    	echo "Calling function:".$function." Params".var_dump($params)."<br>";
+    	//echo "------<br>Calling function:".$function." Params".var_dump($params)."<br>";
+    	echo "------<br>Calling function:".$function."<br>";
      
         $rpc = $this->config->getRpcHandle();
         $res = call_user_func_array(array($rpc,$function),array_values($params));
@@ -121,7 +122,7 @@ class groupware extends plugin
         return($res);
     }
 	public function isFeatureEnabled($featureName){
-		if(!isset($this->enabledFeatures[$featureName]) &&  $this->enabledFeatures[$featureName]){
+		if(isset($this->enabledFeatures[$featureName]) &&  $this->enabledFeatures[$featureName]){
 			return TRUE;
 		}
 		return FALSE;
@@ -882,12 +883,12 @@ class groupware_dao{
 		
 		
 		$this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
-		$this->availableProperties = $this->groupwarePluginRef->rpcExec('gwGetSupportedProperties');
-		$this->debug("availableProperties on init:", $this->availableProperties);
+		//$this->availableProperties = $this->groupwarePluginRef->rpcExec('gwGetSupportedProperties');
+		//$this->debug("availableProperties on init:", $this->availableProperties);
 		
-		$this->accountLocations = $this->groupwarePluginRef->rpcExec('gwgetMailboxLocations');
-		$this->debug("availableProperties on init:", $this->accountLocations);
-		echo "Got the capabilities.";
+		$this->accountLocations = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
+		$this->debug("gwGetMailboxLocations on init:", $this->accountLocations);
+		
 	}
 	public function save($feature, $valueArray){
 		/*
@@ -925,11 +926,13 @@ class groupware_dao{
 		$function = groupware_dao::$gwFeatures[$feature]["delete"];
 
 		$valueArray = array_merge(array($function), $valueArray);
+		
 		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
 		
 		return $result;
 	}
 	public function gwFeatureAvailable($methodName){
+		
 		return $this->availableMethods[$methodName];
 	}
 	public function getMailboxLocations(){
@@ -939,21 +942,42 @@ class groupware_dao{
 	
 	public function getComprehensiverUser($uid){
 		//$hi = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
+		$resultArr = array();
+		
 		if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
+			
 			$pMail = $this->get("primaryMail", array($uid));
-			 
-			//= $this->groupwarePluginRef->rpcExec("gwAcctGetPrimaryMailAddress",$uid);
-			echo "pMail for $uid<pre>";
-			print_r($pMail);
-			echo "</pre>";
+			
+			$resultArr["primaryMail"] = $pMail;
 		}
 		if($this->groupwarePluginRef->isFeatureEnabled("alternateAddresses")){
+			
 			$addresses = $this->get("alternateAddresses", array($uid));
-			echo "Adresses for $uid<pre>";
-			print_r($addresses);
-			echo "</pre>";
+			
+			$resultArr["alternateAddresses"] = $addresses;
 		}
-		return $pMail;
+		if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
+			
+			$addresses = $this->get("forwardingAddresses", array($uid));
+			
+			$resultArr["forwardingAddresses"] = $addresses;
+		}
+		/*
+		 * this function seems to be broken on the server.
+		 * addding dummy
+		 */
+		if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
+			
+			$vacMessage = $this->get("vacationMessage", array($uid));
+			
+			$resultArr["vacationMessage"] = "dummy Vacation message";
+		}
+		else{
+			echo "vacationMessage not enabled."; 
+		}
+		
+		$this->debug("getComprehensiverUser:", $resultArr);
+		return $resultArr;
 	}
 	
 	public function debug($name, $message){

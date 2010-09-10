@@ -135,7 +135,6 @@ class groupware extends plugin
     function init()
     {
         // Detect feature availability and enable/disable services correspondingly.
-		echo "init Plugin:";
         $this->groupwareDao = new groupware_dao($this);
 
         $features = array();
@@ -206,7 +205,7 @@ class groupware extends plugin
             "dropOwnMails"=>0 );
 			
 			$response = array_merge( $response, $compResponse);
-			$this->groupwareDao->debug("Merged Comp Array:", $response);
+			
 			
 			$this->mapComprehensiveUserData($response);
             $this->initially_was_account = $this->is_account = $status;
@@ -709,11 +708,10 @@ class groupware extends plugin
         //required vacationEnabled
 		if($this->vacationEnabled){
 	        if(tests::is_date($this->vacationStart)){
-		        msgPool::invalid(_("von"),$this->vacationStart , "", _("Example of date : 01.13.2010"));
+		        $messages[] = msgPool::invalid(_("von"),$this->vacationStart , "", _("Example of date : 01.03.2010"));
 	        }
 	        if(tests::is_date($this->vacationStop)){
-		        msgPool::invalid(_("bis"),$this->vacationStop , "", _("Example of date : 01.13.2010"));
-	        	
+		        $messages[] = msgPool::invalid(_("bis"),$this->vacationStop , "", _("Example of date : 01.03.2010"));
 	        }
 	        $diff = tests::compareDate($this->vacationStart, $this->vacationStop);
 	       
@@ -722,9 +720,11 @@ class groupware extends plugin
 	        	$messages[] = msgPool::invalid(_("vacation dates"), $this->vacationStart." - ".$this->vacationStop, "", _("Enddate before Start or the same."));
 	        }
 		}
+		if(!tests::is_email ($this->mailAddress)){
+			$messages[] = msgPool::invalid(_("Email"),$this->mailAddress , "", _("Example: user@excom.intranet.gonicus.de"));
+		}
         return($messages);
     }
-
 
     /*! \brief  Adapt from template, using 'dn' 
      */
@@ -795,12 +795,6 @@ class groupware extends plugin
 	    $this->localDeliveryOnly = $callBackMap["localDeliveryOnly"];
 	    $this->dropOwnMails = $callBackMap["dropOwnMails"];
 	    
-	    /*
-	     * TODO: Remove the line to check on every call..
-	     * 
-	     * The check will be called on "OK" or "APPLY"
-	     */
-	    $this->check();
     }
 }
 
@@ -812,7 +806,7 @@ class groupware_dao{
 	/*
 	 *	TODO: Remove the debug 
 	 */
-	private $debug = false;
+	private $debug = true;
 	/*
 	 * TODO: fill the following vars on init.
 	 */
@@ -880,7 +874,6 @@ class groupware_dao{
 	 * groupware rpc. 
 	 */
 	public function init(){
-		
 		
 		$this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
 		//$this->availableProperties = $this->groupwarePluginRef->rpcExec('gwGetSupportedProperties');
@@ -970,7 +963,20 @@ class groupware_dao{
 			
 			//$vacMessage = $this->get("vacationMessage", array($uid));
 			
-			$resultArr["vacationMessage"] = "dummy Vacation message";
+			$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
+		}
+		else{
+			echo "vacationMessage not enabled."; 
+		}
+		/*
+		 * this function seems to be broken on the server.
+		 * addding dummy
+		 */
+		if($this->groupwarePluginRef->isFeatureEnabled("quotaSize")){
+			
+			//$quotMessage = $this->get("quotaSize", array($uid));
+			
+			$resultArr["quotaSize"] = 123456789;
 		}
 		else{
 			echo "vacationMessage not enabled."; 

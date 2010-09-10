@@ -182,7 +182,7 @@ class groupware extends plugin
         if($status !== NULL){
 				
 	    	var_dump($this->rpcExec('gwAcctGetLocation',$this->uid));
-	    	$User =$this->groupwareDao->getComprehensiverUser($this->uid);
+	    	$compResponse = $this->groupwareDao->getComprehensiverUser($this->uid);
 	    	
 			$response = array("mailAddress"=>"hape@exdom.de",
             "mailLocation"=>"hape@exdom.de",
@@ -204,12 +204,15 @@ class groupware extends plugin
             "mailBoxAutomaticRemovalValue"=>"mailBoxAutomaticRemovalValue",
             "localDeliveryOnly"=>0,
             "dropOwnMails"=>0 );
+			
+			$response = array_merge( $response, $compResponse);
+			$this->groupwareDao->debug("Merged Comp Array:", $response);
+			
 			$this->mapComprehensiveUserData($response);
             $this->initially_was_account = $this->is_account = $status;
         
            	$this->accountInitialized = TRUE;
         }
-
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
         $this->vacationStop = time() + (14 * 60*60*24);
@@ -771,7 +774,7 @@ class groupware extends plugin
 	    $this->filterRules = $callBackMap["filterRules"];
 	    $this->vacationTemplates = $callBackMap["vacationTemplates"];
 	
-	    $this->mailAddress = $callBackMap["mailAddress"];
+	    $this->mailAddress = $callBackMap["primaryMail"];
 	    $this->mailLocation = $callBackMap["mailLocation"];
 	    $this->quotaUsage = $callBackMap["quotaUsage"];
 	    $this->quotaSize = $callBackMap["quotaSize"];
@@ -968,7 +971,7 @@ class groupware_dao{
 		 */
 		if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
 			
-			$vacMessage = $this->get("vacationMessage", array($uid));
+			//$vacMessage = $this->get("vacationMessage", array($uid));
 			
 			$resultArr["vacationMessage"] = "dummy Vacation message";
 		}

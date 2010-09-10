@@ -94,11 +94,9 @@ class groupware extends plugin
                 $this->$attr = $this->attrs[$attr][0];
             }
         }
-
         // Initialize the plugin using rpc.
         $this->init();
     }
-
 
     /*! \brief  Try to execute a function on the gosa backend using json-rpc.
      *          This method also takes care about errors and sets the required
@@ -123,7 +121,7 @@ class groupware extends plugin
         return($res);
     }
 	public function isFeatureEnabled($featureName){
-		if(!empty($this->enabledFeatures[$featureName]) &&  $this->enabledFeatures[$featureName]){
+		if(!isset($this->enabledFeatures[$featureName]) &&  $this->enabledFeatures[$featureName]){
 			return TRUE;
 		}
 		return FALSE;
@@ -138,13 +136,13 @@ class groupware extends plugin
         // Detect feature availability and enable/disable services correspondingly.
 		echo "init Plugin:";
         $this->groupwareDao = new groupware_dao($this);
-     
+
         $features = array();
         $featureReq = array(
         		"primaryMail" 				=> array(
         			'acctGetPrimaryMailAddress'),
-                "quotaUsage"                => array(
-                    'acctGetQuota'),
+        	    "quotaUsage"                => array(
+	                'acctGetQuota'),
                 "quotaSize"                 => array(
                     'acctSetQuota','acctGetQuota'),
                 "mailFilter"                => array(
@@ -178,8 +176,6 @@ class groupware extends plugin
             }
             $this->enabledFeatures[$name] = $active;
         }
-       
-
         // Get rpc handle to fetch account info and feature availability.
         $status = $this->rpcExec('gwAcctExists', $this->uid);
         if($status !== NULL){
@@ -211,7 +207,6 @@ class groupware extends plugin
             $this->initially_was_account = $this->is_account = $status;
         
            	$this->accountInitialized = TRUE;
-	    
         }
 
         // Set vacation start/stop if not set alreasy
@@ -735,7 +730,6 @@ class groupware extends plugin
 
     }
 
-
     /*! \brief  ACL settings 
      */
     static function plInfo()
@@ -811,26 +805,66 @@ class groupware extends plugin
  * Data Access Object for groupwares 
  */
 class groupware_dao{
-	private $availableMethods;
+	/*
+	 *	TODO: Remove the debug 
+	 */
+	private $debug = false;
 	/*
 	 * TODO: fill the following vars on init.
 	 */
+	private $availableMethods;
+	private $availableProperties;
 	private $accountLocations;
-	
 	
 	private static $gwFeatures  = array(
 		"primaryMail" => array(	"get"=>"gwAcctGetPrimaryMailAddress", 
-									"save"=>"gwAcctSetPrimaryMailAddress")
-		
-		
+							 	"save"=>"gwAcctSetPrimaryMailAddress"),
+		"quotaSize"  =>array(  "get"=>"gwAcctGetQuota", 
+							 	"save"=>"gwAcctSetQuota",
+								"delete"=>"gwAcctSetQuota"),
+		"mailFilter"  =>array(  "get"=>"gwAcctGetFilters", 
+							 	"save"=>"gwAcctSetFilters",
+								"delete"=>"gwAcctDelFilter"),
+        "alternateAddresses"  =>array(  "get"=>"gwAcctGetAlternateMailAddresses", 
+							 	"save"=>"gwAcctSetAlternateMailAddresses",
+								"delete"=>"gwAcctDelAlternateMailAddress"),
+        "forwardingAddresses"  =>array( "get"=>"gwAcctGetMailForwardAddresses", 
+									 	"save"=>"gwAcctSetMailForwardAddresses",
+										"delete"=>"gwAcctDelMailForwardAddress"),
+        "vacationMessage"  =>array(  	"get"=>"gwAcctGetOutOfOfficeReply", 
+									 	"save"=>"gwAcctSetOutOfOfficeReply",
+										"delete"=>"gwAcctDelOutOfOfficeReply"),
+        "mailBoxWarnLimit"  =>array(  	"get"=>"", 
+									 	"save"=>"",
+										"delete"=>""),
+        "mailBoxSendSizelimit"  =>array(  "get"=>"gwAcctGetQuota", 
+							 	"save"=>"gwAcctSetQuota",
+								"delete"=>"gwAcctDelQuota"),
+        "mailBoxHardSizelimit"  =>array(  "get"=>"gwAcctGetMailLimit", 
+							 	"save"=>"gwAcctSetMailLimit",
+								"delete"=>"gwAcctDelMailLimit"),
+		"mailBoxAutomaticRemoval"  =>array(  "get"=>"", 
+							 	"save"=>"",
+								"delete"=>""),
+		"localDeliveryOnly"  =>array(  "get"=>"", 
+							 	"save"=>"",
+								"delete"=>""),
+		"dropOwnMails"  =>array(  "get"=>"",
+							 	"save"=>"",
+								"delete"=>""),
+		"accountProperties" => array("get"=>"gwAcctGetProperties",
+							 	"save"=>"gwAcctSetProperties",
+								"delete"=>"gwAcctDelProperties")
+	
 	);
+	
 	private $groupwarePluginRef = False;
 	function __construct(&$pluginRef){
 		
+		$this->debug = true;
+		
 		echo "init Dao";
 		$this->groupwarePluginRef = &$pluginRef;
-		
-		
 		
 		/*
 		 * TODO:
@@ -845,37 +879,42 @@ class groupware_dao{
 	 * groupware rpc. 
 	 */
 	public function init(){
+		
+		
 		$this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
+		$this->availableProperties = $this->groupwarePluginRef->rpcExec('gwGetSupportedProperties');
+		$this->debug("availableProperties on init:", $this->availableProperties);
+		
+		$this->accountLocations = $this->groupwarePluginRef->rpcExec('gwgetMailboxLocations');
+		$this->debug("availableProperties on init:", $this->accountLocations);
 		echo "Got the capabilities.";
 	}
 	public function save($feature, $valueArray){
-		
 		/*
 		 * TODO: 
 		 * check if feture available
 		 * save and return the result.
 		 */
-		return false;
+		$function = groupware_dao::$gwFeatures[$feature]["save"];
+
+		$valueArray = array_merge(array($function), $valueArray);
+		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
+		
+		return $result;
 	}
 	public function get($feature, $valueArray){
 		
 		/*
 		 * TODO: 
-		 * check if feture available
+		 * check if feture available ? 
 		 * get and return the result.
 		 */
 		$function = groupware_dao::$gwFeatures[$feature]["get"];
-		if(true){
-			$valueArray = array_merge(array($function), $valueArray);
-			$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
-			
-			return $result;
-		}
-		else{
-			echo "Feature not available.";
-		}
-		//Throw an error?
-		return false;
+
+		$valueArray = array_merge(array($function), $valueArray);
+		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
+		
+		return $result;
 	}
 	public function del($feature, $valueArray){
 		/*
@@ -883,7 +922,12 @@ class groupware_dao{
 		 * check if feture available
 		 * del and return the result.
 		 */
-		return false;
+		$function = groupware_dao::$gwFeatures[$feature]["delete"];
+
+		$valueArray = array_merge(array($function), $valueArray);
+		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
+		
+		return $result;
 	}
 	public function gwFeatureAvailable($methodName){
 		return $this->availableMethods[$methodName];
@@ -892,6 +936,7 @@ class groupware_dao{
 		echo "acctGetMailboxLocations";
 		return $this->groupwarePluginRef->rpcExec("acctGetMailboxLocations");
 	}
+	
 	public function getComprehensiverUser($uid){
 		//$hi = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
 		if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
@@ -902,7 +947,28 @@ class groupware_dao{
 			print_r($pMail);
 			echo "</pre>";
 		}
+		if($this->groupwarePluginRef->isFeatureEnabled("alternateAddresses")){
+			$addresses = $this->get("alternateAddresses", array($uid));
+			echo "Adresses for $uid<pre>";
+			print_r($addresses);
+			echo "</pre>";
+		}
 		return $pMail;
+	}
+	
+	public function debug($name, $message){
+		
+		if($this->debug){
+			echo"<b>".$name."</b>";
+			if(is_array($message)){
+				echo "<pre>";
+				print_r($message);
+				echo "</pre>";
+			}
+			else{
+				echo "$message";
+			}
+		}
 	}
 }
 ?>

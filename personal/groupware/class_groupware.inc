@@ -311,7 +311,7 @@ class groupware extends plugin
                 }
             }
         }
-		$this->check();
+		
         /****************
           Forward addresses 
          ****************/
@@ -720,10 +720,10 @@ class groupware extends plugin
         //required vacationEnabled
 		if($this->vacationEnabled){
 	        if(!tests::is_date($this->vacationStart)){
-		        $messages[] = msgPool::invalid(_("von"),$this->vacationStart , "", _("Example of date : 01.03.2010"));
+		        $messages[] = msgPool::invalid(_("vacationstart"),$this->vacationStart , "", _("Example of date : 01.03.2010"));
 	        }
 	        if(!tests::is_date($this->vacationStop)){
-		        $messages[] = msgPool::invalid(_("bis"),$this->vacationStop , "", _("Example of date : 01.03.2010"));
+		        $messages[] = msgPool::invalid(_("vacationstop"),$this->vacationStop , "", _("Example of date : 01.03.2010"));
 	        }
 	        $diff = tests::compareDate($this->vacationStart, $this->vacationStop);
 	       
@@ -741,6 +741,13 @@ class groupware extends plugin
 		 */
 		if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
 			foreach($this->forwardingAddresses as $fAddress){
+				if(!tests::is_email ($fAddress)){
+					$messages[] = msgPool::invalid(_("Email"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
+				}
+			}
+		}
+		if(isset($this->alternateAddresses) && is_array($this->alternateAddresses)){
+			foreach($this->alternateAddresses as $fAddress){
 				if(!tests::is_email ($fAddress)){
 					$messages[] = msgPool::invalid(_("Email"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
 				}

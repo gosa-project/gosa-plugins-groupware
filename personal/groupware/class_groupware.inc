@@ -824,10 +824,12 @@ class groupware extends plugin
                     ));
     }
     function mapComprehensiveUserData($callBackMap){
-    	$this->mailAddressSelectDialog = $callBackMap["mailAddressSelectDialog"];
-	    $this->filterManager = $callBackMap["filterManager"];
-	    $this->filterRules = $callBackMap["filterRules"];
-	    $this->vacationTemplates = $callBackMap["vacationTemplates"];
+
+        // This won't come from the server.
+    	#$this->mailAddressSelectDialog = $callBackMap["mailAddressSelectDialog"];
+	    #$this->filterManager = $callBackMap["filterManager"];
+	    #$this->filterRules = $callBackMap["filterRules"];
+	    #$this->vacationTemplates = $callBackMap["vacationTemplates"];
 	
 	    $this->mailAddress = $callBackMap["primaryMail"];
 	    $this->mailLocation = $callBackMap["mailLocation"];

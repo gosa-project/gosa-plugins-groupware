@@ -311,7 +311,7 @@ class groupware extends plugin
                 }
             }
         }
-
+		$this->check();
         /****************
           Forward addresses 
          ****************/
@@ -394,6 +394,7 @@ class groupware extends plugin
           Alternate addresses 
          ****************/
 
+        
         // Add manually inserted alternate mail address.
         if (isset($_POST['addAlternateAddress'])){
             $valid= FALSE;
@@ -461,6 +462,8 @@ class groupware extends plugin
         $smarty->assign("initFailed", !$this->accountInitialized);
         $smarty->assign("rpcError", $this->rpcError);
         $smarty->assign("rpcErrorMessage", $this->rpcErrorMessage);
+        
+       
         return($display.$smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
     }
 
@@ -688,7 +691,7 @@ class groupware extends plugin
                 msg_dialog::display(_("Error"), _("Groupware account creation failed!"), ERROR_DIALOG);
             }
         }
-        
+         
         /*
          * Trying to save the primary Email Address.
          */
@@ -731,6 +734,19 @@ class groupware extends plugin
 		if(!tests::is_email ($this->mailAddress)){
 			$messages[] = msgPool::invalid(_("Email"),$this->mailAddress , "", _("Example: user@excom.intranet.gonicus.de"));
 		}
+		/*
+		 * forwarding Addresses
+		 * $alternateAddresses 
+    	 * $forwardingAddresses
+		 */
+		if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
+			foreach($this->forwardingAddresses as $fAddress){
+				if(!tests::is_email ($fAddress)){
+					$messages[] = msgPool::invalid(_("Email"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
+				}
+			}
+		}
+		
         return($messages);
     }
 
@@ -814,7 +830,7 @@ class groupware_dao{
 	/*
 	 *	TODO: Remove the debug 
 	 */
-	private $debug = true;
+	private $debug = false;
 	/*
 	 * TODO: fill the following vars on init.
 	 */

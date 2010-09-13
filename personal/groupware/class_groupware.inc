@@ -27,6 +27,7 @@ class groupware extends plugin
     var $rpcError = FALSE;
     var $rpcErrorMessage = "";
 
+    /*
     var $attributes = array(
             "mailAddress",
             "mailLocation",
@@ -49,6 +50,7 @@ class groupware extends plugin
             "localDeliveryOnly",
             "dropOwnMails"
             );
+            */
 
     var $enabledFeatures = array();
 
@@ -167,8 +169,40 @@ class groupware extends plugin
                 "localDeliveryOnly"         => array(
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "dropOwnMails"              => array(
+                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters')
+       	 	);
+             
+        /*
+        $featureReq = array(
+        		"primaryMail" 				=> array(
+        			'acctGetPrimaryMailAddress'),
+        	    "quotaUsage"                => array(
+	                'acctGetQuota'),
+                "quotaSize"                 => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailFilter"                => array(
+                    'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+                "alternateAddresses"        => array(
+                    'acctDelAlternateMailAddress','acctSetAlternateMailAddresses',
+                    'acctAddAlternateMailAddress','acctGetAlternateMailAddresses'),
+                "forwardingAddresses"       => array(
+                    'acctAddMailForwardAddress','acctDelMailForwardAddress',
+                    'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
+                "vacationMessage"           => array(
+                    'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+                "mailBoxWarnLimit"          => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailBoxSendSizelimit"      => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailBoxHardSizelimit"      => array(
+                    'acctSetQuota','acctGetQuota'),
+                "mailBoxAutomaticRemoval"   => array(
+                        'acctSetQuota','acctGetQuota'),
+                "localDeliveryOnly"         => array(
+                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+                "dropOwnMails"              => array(
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'));
-      
+      */
         // Check if all required methods cann be called! 
         foreach($featureReq as $name => $requires){
             $active = TRUE;
@@ -708,10 +742,20 @@ class groupware extends plugin
         }
          
         /*
-         * Trying to save the primary Email Address.
+         *save the primary Email Address.
          */
         if(!empty($this->mailAddress)){
-        	$this->groupwareDao->save("primaryMail", array($this->uid, $this->mailAddress));
+        	$this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
+        }
+        
+        /*
+         *  
+         */
+        if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
+			$this->groupwareDao->save("alternateAddresses", $this->uid, $this->alternateAddresses);
+        }
+        if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
+			$this->groupwareDao->save("forwardingAddresses", $this->uid, $this->forwardingAddresses);
         }
       
     }
@@ -946,7 +990,7 @@ class groupware_dao{
 	}
 	
 	
-	public function save($feature, $valueArray)
+	public function save($feature, $uid, $valueArray)
 	{
 		/*
 		 * TODO: 
@@ -954,11 +998,12 @@ class groupware_dao{
 		 * save and return the result.
 		 */
 		$function = groupware_dao::$gwFeatures[$feature]["save"];
+		
 		if(is_array($valueArray)){
-			$valueArray = array_merge(array($function), $valueArray);
+			$valueArray = array_merge(array($function, $uid), $valueArray);
 		}
 		else{
-			$valueArray = array($function, $valueArray);
+			$valueArray = array($function, $uid, $valueArray);
 		}
 		$this->debug("SAVING (feature, value)", $valueArray);
 		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);

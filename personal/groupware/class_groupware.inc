@@ -62,6 +62,9 @@ class groupware extends plugin
     var $filterRules = array();
     var $vacationTemplates = array();
 
+    //the dropdown
+    var $mailLocations = "empty";
+    
     var $mailAddress = "";
     var $mailLocation = "";
     var $quotaUsage = 0;
@@ -142,6 +145,10 @@ class groupware extends plugin
 
         $features = array();
         
+        /*
+         * feature names with a list of groupware function that must be availabele
+         * these groupware functions are not the rpc functions, because they are asked from the groupware server
+         */
         $featureReq = array(
         		"primaryMail" 				=> array(
         			'acctGetPrimaryMailAddress'),
@@ -149,6 +156,8 @@ class groupware extends plugin
 	                'acctGetQuota'),
                 "quotaSize"                 => array(
                     'acctSetQuota','acctGetQuota'),
+        		"mailLocations"				=> array(
+        			'getMailboxLocations'),
                 "mailFilter"                => array("_off",
                     'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "alternateAddresses"        => array(
@@ -188,7 +197,8 @@ class groupware extends plugin
 	    	$compResponse = $this->groupwareDao->getComprehensiverUser($this->uid);
 	    	
 			$response = array("mailAddress"=>"hape@exdom.de",
-            "mailLocation"=>"hape@exdom.de",
+            "mailLocation"=>"mailbox 1",
+			"mailLocations"=>array("hape","mailbox 1"),
             "quotaUsage"=>10,
             "quotaSize"=>100,
             "alternateAddresses"=>"alternateAddresses@exdom.de",
@@ -441,6 +451,7 @@ class groupware extends plugin
 
         $smarty = get_smarty();
         foreach($this->attributes as $attr){
+        	
             $smarty->assign($attr, $this->$attr);
         }
 
@@ -452,7 +463,8 @@ class groupware extends plugin
             $smarty->assign($feature."_isActive", $state);
         }
 
-        $smarty->assign("mailLocations", array("tester"));
+     
+        $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
             $smarty->assign("displayTemplateSelector", "true");
             $smarty->assign("vacationTemplate", set_post($this->vacationTemplate));
@@ -843,6 +855,7 @@ class groupware extends plugin
 	    #$this->filterManager = $callBackMap["filterManager"];
 	    #$this->filterRules = $callBackMap["filterRules"];
 	    #$this->vacationTemplates = $callBackMap["vacationTemplates"];
+	    $this->mailLocations = $callBackMap["mailLocations"];
 	
 	    $this->mailAddress = $callBackMap["primaryMail"];
 	    $this->mailLocation = $callBackMap["mailLocation"];
@@ -887,6 +900,7 @@ class groupware_dao{
 	private static $gwFeatures  = array(
 		"primaryMail" => array(	"get"=>"gwAcctGetPrimaryMailAddress", 
 							 	"save"=>"gwAcctSetPrimaryMailAddress"),
+		"mailLocations" => array("get"=>"gwGetMailboxLocations"),
 		"quotaSize"  =>array(  "get"=>"gwAcctGetQuota", 
 							 	"save"=>"gwAcctSetQuota",
 								"delete"=>"gwAcctSetQuota"),
@@ -952,10 +966,7 @@ class groupware_dao{
 		$this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
 		//$this->availableProperties = $this->groupwarePluginRef->rpcExec('gwGetSupportedProperties');
 		//$this->debug("availableProperties on init:", $this->availableProperties);
-		
-		$this->accountLocations = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
-		$this->debug("gwGetMailboxLocations on INIT:", $this->accountLocations);
-		
+
 	}
 	
 	
@@ -1026,11 +1037,6 @@ class groupware_dao{
 	}
 	
 	
-	public function getMailboxLocations()
-	{
-		echo "acctGetMailboxLocations";
-		return $this->groupwarePluginRef->rpcExec("acctGetMailboxLocations");
-	}
 	
 	
 	public function getComprehensiverUser($uid)
@@ -1058,6 +1064,15 @@ class groupware_dao{
 			$addresses = $this->get("forwardingAddresses", array($uid));
 			$resultArr["forwardingAddresses"] = $addresses;
 		}
+		//location dropdownlist - only readable
+		if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
+			
+			$addresses = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
+			$resultArr["mailLocations"] = $addresses;
+			$this->debug("gwGetMailboxLocations", $addresses);
+		}
+	
+		
 		/*
 		 * this function seems to be broken on the server.
 		 * addding dummy

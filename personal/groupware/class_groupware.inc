@@ -742,7 +742,12 @@ class groupware extends plugin
 		if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
 			foreach($this->forwardingAddresses as $fAddress){
 				if(!tests::is_email ($fAddress)){
-					$messages[] = msgPool::invalid(_("Mail address"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
+					$messages[] = msgPool::invalid(_("Mail address"),$fAddress, "", 
+						_("Example: user@excom.intranet.gonicus.de"));
+				}
+				if($fAddress == $this->mailAddress){
+					$messages[] = msgPool::invalid(_("Mail address same as primary Email Address"),$fAddress, "",
+						 _("Forward Address and primary Email Address must not be the same (cirle reference)"));
 				}
 			}
 		}
@@ -750,6 +755,10 @@ class groupware extends plugin
 			foreach($this->alternateAddresses as $fAddress){
 				if(!tests::is_email ($fAddress)){
 					$messages[] = msgPool::invalid(_("Mail address"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
+				}
+				if($fAddress == $this->mailAddress){
+					$messages[] = msgPool::invalid(_("Mail address same as primary Email Address"),$fAddress, "",
+						 _("Alternative Address and primary Email Address must not be the same (cirle reference)"));
 				}
 			}
 		}

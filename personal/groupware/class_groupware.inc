@@ -27,7 +27,7 @@ class groupware extends plugin
     var $rpcError = FALSE;
     var $rpcErrorMessage = "";
 
-    /*
+    
     var $attributes = array(
             "mailAddress",
             "mailLocation",
@@ -48,9 +48,13 @@ class groupware extends plugin
             "mailBoxAutomaticRemovalEnabled",
             "mailBoxAutomaticRemovalValue",
             "localDeliveryOnly",
-            "dropOwnMails"
+            "dropOwnMails",
+            "mailFilter_isActive",
+    		"vacationMessage_isActive",
+    		"localDeliveryOnly_isActive",
+    		"dropOwnMails_isActive"
             );
-            */
+            
 
     var $enabledFeatures = array();
 
@@ -148,16 +152,12 @@ class groupware extends plugin
 	                'acctGetQuota'),
                 "quotaSize"                 => array(
                     'acctSetQuota','acctGetQuota'),
-                "mailFilter"                => array(
-                    'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "alternateAddresses"        => array(
                     'acctDelAlternateMailAddress','acctSetAlternateMailAddresses',
                     'acctAddAlternateMailAddress','acctGetAlternateMailAddresses'),
                 "forwardingAddresses"       => array(
                     'acctAddMailForwardAddress','acctDelMailForwardAddress',
                     'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
-                "vacationMessage"           => array(
-                    'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "mailBoxWarnLimit"          => array(
                     'acctSetQuota','acctGetQuota'),
                 "mailBoxSendSizelimit"      => array(
@@ -166,10 +166,7 @@ class groupware extends plugin
                     'acctSetQuota','acctGetQuota'),
                 "mailBoxAutomaticRemoval"   => array(
                         'acctSetQuota','acctGetQuota'),
-                "localDeliveryOnly"         => array(
-                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
-                "dropOwnMails"              => array(
-                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters')
+              
        	 	);
              
         /*

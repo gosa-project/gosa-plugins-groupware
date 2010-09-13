@@ -48,11 +48,7 @@ class groupware extends plugin
             "mailBoxAutomaticRemovalEnabled",
             "mailBoxAutomaticRemovalValue",
             "localDeliveryOnly",
-            "dropOwnMails",
-            "mailFilter_isActive",
-    		"vacationMessage_isActive",
-    		"localDeliveryOnly_isActive",
-    		"dropOwnMails_isActive"
+            "dropOwnMails"
             );
             
 
@@ -145,6 +141,7 @@ class groupware extends plugin
         $this->groupwareDao = new groupware_dao($this);
 
         $features = array();
+        
         $featureReq = array(
         		"primaryMail" 				=> array(
         			'acctGetPrimaryMailAddress'),
@@ -152,32 +149,7 @@ class groupware extends plugin
 	                'acctGetQuota'),
                 "quotaSize"                 => array(
                     'acctSetQuota','acctGetQuota'),
-                "alternateAddresses"        => array(
-                    'acctDelAlternateMailAddress','acctSetAlternateMailAddresses',
-                    'acctAddAlternateMailAddress','acctGetAlternateMailAddresses'),
-                "forwardingAddresses"       => array(
-                    'acctAddMailForwardAddress','acctDelMailForwardAddress',
-                    'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
-                "mailBoxWarnLimit"          => array(
-                    'acctSetQuota','acctGetQuota'),
-                "mailBoxSendSizelimit"      => array(
-                    'acctSetQuota','acctGetQuota'),
-                "mailBoxHardSizelimit"      => array(
-                    'acctSetQuota','acctGetQuota'),
-                "mailBoxAutomaticRemoval"   => array(
-                        'acctSetQuota','acctGetQuota'),
-              
-       	 	);
-             
-        /*
-        $featureReq = array(
-        		"primaryMail" 				=> array(
-        			'acctGetPrimaryMailAddress'),
-        	    "quotaUsage"                => array(
-	                'acctGetQuota'),
-                "quotaSize"                 => array(
-                    'acctSetQuota','acctGetQuota'),
-                "mailFilter"                => array(
+                "mailFilter"                => array("_off",
                     'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "alternateAddresses"        => array(
                     'acctDelAlternateMailAddress','acctSetAlternateMailAddresses',
@@ -185,7 +157,7 @@ class groupware extends plugin
                 "forwardingAddresses"       => array(
                     'acctAddMailForwardAddress','acctDelMailForwardAddress',
                     'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
-                "vacationMessage"           => array(
+                "vacationMessage"           => array("_off",
                     'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "mailBoxWarnLimit"          => array(
                     'acctSetQuota','acctGetQuota'),
@@ -195,11 +167,11 @@ class groupware extends plugin
                     'acctSetQuota','acctGetQuota'),
                 "mailBoxAutomaticRemoval"   => array(
                         'acctSetQuota','acctGetQuota'),
-                "localDeliveryOnly"         => array(
+                "localDeliveryOnly"         => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
-                "dropOwnMails"              => array(
+                "dropOwnMails"              => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'));
-      */
+      
         // Check if all required methods cann be called! 
         foreach($featureReq as $name => $requires){
             $active = TRUE;
@@ -904,7 +876,7 @@ class groupware_dao{
 	/*
 	 *	TODO: Remove the debug 
 	 */
-	private $debug = false;
+	private $debug = true;
 	/*
 	 * TODO: fill the following vars on init.
 	 */
@@ -982,7 +954,7 @@ class groupware_dao{
 		//$this->debug("availableProperties on init:", $this->availableProperties);
 		
 		$this->accountLocations = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
-		$this->debug("gwGetMailboxLocations on init:", $this->accountLocations);
+		$this->debug("gwGetMailboxLocations on INIT:", $this->accountLocations);
 		
 	}
 	
@@ -1075,6 +1047,11 @@ class groupware_dao{
 			
 			$addresses = $this->get("alternateAddresses", array($uid));
 			$resultArr["alternateAddresses"] = $addresses;
+		}
+		if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
+			
+			$addresses = $this->get("forwardingAddresses", array($uid));
+			$resultArr["forwardingAddresses"] = $addresses;
 		}
 		if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
 			

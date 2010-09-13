@@ -720,19 +720,19 @@ class groupware extends plugin
         //required vacationEnabled
 		if($this->vacationEnabled){
 	        if(!tests::is_date($this->vacationStart)){
-		        $messages[] = msgPool::invalid(_("vacationstart"),$this->vacationStart , "", _("Example of date : 01.03.2010"));
+		        $messages[] = msgPool::invalid(_("Vacation start date"),$this->vacationStart , "", _("Example of date : 01.03.2010"));
 	        }
 	        if(!tests::is_date($this->vacationStop)){
-		        $messages[] = msgPool::invalid(_("vacationstop"),$this->vacationStop , "", _("Example of date : 01.03.2010"));
+		        $messages[] = msgPool::invalid(_("Vacation stop date"),$this->vacationStop , "", _("Example of date : 01.03.2010"));
 	        }
 	        $diff = tests::compareDate($this->vacationStart, $this->vacationStop);
 	       
 	        if($diff>=0){
-	        	$messages[] = msgPool::invalid(_("vacation dates"), $this->vacationStart." - ".$this->vacationStop, "", _("Enddate before Start or the same."));
+	        	$messages[] = msgPool::invalid(_("Vacation dates"), $this->vacationStart." - ".$this->vacationStop, "", _("Enddate before Start or the same."));
 	        }
 		}
 		if(!tests::is_email ($this->mailAddress)){
-			$messages[] = msgPool::invalid(_("Email"),$this->mailAddress , "", _("Example: user@excom.intranet.gonicus.de"));
+			$messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", _("Example: user@excom.intranet.gonicus.de"));
 		}
 		/*
 		 * forwarding Addresses
@@ -742,14 +742,14 @@ class groupware extends plugin
 		if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
 			foreach($this->forwardingAddresses as $fAddress){
 				if(!tests::is_email ($fAddress)){
-					$messages[] = msgPool::invalid(_("Email"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
+					$messages[] = msgPool::invalid(_("Mail address"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
 				}
 			}
 		}
 		if(isset($this->alternateAddresses) && is_array($this->alternateAddresses)){
 			foreach($this->alternateAddresses as $fAddress){
 				if(!tests::is_email ($fAddress)){
-					$messages[] = msgPool::invalid(_("Email"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
+					$messages[] = msgPool::invalid(_("Mail address"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
 				}
 			}
 		}

@@ -729,14 +729,25 @@ class groupware extends plugin
         }
         
         /*
-         *  
+         *  save alternateAddresses and forwarding. 
          */
-        if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
+        if(isset($this->alternateAddresses) && is_array($this->alternateAddresses)){
 			$this->groupwareDao->save("alternateAddresses", $this->uid, $this->alternateAddresses);
         }
         if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
 			$this->groupwareDao->save("forwardingAddresses", $this->uid, $this->forwardingAddresses);
         }
+        /*
+         * save the quota
+         */
+         if(true){
+         	$quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
+							"send_limit" => $this->mailBoxSendSizelimitValue,
+							"hard_limit" => $this->mailBoxHardSizelimitValue,
+							"hold" => $this->quotaSize,
+							"usage" => $this->quotaUsage);
+         	$this->groupwareDao->save("quotaSize", $this->uid, $quota);
+         }
       
     }
 
@@ -1067,7 +1078,7 @@ class groupware_dao{
 		if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
 			
 			$resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
-			$resultArr["mailLocation"] = $this->rpcExec('gwAcctGetLocation',$this->uid);
+			$resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec(array('gwAcctGetLocation',$uid));
 			
 		}
 		/*

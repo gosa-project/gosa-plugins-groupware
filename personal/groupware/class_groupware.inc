@@ -115,10 +115,9 @@ class groupware extends plugin
         $params = func_get_args();
         unset($params[0]);
     	//echo "------<br>Calling function:".$function." Params".var_dump($params)."<br>";
-    	echo "------<br>Calling function:".$function."<br>";
      
         $rpc = $this->config->getRpcHandle();
-        echo get_class($rpc);
+        
         $res = call_user_func_array(array($rpc,$function),array_values($params));
         $this->rpcError = !$rpc->success();
         if($this->rpcError){
@@ -174,7 +173,7 @@ class groupware extends plugin
                     'acctSetQuota','acctGetQuota'),
                 "mailBoxHardSizelimit"      => array(
                     'acctSetQuota','acctGetQuota'),
-                "mailBoxAutomaticRemoval"   => array(
+                "mailBoxAutomaticRemoval"   => array("_off",
                         'acctSetQuota','acctGetQuota'),
                 "localDeliveryOnly"         => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
@@ -193,7 +192,7 @@ class groupware extends plugin
         $status = $this->rpcExec('gwAcctExists', $this->uid);
         if($status !== NULL){
 				
-	    	var_dump($this->rpcExec('gwAcctGetLocation',$this->uid));
+	    	
 	    	$compResponse = $this->groupwareDao->getComprehensiverUser($this->uid);
 	    	
 			$response = array("mailAddress"=>"hape@exdom.de",
@@ -889,7 +888,7 @@ class groupware_dao{
 	/*
 	 *	TODO: Remove the debug 
 	 */
-	private $debug = true;
+	private $debug = false;
 	/*
 	 * TODO: fill the following vars on init.
 	 */
@@ -1067,8 +1066,9 @@ class groupware_dao{
 		//location dropdownlist - only readable
 		if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
 			
-			$addresses = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
-			$resultArr["mailLocations"] = $addresses;
+			$resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
+			$resultArr["mailLocation"] = $this->rpcExec('gwAcctGetLocation',$this->uid);
+			
 		}
 		/*
 		 * TODO:
@@ -1081,10 +1081,47 @@ class groupware_dao{
 			$this->groupwarePluginRef->isFeatureEnabled("mailBoxWarnLimit") || 
 			$this->groupwarePluginRef->isFeatureEnabled("mailBoxSendSizelimit") || 
 			$this->groupwarePluginRef->isFeatureEnabled("mailBoxHardSizelimit")){
-				
-			$quota = $this->get("quotaSize", array($uid));
 			
-			$this->debug("QUOTA...", $quota);
+			/*
+			 * Usage is a Mapi function which is not yet 
+			 */
+			/*
+			 * TODO:
+			 * remove the following dummy and enable the qota fetch from groupware
+			 */ 
+			echo "Quota function not yet implemented on server side!!";
+			//$quota = $this->get("quotaSize", array($uid));
+			$quota = array(	"warn_limit" => 1008,
+							"send_limit" => 108,
+							"hard_limit" => 1108,
+							"hold" => 508,
+							"usage" => 1108);
+			    $resultArr["quotaSize"] = $quota["usage"];
+			    $resultArr["quotaSize"] = $quota["hold"];
+			    if($quota["warn_limit"] > 0){
+				    $resultArr["mailBoxWarnLimitEnabled"] = true;
+				    $resultArr["mailBoxWarnLimitValue"] = $quota["warn_limit"];
+			    }
+			    else{
+			    	$resultArr["mailBoxWarnLimitEnabled"] = false;
+				    $resultArr["mailBoxWarnLimitValue"] = 0;
+			    }
+			    if($quota["send_limit"] > 0){
+			    	 $resultArr["mailBoxSendSizelimitEnabled"] = True;
+			    	$resultArr["mailBoxSendSizelimitValue"] = $quota["send_limit"];
+			    }
+			    else{
+			   		 $resultArr["mailBoxSendSizelimitEnabled"] = FALSE;
+			    	$resultArr["mailBoxSendSizelimitValue"] = 0; 	
+			    }
+			   	if($quota["hard_limit"] > 0){
+			   		$resultArr["mailBoxHardSizelimitEnabled"] = True;
+			    	$resultArr["mailBoxHardSizelimitValue"] = $quota["hard_limit"];	
+			   	}
+			   	else{
+			   		$resultArr["mailBoxHardSizelimitEnabled"] = FALSE;
+			    	$resultArr["mailBoxHardSizelimitValue"] = 0;
+			   	}
 		}
 		
 		/*
@@ -1100,9 +1137,6 @@ class groupware_dao{
 			//$vacMessage = $this->get("vacationMessage", array($uid));
 			$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
 		}
-		else{
-			echo "vacationMessage not enabled."; 
-		}
 		/*
 		 * this function seems to be broken on the server.
 		 * addding dummy
@@ -1113,9 +1147,7 @@ class groupware_dao{
 			
 			$resultArr["quotaSize"] = 123456789;
 		}
-		else{
-			echo "vacationMessage not enabled."; 
-		}
+	
 		
 		$this->debug("getComprehensiverUser:", $resultArr);
 		return $resultArr;

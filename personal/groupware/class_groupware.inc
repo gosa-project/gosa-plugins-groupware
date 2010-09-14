@@ -697,7 +697,7 @@ class groupware extends plugin
 
     
 	/*
-	 * TODO: Comment
+	 * remove the account form the groupware server completely. 
 	 */
     function remove_from_parent()
     {
@@ -709,8 +709,12 @@ class groupware extends plugin
         }
     }
 
+    
 	/*
-	 * TODO: Comment
+	 * Persists the values of this plugin to the groupware server
+	 * Save method ist called on "apply" and "ok" in the Gosa Frontend 
+	 * All other actions will update values in the form or 
+	 * cancel and therefore discard the changes so far.
 	 */
     function save()
     {
@@ -868,11 +872,11 @@ class groupware extends plugin
     
     
     /*
-     * TODO: comments
+     * maps the resultset fetched from the Dao to the class variables 
+     * of the plugin.
      */
     function mapComprehensiveUserData($callBackMap)
     {
-
 	    $this->mailLocations = $callBackMap["mailLocations"];
 	
 	    $this->mailAddress = $callBackMap["primaryMail"];
@@ -905,12 +909,13 @@ class groupware extends plugin
  */
 class groupware_dao{
 	/*
-	 *	TODO: Remove the debug 
+	 * TODO: Remove the debug 
+	 * use the debug functions fo the Gosa installation instead.
+	 * function_debug
+	 * (got ot remove the following variable, the function debug and all calls to it)
 	 */
 	private $debug = false;
-	/*
-	 * TODO: fill the following vars on init.
-	 */
+	
 	private $availableMethods;
 	private $availableProperties;
 	private $accountLocations;
@@ -961,7 +966,8 @@ class groupware_dao{
 	
 	
 	/*
-	 * TODO: comments
+	 * Constructor sets the connection to the rpc service 
+	 * initializes the class
 	 */
 	function __construct(&$pluginRef)
 	{
@@ -993,15 +999,11 @@ class groupware_dao{
 	
 	
 	/*
-	 * TODO: comment
+	 * generic saving method for all features defined in $gwFeatures
+	 * which are the available features.
 	 */
 	public function save($feature, $uid, $valueArray)
 	{
-		/*
-		 * TODO: 
-		 * check if feature available
-		 * save and return the result.
-		 */
 		$function = groupware_dao::$gwFeatures[$feature]["save"];
 		
 		if(is_array($valueArray)){
@@ -1018,7 +1020,8 @@ class groupware_dao{
 	
 	
 	/*
-	 * TODO: comment
+	 * generic get method for all features defined in $gwFeatures
+	 * which are the available features.
 	 */
 	public function get($feature, $valueArray)
 	{
@@ -1042,7 +1045,10 @@ class groupware_dao{
 	
 	
 	/*
-	 * TODO: comment
+	 * generic delete function for all features defined in $gwFeatures
+	 * which are the available features.
+	 * 
+	 * NOT YET IMPLEMENTED
 	 */
 	public function del($feature, $valueArray)
 	{
@@ -1065,17 +1071,22 @@ class groupware_dao{
 	
 	
 	/*
-	 * TODO: comment
+	 * determine availability of features.
+	 * @param methodName
+	 * @return boolean
 	 */
 	public function gwFeatureAvailable($methodName)
 	{
-		
+
 		return $this->availableMethods[$methodName];
 	}
 	
 	
 	/*
-	 * TODO: comment
+	 * comprehensive user info will dessolve into one groupware call later
+	 * right now it will get all data of the features that are available in the plugin.
+	 * @param int $uid
+	 * @return assoc array "feature" => "gwValue";   
 	 */
 	public function getComprehensiverUser( $uid)
 	{

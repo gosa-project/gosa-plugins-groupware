@@ -193,7 +193,7 @@ class groupware extends plugin
         if($status !== NULL){
 				
 	    	
-	    	$compResponse = $this->groupwareDao->getComprehensiverUser($this->uid);
+	    	$response = $this->groupwareDao->getComprehensiverUser($this->uid);
 	    	/*
 			$response = array("mailAddress"=>"hape@exdom.de",
             "mailLocation"=>"mailbox 1",
@@ -914,7 +914,7 @@ class groupware_dao{
 	 * function_debug
 	 * (got ot remove the following variable, the function debug and all calls to it)
 	 */
-	private $debug = false;
+	private $debug = true;
 	
 	private $availableMethods;
 	private $availableProperties;
@@ -1174,8 +1174,8 @@ class groupware_dao{
 		 */
 		if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
 			
-			//$vacMessage = $this->get("vacationMessage", array($uid));
-			$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
+			$vacMessage = $this->get("vacationMessage", array($uid));
+			//$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
 		}
 		
 		$this->debug("getComprehensiverUser:", $resultArr);

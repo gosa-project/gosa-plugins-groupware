@@ -17,6 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+
 class groupware extends plugin
 {
     var $plHeadline     = "Mail";
@@ -86,8 +88,13 @@ class groupware extends plugin
     var $localDeliveryOnly = FALSE;
     var $dropOwnMails = FALSE;
 
-    var $groupwareDao = FALSE;
-    function __construct ($config, $dn= NULL)
+    var $groupwareDao = null;
+    
+    
+    /*
+	 * TODO: comment
+	 */
+	function __construct ($config, $dn= NULL)
     {
         plugin::plugin($config,$dn); 
 
@@ -103,6 +110,7 @@ class groupware extends plugin
         $this->init();
     }
 
+    
     /*! \brief  Try to execute a function on the gosa backend using json-rpc.
      *          This method also takes care about errors and sets the required
      *           class members, such as rpcError and rpcErrorMessage. 
@@ -126,13 +134,20 @@ class groupware extends plugin
         }
         return($res);
     }
-	public function isFeatureEnabled($featureName){
+    
+    
+    /*
+	 * TODO: comment
+	 */
+	public function isFeatureEnabled($featureName)
+	{
 		if(isset($this->enabledFeatures[$featureName]) &&  $this->enabledFeatures[$featureName]){
 			return TRUE;
 		}
 		return FALSE;
 	}
 
+	
     /*! \brief  Try initialize the groupware account.
      *          This method fetches all required information to manage the
      *           account using the GOsa gui.
@@ -143,11 +158,8 @@ class groupware extends plugin
         $this->groupwareDao = new groupware_dao($this);
 
         $features = array();
-        
-        /*
-         * feature names with a list of groupware function that must be availabele
-         * these groupware functions are not the rpc functions, because they are asked from the groupware server
-         */
+         //feature names with a list of groupware function that must be availabele
+         //these groupware functions are not the rpc functions, because they are asked from the groupware server
         $featureReq = array(
         		"primaryMail" 				=> array(
         			'acctGetPrimaryMailAddress'),
@@ -191,34 +203,7 @@ class groupware extends plugin
         // Get rpc handle to fetch account info and feature availability.
         $status = $this->rpcExec('gwAcctExists', $this->uid);
         if($status !== NULL){
-				
-	    	
 	    	$response = $this->groupwareDao->getComprehensiverUser($this->uid);
-	    	/*
-			$response = array("mailAddress"=>"hape@exdom.de",
-            "mailLocation"=>"mailbox 1",
-			"mailLocations"=>array("hape","mailbox 1"),
-            "quotaUsage"=>10,
-            "quotaSize"=>100,
-            "alternateAddresses"=>"alternateAddresses@exdom.de",
-            "forwardingAddresses"=>"forwardingAddresses@exdom.de",
-            "vacationEnabled"=>1,
-            "vacationStart"=>"09.09.2010",
-            "vacationStop"=>"08.09.2010",
-            "vacationMessage"=>"bin in Urlaub message",
-            "mailBoxWarnLimitEnabled"=>1,
-            "mailBoxWarnLimitValue"=>99,
-            "mailBoxSendSizelimitEnabled"=>1,
-            "mailBoxSendSizelimitValue"=>100,
-            "mailBoxHardSizelimitEnabled"=>1,
-            "mailBoxHardSizelimitValue"=>105,
-            "mailBoxAutomaticRemovalEnabled"=>0,
-            "mailBoxAutomaticRemovalValue"=>"mailBoxAutomaticRemovalValue",
-            "localDeliveryOnly"=>0,
-            "dropOwnMails"=>0 );
-			
-			$response = array_merge( $response, $compResponse);
-			*/
 			
 			$this->mapComprehensiveUserData($response);
             $this->initially_was_account = $this->is_account = $status;
@@ -457,7 +442,6 @@ class groupware extends plugin
         foreach($this->enabledFeatures as $feature => $state){
             $smarty->assign($feature."_isActive", $state);
         }
-
      
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
@@ -472,7 +456,6 @@ class groupware extends plugin
         $smarty->assign("initFailed", !$this->accountInitialized);
         $smarty->assign("rpcError", $this->rpcError);
         $smarty->assign("rpcErrorMessage", $this->rpcErrorMessage);
-        
        
         return($display.$smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
     }
@@ -489,7 +472,7 @@ class groupware extends plugin
 
             // We ran into a communication error with the backend. 
             // Try a simple communication operation with the backend 
-            //  again and let us see if it works.
+            // again and let us see if it works.
             if(isset($_POST['retry'])){
                 $this->rpcExec('gwGetCapabilities');
             }
@@ -528,9 +511,9 @@ class groupware extends plugin
 
 
     /*! \brief  Parse vacation templates and build up an array
-      containing 'filename' => 'description'. 
-      Used to fill vacation dropdown box.
-      @return Array   All useable vacation templates.
+     *	containing 'filename' => 'description'. 
+     *	Used to fill vacation dropdown box.
+     *	@return Array   All useable vacation templates.
      */ 
     function get_vacation_templates()
     {
@@ -725,26 +708,22 @@ class groupware extends plugin
             }
         }
          
-        /*
-         *save the primary Email Address.
-         */
+        //save the primary Email Address.
         if(!empty($this->mailAddress)){
         	$this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
         }
         
-        /*
-         *  save alternateAddresses and forwarding. 
-         */
+        
+        // save alternateAddresses and forwarding. 
         if(isset($this->alternateAddresses) && is_array($this->alternateAddresses)){
 			$this->groupwareDao->save("alternateAddresses", $this->uid, $this->alternateAddresses);
         }
         if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
 			$this->groupwareDao->save("forwardingAddresses", $this->uid, $this->forwardingAddresses);
         }
-        /*
-         * save the quota
-         */
-         if(true){
+        
+        //save the quota
+        if(true){
          	$quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
 							"send_limit" => $this->mailBoxSendSizelimitValue,
 							"hard_limit" => $this->mailBoxHardSizelimitValue,
@@ -768,10 +747,8 @@ class groupware extends plugin
     	 * TODO: Remove all echo Messages
     	 */
         $messages = plugin::check();
-        /*
-         * Check the dates 
-         */
         
+        //Check the dates        
         /*
          * TODO: check only if features are enabled.
          */
@@ -792,11 +769,7 @@ class groupware extends plugin
 		if(!tests::is_email ($this->mailAddress)){
 			$messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", _("Example: user@excom.intranet.gonicus.de"));
 		}
-		/*
-		 * forwarding Addresses
-		 * $alternateAddresses 
-    	 * $forwardingAddresses
-		 */
+		
 		if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
 			foreach($this->forwardingAddresses as $fAddress){
 				if(!tests::is_email ($fAddress)){
@@ -820,7 +793,9 @@ class groupware extends plugin
 				}
 			}
 		}
-		//TODO: Checks for quota and Locations?
+		/*
+		 * TODO: Checks for quota and Locations?
+		 */
 		
         return($messages);
     }
@@ -871,14 +846,14 @@ class groupware extends plugin
     }
     
     
-    /*
-     * maps the resultset fetched from the Dao to the class variables 
-     * of the plugin.
+    /*! \brief maps the resultset fetched from the Dao to the class variables 
+     * 		of the plugin.
      */
     function mapComprehensiveUserData($callBackMap)
     {
+    	//dropdown
 	    $this->mailLocations = $callBackMap["mailLocations"];
-	
+		//data from the groupware
 	    $this->mailAddress = $callBackMap["primaryMail"];
 	    $this->mailLocation = $callBackMap["mailLocation"];
 	    $this->quotaUsage = $callBackMap["quotaUsage"];
@@ -899,13 +874,11 @@ class groupware extends plugin
 	    $this->mailBoxAutomaticRemovalValue = $callBackMap["mailBoxAutomaticRemovalValue"];
 	    $this->localDeliveryOnly = $callBackMap["localDeliveryOnly"];
 	    $this->dropOwnMails = $callBackMap["dropOwnMails"];
-	    
     }
 }
 
 
-/*
- * Data Access Object for groupwares 
+/*! \brief Data Access Object for groupwares 
  */
 class groupware_dao{
 	/*
@@ -965,9 +938,8 @@ class groupware_dao{
 	private $groupwarePluginRef = False;
 	
 	
-	/*
-	 * Constructor sets the connection to the rpc service 
-	 * initializes the class
+	/*! \brief Constructor sets the connection to the rpc service 
+	 * 		initializes the class
 	 */
 	function __construct(&$pluginRef)
 	{
@@ -983,8 +955,7 @@ class groupware_dao{
 	}
 	
 	
-	/*
-	 * gets the capabilities of the server
+	/*! \brief gets the capabilities of the server
 	 * builds an array with availbale features and knows how to call get, save, delete functions of 
 	 * groupware rpc. 
 	 */
@@ -998,8 +969,7 @@ class groupware_dao{
 	}
 	
 	
-	/*
-	 * generic saving method for all features defined in $gwFeatures
+	/*! \brief generic saving method for all features defined in $gwFeatures
 	 * which are the available features.
 	 */
 	public function save($feature, $uid, $valueArray)
@@ -1019,9 +989,8 @@ class groupware_dao{
 	}
 	
 	
-	/*
-	 * generic get method for all features defined in $gwFeatures
-	 * which are the available features.
+	/*! \brief generic get method for all features defined in $gwFeatures
+	 * 		which are the available features.
 	 */
 	public function get($feature, $valueArray)
 	{
@@ -1044,9 +1013,8 @@ class groupware_dao{
 	}
 	
 	
-	/*
-	 * generic delete function for all features defined in $gwFeatures
-	 * which are the available features.
+	/*! \brief generic delete function for all features defined in $gwFeatures
+	 * 		which are the available features.
 	 * 
 	 * NOT YET IMPLEMENTED
 	 */
@@ -1070,8 +1038,8 @@ class groupware_dao{
 	}
 	
 	
-	/*
-	 * determine availability of features.
+	/*! \brief determine availability of features.
+	 * 
 	 * @param methodName
 	 * @return boolean
 	 */
@@ -1082,9 +1050,8 @@ class groupware_dao{
 	}
 	
 	
-	/*
-	 * comprehensive user info will dessolve into one groupware call later
-	 * right now it will get all data of the features that are available in the plugin.
+	/*! \brief comprehensive user info will dessolve into one groupware call later
+	 * 		right now it will get all data of the features that are available in the plugin.
 	 * @param int $uid
 	 * @return assoc array "feature" => "gwValue";   
 	 */
@@ -1126,9 +1093,7 @@ class groupware_dao{
 			$this->groupwarePluginRef->isFeatureEnabled("mailBoxSendSizelimit") || 
 			$this->groupwarePluginRef->isFeatureEnabled("mailBoxHardSizelimit")){
 			
-			/*
-			 * Usage is a Mapi function which is not yet 
-			 */
+			//Usage is a Mapi function which is not yet 
 			/*
 			 * TODO:
 			 * remove the following dummy and enable the qota fetch from groupware
@@ -1168,10 +1133,9 @@ class groupware_dao{
 			   	}
 		}
 
-		/*
-		 * this function seems to be broken on the server.
-		 * addding dummy
-		 */
+		//this function seems to be broken on the server.
+		 //addding dummy
+		 
 		if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
 			
 			$vacMessage = $this->get("vacationMessage", array($uid));

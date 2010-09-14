@@ -1069,9 +1069,27 @@ class groupware_dao{
 			
 			$addresses = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
 			$resultArr["mailLocations"] = $addresses;
-			$this->debug("gwGetMailboxLocations", $addresses);
 		}
-	
+		/*
+		 * TODO:
+		 * getLocation muss ebenfalls geholt werden
+		 */
+		
+		//Quota quotaUsage, quotaSize
+		if($this->groupwarePluginRef->isFeatureEnabled("quotaSize") || 
+			$this->groupwarePluginRef->isFeatureEnabled("quotaUsage") || 
+			$this->groupwarePluginRef->isFeatureEnabled("mailBoxWarnLimit") || 
+			$this->groupwarePluginRef->isFeatureEnabled("mailBoxSendSizelimit") || 
+			$this->groupwarePluginRef->isFeatureEnabled("mailBoxHardSizelimit")){
+				
+			$quota = $this->get("quotaSize", array($uid));
+			
+			$this->debug("QUOTA...", $quota);
+		}
+		
+		/*
+		 * mailBoxWarnLimit,mailBoxSendSizelimit, mailBoxHardSizelimit
+		 */
 		
 		/*
 		 * this function seems to be broken on the server.

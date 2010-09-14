@@ -63,7 +63,7 @@ class groupware extends plugin
     var $vacationTemplates = array();
 
     //the dropdown
-    var $mailLocations = "empty";
+    var $mailLocations = array();
     
     var $mailAddress = "";
     var $mailLocation = "";
@@ -194,7 +194,7 @@ class groupware extends plugin
 				
 	    	
 	    	$compResponse = $this->groupwareDao->getComprehensiverUser($this->uid);
-	    	
+	    	/*
 			$response = array("mailAddress"=>"hape@exdom.de",
             "mailLocation"=>"mailbox 1",
 			"mailLocations"=>array("hape","mailbox 1"),
@@ -218,7 +218,7 @@ class groupware extends plugin
             "dropOwnMails"=>0 );
 			
 			$response = array_merge( $response, $compResponse);
-			
+			*/
 			
 			$this->mapComprehensiveUserData($response);
             $this->initially_was_account = $this->is_account = $status;
@@ -294,7 +294,6 @@ class groupware extends plugin
             $this->dialog = TRUE;
             return($this->filterManager->execute());
         }
-
 
         /****************
           Account status
@@ -401,12 +400,9 @@ class groupware extends plugin
             $this->delForwarder ($_POST['forwardingAddressList']);
         }
 
-
         /****************
           Alternate addresses 
          ****************/
-
-        
         // Add manually inserted alternate mail address.
         if (isset($_POST['addAlternateAddress'])){
             $valid= FALSE;
@@ -480,7 +476,6 @@ class groupware extends plugin
        
         return($display.$smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
     }
-
 
 
     /*! \brief      This method handles potential _POST and _GET values.
@@ -700,7 +695,10 @@ class groupware extends plugin
         return($contents);
     }
 
-
+    
+	/*
+	 * TODO: Comment
+	 */
     function remove_from_parent()
     {
         // Get rpc handle to remove the account
@@ -711,7 +709,9 @@ class groupware extends plugin
         }
     }
 
-
+	/*
+	 * TODO: Comment
+	 */
     function save()
     {
         // Get rpc handle to create or update the account
@@ -748,6 +748,10 @@ class groupware extends plugin
 							"usage" => $this->quotaUsage);
          	$this->groupwareDao->save("quotaSize", $this->uid, $quota);
          }
+         
+         /*
+          * TODO: save Mailbox location
+          */
       
     }
 
@@ -812,10 +816,12 @@ class groupware extends plugin
 				}
 			}
 		}
+		//TODO: Checks for quota and Locations?
 		
         return($messages);
     }
 
+    
     /*! \brief  Adapt from template, using 'dn' 
      */
     function adapt_from_template($dn, $skip= array())
@@ -824,6 +830,7 @@ class groupware extends plugin
 
     }
 
+    
     /*! \brief  ACL settings 
      */
     static function plInfo()
@@ -858,13 +865,14 @@ class groupware extends plugin
                         )
                     ));
     }
-    function mapComprehensiveUserData($callBackMap){
+    
+    
+    /*
+     * TODO: comments
+     */
+    function mapComprehensiveUserData($callBackMap)
+    {
 
-        // This won't come from the server.
-    	#$this->mailAddressSelectDialog = $callBackMap["mailAddressSelectDialog"];
-	    #$this->filterManager = $callBackMap["filterManager"];
-	    #$this->filterRules = $callBackMap["filterRules"];
-	    #$this->vacationTemplates = $callBackMap["vacationTemplates"];
 	    $this->mailLocations = $callBackMap["mailLocations"];
 	
 	    $this->mailAddress = $callBackMap["primaryMail"];
@@ -891,7 +899,7 @@ class groupware extends plugin
     }
 }
 
-// vim:tabstop=2:expandtab:shiftwidth=2:filetype=php:syntax:ruler:
+
 /*
  * Data Access Object for groupwares 
  */
@@ -949,8 +957,12 @@ class groupware_dao{
 								"delete"=>"gwAcctDelProperties")
 	
 	);
-	
 	private $groupwarePluginRef = False;
+	
+	
+	/*
+	 * TODO: comments
+	 */
 	function __construct(&$pluginRef)
 	{
 
@@ -980,6 +992,9 @@ class groupware_dao{
 	}
 	
 	
+	/*
+	 * TODO: comment
+	 */
 	public function save($feature, $uid, $valueArray)
 	{
 		/*
@@ -1002,6 +1017,9 @@ class groupware_dao{
 	}
 	
 	
+	/*
+	 * TODO: comment
+	 */
 	public function get($feature, $valueArray)
 	{
 		/*
@@ -1023,6 +1041,9 @@ class groupware_dao{
 	}
 	
 	
+	/*
+	 * TODO: comment
+	 */
 	public function del($feature, $valueArray)
 	{
 		/*
@@ -1030,6 +1051,8 @@ class groupware_dao{
 		 * check if feture available
 		 * del and return the result.
 		 */
+		echo "deletion of values is not implemented yet";
+		/*
 		$function = groupware_dao::$gwFeatures[$feature]["delete"];
 
 		$valueArray = array_merge(array($function), $valueArray);
@@ -1037,9 +1060,13 @@ class groupware_dao{
 		$result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
 		
 		return $result;
+		*/
 	}
 	
 	
+	/*
+	 * TODO: comment
+	 */
 	public function gwFeatureAvailable($methodName)
 	{
 		
@@ -1047,39 +1074,34 @@ class groupware_dao{
 	}
 	
 	
-	
-	
-	public function getComprehensiverUser($uid)
+	/*
+	 * TODO: comment
+	 */
+	public function getComprehensiverUser( $uid)
 	{
 		//$hi = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
 		$resultArr = array();
 		
 		if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
-			
-			$pMail = $this->get("primaryMail", array($uid));
-			$resultArr["primaryMail"] = $pMail;
+			$resultArr["primaryMail"] = $this->get("primaryMail", array($uid));
 		}
+		
 		if($this->groupwarePluginRef->isFeatureEnabled("alternateAddresses")){
-			
-			$addresses = $this->get("alternateAddresses", array($uid));
-			$resultArr["alternateAddresses"] = $addresses;
+			$resultArr["alternateAddresses"] = $this->get("alternateAddresses", array($uid));
 		}
+		
 		if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
-			
-			$addresses = $this->get("forwardingAddresses", array($uid));
-			$resultArr["forwardingAddresses"] = $addresses;
+			$resultArr["forwardingAddresses"] = $this->get("forwardingAddresses", array($uid));
 		}
+		
 		if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
-			
-			$addresses = $this->get("forwardingAddresses", array($uid));
-			$resultArr["forwardingAddresses"] = $addresses;
+			$resultArr["forwardingAddresses"] = $this->get("forwardingAddresses", array($uid));
 		}
+		
 		//location dropdownlist - only readable
 		if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
-			
 			$resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
 			$resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec(array('gwAcctGetLocation',$uid));
-			
 		}
 		/*
 		 * TODO:
@@ -1134,11 +1156,7 @@ class groupware_dao{
 			    	$resultArr["mailBoxHardSizelimitValue"] = 0;
 			   	}
 		}
-		
-		/*
-		 * mailBoxWarnLimit,mailBoxSendSizelimit, mailBoxHardSizelimit
-		 */
-		
+
 		/*
 		 * this function seems to be broken on the server.
 		 * addding dummy
@@ -1148,23 +1166,15 @@ class groupware_dao{
 			//$vacMessage = $this->get("vacationMessage", array($uid));
 			$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
 		}
-		/*
-		 * this function seems to be broken on the server.
-		 * addding dummy
-		 */
-		if($this->groupwarePluginRef->isFeatureEnabled("quotaSize")){
-			
-			//$quotMessage = $this->get("quotaSize", array($uid));
-			
-			$resultArr["quotaSize"] = 123456789;
-		}
-	
 		
 		$this->debug("getComprehensiverUser:", $resultArr);
 		return $resultArr;
 	}
 	
 	
+	/*
+	 * TODO: remove all debug functions.
+	 */
 	public function debug($name, $message)
 	{
 		if($this->debug){

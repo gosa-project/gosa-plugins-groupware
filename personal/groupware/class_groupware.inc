@@ -815,29 +815,35 @@ class groupware extends plugin
      */
     function mapComprehensiveUserData($callBackMap)
     {
-        //dropdown
-        $this->mailLocations = $callBackMap["mailLocations"];
-        //data from the groupware
-        $this->mailAddress = $callBackMap["primaryMail"];
-        $this->mailLocation = $callBackMap["mailLocation"];
-        $this->quotaUsage = $callBackMap["quotaUsage"];
-        $this->quotaSize = $callBackMap["quotaSize"];
-        $this->alternateAddresses = $callBackMap["alternateAddresses"];
-        $this->forwardingAddresses = $callBackMap["forwardingAddresses"];
-        $this->vacationEnabled = $callBackMap["vacationEnabled"];
-        $this->vacationStart = $callBackMap["vacationStart"];
-        $this->vacationStop = $callBackMap["vacationStop"];
-        $this->vacationMessage = $callBackMap["vacationMessage"];
-        $this->mailBoxWarnLimitEnabled = $callBackMap["mailBoxWarnLimitEnabled"];
-        $this->mailBoxWarnLimitValue = $callBackMap["mailBoxWarnLimitValue"];
-        $this->mailBoxSendSizelimitEnabled = $callBackMap["mailBoxSendSizelimitEnabled"];
-        $this->mailBoxSendSizelimitValue = $callBackMap["mailBoxSendSizelimitValue"];
-        $this->mailBoxHardSizelimitEnabled = $callBackMap["mailBoxHardSizelimitEnabled"];
-        $this->mailBoxHardSizelimitValue = $callBackMap["mailBoxHardSizelimitValue"];
-        $this->mailBoxAutomaticRemovalEnabled = $callBackMap["mailBoxAutomaticRemovalEnabled"];
-        $this->mailBoxAutomaticRemovalValue = $callBackMap["mailBoxAutomaticRemovalValue"];
-        $this->localDeliveryOnly = $callBackMap["localDeliveryOnly"];
-        $this->dropOwnMails = $callBackMap["dropOwnMails"];
+        $map = array(
+                "mailLocations" => "mailLocations",
+                "mailAddress" => "primaryMail",
+                "mailLocation" => "mailLocation",
+                "quotaUsage" => "quotaUsage",
+                "quotaSize" => "quotaSize",
+                "alternateAddresses" => "alternateAddresses",
+                "forwardingAddresses" => "forwardingAddresses",
+                "vacationEnabled" => "vacationEnabled",
+                "vacationStart" => "vacationStart",
+                "vacationStop" => "vacationStop",
+                "vacationMessage" => "vacationMessage",
+                "mailBoxWarnLimitEnabled" => "mailBoxWarnLimitEnabled",
+                "mailBoxWarnLimitValue" => "mailBoxWarnLimitValue",
+                "mailBoxSendSizelimitEnabled" => "mailBoxSendSizelimitEnabled",
+                "mailBoxSendSizelimitValue" => "mailBoxSendSizelimitValue",
+                "mailBoxHardSizelimitEnabled" => "mailBoxHardSizelimitEnabled",
+                "mailBoxHardSizelimitValue" => "mailBoxHardSizelimitValue",
+                "mailBoxAutomaticRemovalEnabled" => "mailBoxAutomaticRemovalEnabled",
+                "mailBoxAutomaticRemovalValue" => "mailBoxAutomaticRemovalValue",
+                "localDeliveryOnly" => "localDeliveryOnly",
+                "dropOwnMails" => "dropOwnMails");
+
+        // Map values from source array to class members
+        foreach($map as $target => $source){
+            if(isset($callBackMap[$source])){
+                $this->$target = $callBackMap[$source];
+            }
+        }
     }
 }
 

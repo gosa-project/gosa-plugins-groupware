@@ -728,48 +728,44 @@ class groupware extends plugin
         //required vacationEnabled
         if($this->vacationEnabled){
             if(!tests::is_date($this->vacationStart)){
-                $messages[] = msgPool::invalid(_("Vacation start date"),$this->vacationStart , "", _("Example of date : 01.03.2010"));
+                $messages[] = msgPool::invalid(_("Vacation start date"),$this->vacationStart , "", "01.03.2010");
             }
             if(!tests::is_date($this->vacationStop)){
-                $messages[] = msgPool::invalid(_("Vacation stop date"),$this->vacationStop , "", _("Example of date : 01.03.2010"));
+                $messages[] = msgPool::invalid(_("Vacation stop date"),$this->vacationStop , "", "01.03.2010");
             }
             $diff = tests::compareDate($this->vacationStart, $this->vacationStop);
 
             if($diff>=0){
-                $messages[] = msgPool::invalid(_("Vacation dates"), $this->vacationStart." - ".$this->vacationStop, "", _("Enddate before Start or the same."));
+                $messages[] = msgPool::invalid(_("Vacation dates"));
             }
         }
         if(!tests::is_email ($this->mailAddress)){
-            $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", _("Example: user@excom.intranet.gonicus.de"));
+            $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@excom.intranet.gonicus.de");
         }
 
         if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
             foreach($this->forwardingAddresses as $fAddress){
                 if(!tests::is_email ($fAddress)){
-                    $messages[] = msgPool::invalid(_("Mail address"),$fAddress, "", 
-                            _("Example: user@excom.intranet.gonicus.de"));
+                    $messages[] = msgPool::invalid(_("Alternate address"),$fAddress, "", 
+                            "user@excom.intranet.gonicus.de");
                 }
                 if($fAddress == $this->mailAddress){
-                    $messages[] = msgPool::invalid(_("Mail address same as primary Email Address"),$fAddress, "",
-                            _("Forward Address and primary Email Address must not be the same (cirle reference)"));
+                    $messages[] = _("The primary address cannot be used as alternative address!");
                 }
             }
         }
         if(isset($this->alternateAddresses) && is_array($this->alternateAddresses)){
             foreach($this->alternateAddresses as $fAddress){
                 if(!tests::is_email ($fAddress)){
-                    $messages[] = msgPool::invalid(_("Mail address"),$fAddress, "", _("Example: user@excom.intranet.gonicus.de"));
+                    $messages[] = msgPool::invalid(_("Forward address"),$fAddress, "", "user@excom.intranet.gonicus.de");
                 }
                 if($fAddress == $this->mailAddress){
-                    $messages[] = msgPool::invalid(_("Mail address same as primary Email Address"),$fAddress, "",
-                            _("Alternative Address and primary Email Address must not be the same (cirle reference)"));
+                    $messages[] = _("The primary address cannot be used as forward address!");
                 }
             }
         }
-        /*
-         * TODO: Checks for quota and Locations?
-         */
-
+        
+        // TODO: Checks for quota and Locations?
         return($messages);
     }
 

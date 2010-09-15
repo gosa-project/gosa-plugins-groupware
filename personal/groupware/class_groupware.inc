@@ -1029,7 +1029,7 @@ class groupware_dao{
         // Location dropdownlist - only readable
         if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
             $resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
-            $resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec(array('gwAcctGetLocation',$uid));
+            $resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec('gwAcctGetLocation',array($uid));
         }
 
         

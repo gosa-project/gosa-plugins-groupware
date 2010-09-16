@@ -104,7 +104,7 @@ class Groupware extends plugin
     {
         $params = func_get_args();
         unset($params[0]);
-        echo "------<br>Calling function:".$function." Params".var_dump($params)."<br>";
+        //echo "------<br>Calling function:".$function." Params".var_dump($params)."<br>";
 
         $rpc = $this->config->getRpcHandle();
 

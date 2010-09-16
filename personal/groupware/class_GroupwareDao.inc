@@ -4,13 +4,6 @@
  */
 class GroupwareDao{
 
-    /* TODO: Remove the debug 
-     * use the debug functions fo the Gosa installation instead.
-     * function_debug
-     * (got ot remove the following variable, the function debug and all calls to it)
-     */
-    private $debug = true;
-
     private $availableMethods;
     private $availableProperties;
     private $accountLocations;
@@ -97,7 +90,7 @@ class GroupwareDao{
         }else{
             $valueArray = array($function, $uid, $valueArray);
         }
-        $this->debug("SAVING (feature, value)", $valueArray);
+        
         $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
         return $result;
     }
@@ -236,27 +229,8 @@ class GroupwareDao{
 
             $vacMessage = $this->get("vacationMessage", array($uid));
             //$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
-        }
-
-        $this->debug("getComprehensiverUser:", $resultArr);
+        }   
         return $resultArr;
-    }
-
-
-    /*! \brief     TODO: remove all debug functions. Remove them also in the class_Groupware.inc
-     */
-    public function debug($name, $message)
-    {
-        if($this->debug){
-            echo"<b>".$name."</b>";
-            if(is_array($message)){
-                echo "<pre>";
-                print_r($message);
-                echo "</pre>";
-            }else{
-                echo "$message";
-            }
-        }
     }
 } 
 ?>

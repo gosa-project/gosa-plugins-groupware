@@ -1,6 +1,6 @@
 <?php
 
-class filterEditor extends plugin
+class FilterEditor extends plugin
 {
     function __construct($config, $parent, $filter)
     {

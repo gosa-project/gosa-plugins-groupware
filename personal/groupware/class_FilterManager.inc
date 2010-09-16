@@ -36,7 +36,7 @@ class filterManager extends plugin{
         $acl = preg_replace("/r/","rw", $acl);
         $this->filterListing->setAcl($acl);
         // Display filter editor while a filter rule is edited
-        if($this->filterEditor instanceOf filterEditor){
+        if($this->filterEditor instanceOf FilterEditor){
             $this->filterEditor->save_object();
             return($this->filterEditor->execute());
         }
@@ -87,7 +87,7 @@ class filterManager extends plugin{
             $key = $this->filterListing->getKey($key);
             if(isset($this->filter[$key])){
                 $filter = $this->filter[$key];
-                $this->filterEditor = new filterEditor($this->config,$this->parent, $filter);
+                $this->filterEditor = new FilterEditor($this->config,$this->parent, $filter);
                 $this->currentFilter = $key;
             }
         }
@@ -114,17 +114,17 @@ class filterManager extends plugin{
                             'VALUE' => '')
                         )
                     );
-            $this->filterEditor = new filterEditor($this->config,$this->parent, $filter);
+            $this->filterEditor = new FilterEditor($this->config,$this->parent, $filter);
         }
 
         // Close filter editor 
-        if(isset($_POST['filterEditor_cancel']) && $this->filterEditor instanceOf filterEditor){
+        if(isset($_POST['filterEditor_cancel']) && $this->filterEditor instanceOf FilterEditor){
             $this->currentFilter = NULL;
             $this->filterEditor = NULL;
         }
 
         // Save filter modifications and close the dialog
-        if(isset($_POST['filterEditor_ok']) && $this->filterEditor instanceOf filterEditor){
+        if(isset($_POST['filterEditor_ok']) && $this->filterEditor instanceOf FilterEditor){
             $this->filterEditor->save_object();
             $msgs = $this->filterEditor->check();
             if(count($msgs)){

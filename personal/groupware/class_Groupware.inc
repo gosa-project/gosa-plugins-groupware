@@ -183,6 +183,8 @@ class Groupware extends plugin
 
         // Get rpc handle to fetch account info and feature availability.
         $status = $this->rpcExec('gwAcctExists', $this->uid);
+		// mailboxlocations for the dropdownBox
+        
         if($status !== NULL){
             $this->initially_was_account = $this->is_account = $status;
 
@@ -190,8 +192,13 @@ class Groupware extends plugin
                 $response = $this->groupwareDao->getComprehensiverUser($this->uid);
                 $this->mapComprehensiveUserData($response);
             }
+			else{
+				$emptyUser["mailLocations"] = $this->rpcExec('gwGetMailboxLocations');
+				$this->mapComprehensiveUserData($emptyUser);
+			}
             $this->accountInitialized = TRUE;
         }
+		
 
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();

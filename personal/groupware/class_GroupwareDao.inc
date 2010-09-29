@@ -172,10 +172,8 @@ class GroupwareDao{
             $resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
             $resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec('gwAcctGetLocation',$uid);
         }
-
         
         //TODO: getLocation muss ebenfalls geholt werden 
-
         // Quota quotaUsage, quotaSize
         if($this->groupwarePluginRef->isFeatureEnabled("quotaSize") || 
                 $this->groupwarePluginRef->isFeatureEnabled("quotaUsage") || 

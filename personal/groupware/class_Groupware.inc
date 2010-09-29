@@ -181,16 +181,19 @@ class Groupware extends plugin
             }
             $this->enabledFeatures[$name] = $active;
         }
+
         // Get rpc handle to fetch account info and feature availability.
         $status = $this->rpcExec('gwAcctExists', $this->uid);
         if($status !== NULL){
-            $response = $this->groupwareDao->getComprehensiverUser($this->uid);
-
-            $this->mapComprehensiveUserData($response);
             $this->initially_was_account = $this->is_account = $status;
 
+            if($this->is_account){
+                $response = $this->groupwareDao->getComprehensiverUser($this->uid);
+                $this->mapComprehensiveUserData($response);
+            }
             $this->accountInitialized = TRUE;
         }
+
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
         $this->vacationStop = time() + (14 * 60*60*24);

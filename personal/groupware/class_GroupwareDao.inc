@@ -166,9 +166,6 @@ class GroupwareDao{
             $resultArr["forwardingAddresses"] = $this->get("forwardingAddresses", array($uid));
         }
 
-        if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
-            $resultArr["forwardingAddresses"] = $this->get("forwardingAddresses", array($uid));
-        }
 
         // Location dropdownlist - only readable
         if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){

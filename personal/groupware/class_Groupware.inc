@@ -92,7 +92,6 @@ class Groupware extends plugin
         $this->init();
     }
 
-
     /*! \brief  Try to execute a function on the gosa backend using json-rpc.
      *          This method also takes care about errors and sets the required
      *           class members, such as rpcError and rpcErrorMessage. 
@@ -104,7 +103,7 @@ class Groupware extends plugin
     {
         $params = func_get_args();
         unset($params[0]);
-        //echo "------<br>Calling function:".$function." Params".var_dump($params)."<br>";
+        echo "------<br>Calling function:".$function." Params".var_dump($params)."<br>";
 
         $rpc = $this->config->getRpcHandle();
 
@@ -697,8 +696,7 @@ class Groupware extends plugin
 
         // Save alternateAddresses and forwarding. 
 
-
-        if(!empty($this->forwardingAddresses) 
+        if(!empty($this->alternateAddresses) 
         		&& isset($this->alternateAddresses) 
         		&& is_array($this->alternateAddresses)){
 			$this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
@@ -707,7 +705,12 @@ class Groupware extends plugin
         if(!empty($this->forwardingAddresses) 
         		&& isset($this->forwardingAddresses) 
         		&& is_array($this->forwardingAddresses)){
-			$this->groupwareDao->save("forwardingAddresses", $this->uid, array($this->forwardingAddresses));
+				
+				$fw = array();
+				//only the first Address will be set as forward Address.
+				$fw[$this->forwardingAddresses[0]] = true;
+			
+			$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
 
         }
         // Save the quota
@@ -716,8 +719,8 @@ class Groupware extends plugin
             $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
                     "send_limit" => $this->mailBoxSendSizelimitValue,
                     "hard_limit" => $this->mailBoxHardSizelimitValue,
-                    "hold" => $this->quotaSize,
-                    "usage" => $this->quotaUsage);
+                    "hold" => $this->quotaSize);
+                    
             $this->groupwareDao->save("quotaSize", $this->uid, $quota);
         }
 

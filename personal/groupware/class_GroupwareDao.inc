@@ -49,8 +49,10 @@ class GroupwareDao{
                     "delete"=>""),
             "accountProperties" => array("get"=>"gwAcctGetProperties",
                     "save"=>"gwAcctSetProperties",
-                    "delete"=>"gwAcctDelProperties")
-
+                    "delete"=>"gwAcctDelProperties"),
+			"mailFolder" => array( "get"=>"gwAcctGetFolderList",
+                    "save"=>"gwAcctAddFolder",
+                    "delete"=>"gwAcctDelFolder")		
                 );
 
 
@@ -163,16 +165,17 @@ class GroupwareDao{
         }
 
         if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
-            $resultArr["forwardingAddresses"] = $this->get("forwardingAddresses", array($uid));
+		$FWaddresses = $this->get("forwardingAddresses", array($uid));		
+//		$FWaddresses = current($FWaddresses);
+            $resultArr["forwardingAddresses"] = key($FWaddresses);
         }
-
 
         // Location dropdownlist - only readable
         if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
             $resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
             $resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec('gwAcctGetLocation',$uid);
         }
-        
+
         //TODO: getLocation muss ebenfalls geholt werden 
         // Quota quotaUsage, quotaSize
         if($this->groupwarePluginRef->isFeatureEnabled("quotaSize") || 
@@ -185,7 +188,7 @@ class GroupwareDao{
             
             // TODO: Remove the following dummy and enable the qota fetch from groupware
              
-            echo "Quota function not yet implemented on server side!!";
+            //echo "Quota function not yet implemented on server side!!";
             //$quota = $this->get("quotaSize", array($uid));
             $quota = array(	"warn_limit" => 1008,
                     "send_limit" => 108,
@@ -227,5 +230,5 @@ class GroupwareDao{
         }   
         return $resultArr;
     }
-} 
+}
 ?>

@@ -35,7 +35,7 @@ class Groupware extends plugin
             "vacationMessage", "mailBoxWarnLimitEnabled", "mailBoxWarnLimitValue",
             "mailBoxSendSizelimitEnabled", "mailBoxSendSizelimitValue", "mailBoxHardSizelimitEnabled",
             "mailBoxHardSizelimitValue", "mailBoxAutomaticRemovalEnabled", "mailBoxAutomaticRemovalValue",
-            "localDeliveryOnly", "dropOwnMails");
+            "localDeliveryOnly", "dropOwnMails", "mailFolder");
 
 
     var $enabledFeatures = array();
@@ -99,6 +99,7 @@ class Groupware extends plugin
      *  @param  Mixed   args[0-n]   The parameter to use.
      *  @return Mixed   The result of the function call on success else NULL.
      */
+
     function rpcExec($function)
     {
         $params = func_get_args();
@@ -116,7 +117,6 @@ class Groupware extends plugin
         return($res);
     }
 
-
     /*! \brief     TODO: comment
      */
     public function isFeatureEnabled($featureName)
@@ -126,7 +126,6 @@ class Groupware extends plugin
         }
         return FALSE;
     }
-
 
     /*! \brief  Try initialize the groupware account.
      *          This method fetches all required information to manage the
@@ -170,17 +169,26 @@ class Groupware extends plugin
                 "localDeliveryOnly"         => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "dropOwnMails"              => array( "_off",
-                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'));
+                        'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+				"mailFolder"				=> array(
+						'folderList','folderDel','folderAdd')
+				);
 
+		if($this->dn == "new"){
+			// empty features if the user is brand new
+			$this->enabledFeatures = array();
+			return;
+		}
+		
         // Check if all required methods cann be called! 
-        foreach($featureReq as $name => $requires){
-            $active = TRUE;
-            foreach($requires as $methodName){
-                $active &= $this->groupwareDao->gwFeatureAvailable($methodName);
-            }
-            $this->enabledFeatures[$name] = $active;
-        }
-
+		foreach($featureReq as $name => $requires){
+			$active = TRUE;
+			foreach($requires as $methodName){
+				$active &= $this->groupwareDao->gwFeatureAvailable($methodName);
+			}
+			$this->enabledFeatures[$name] = $active;
+		}
+			
         // Get rpc handle to fetch account info and feature availability.
         $status = $this->rpcExec('gwAcctExists', $this->uid);
 		// mailboxlocations for the dropdownBox
@@ -421,7 +429,6 @@ class Groupware extends plugin
 
         $smarty = get_smarty();
         foreach($this->attributes as $attr){
-
             $smarty->assign($attr, $this->$attr);
         }
 
@@ -429,7 +436,9 @@ class Groupware extends plugin
         foreach($plInfo['plProvidedAcls'] as $acl => $name){
             $smarty->assign($acl."ACL", $this->getacl($acl));
         }
+		
         foreach($this->enabledFeatures as $feature => $state){
+			
             $smarty->assign($feature."_isActive", $state);
         }
 
@@ -498,7 +507,6 @@ class Groupware extends plugin
             }
         }
     }
-
 
     /*! \brief  Parse vacation templates and build up an array
      *	containing 'filename' => 'description'. 
@@ -716,9 +724,7 @@ class Groupware extends plugin
 				$fw = array();
 				//only the first Address will be set as forward Address.
 				$fw[$this->forwardingAddresses[0]] = true;
-			
-			$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
-
+				$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
         }
         // Save the quota
         if(true){
@@ -740,11 +746,10 @@ class Groupware extends plugin
      */
     function check()
     {
-        // TODO: Remove all echo Messages
+		//add some checks
         $messages = plugin::check();
 
         //Check the dates        
-        
         // TODO: check only if features are enabled.
         
         //required vacationEnabled
@@ -762,14 +767,14 @@ class Groupware extends plugin
             }
         }
         if(!tests::is_email ($this->mailAddress)){
-            $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@excom.intranet.gonicus.de");
+            $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@exdom.intranet.gonicus.de knibbel");
         }
 
         if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
             foreach($this->forwardingAddresses as $fAddress){
                 if(!tests::is_email ($fAddress)){
                     $messages[] = msgPool::invalid(_("Alternate address"),$fAddress, "", 
-                            "user@excom.intranet.gonicus.de");
+                            "user@exdom.intranet.gonicus.de");
                 }
                 if($fAddress == $this->mailAddress){
                     $messages[] = _("The primary address cannot be used as alternative address!");

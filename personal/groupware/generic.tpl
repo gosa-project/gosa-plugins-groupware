@@ -319,4 +319,7 @@
 </table>
 {/if}
 {/if}
+ {if $mailFolder_isActive}
+ <div>Hape, die Folder sind enabled</div>
+ {/if}
 <input type='hidden' name='groupwarePluginPosted' value='1'>

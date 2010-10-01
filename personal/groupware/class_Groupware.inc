@@ -46,8 +46,11 @@ class Groupware extends plugin
     var $mailAddressSelectDialog = NULL;
     var $filterManager = NULL;
     var $filterRules = array();
-    var $vacationTemplates = array();
+    var $vacationTemplates = array(); 
 
+	var $fileBrowser = NULL;
+
+	
     //the dropdown
     var $mailLocations = array();
 
@@ -71,7 +74,7 @@ class Groupware extends plugin
     var $mailBoxAutomaticRemovalValue = 100;
     var $localDeliveryOnly = FALSE;
     var $dropOwnMails = FALSE;
-
+	var $mailFolder = FALSE;
     var $groupwareDao = null;
 
     /*! \brief      
@@ -206,7 +209,16 @@ class Groupware extends plugin
 			}
             $this->accountInitialized = TRUE;
         }
-		
+		// Initialize file browser list
+		$this->fileBrowser= new sortableListing();
+		$this->fileBrowser->setDeleteable(FALSE);
+		$this->fileBrowser->setEditable(TRUE);
+		$this->fileBrowser->setColspecs(array('*'));
+		$this->fileBrowser->setWidth("100%");
+		$this->fileBrowser->setHeight("150px");
+		$this->fileBrowser->setAcl("rwcdm");
+		$this->fileBrowser->setListData(array("eins", "zwei"),array("eins" =>array( "data"=> array("Uno") ) , "zwei" =>array( "data"=> array("Due") )) );
+		$this->fileBrowser->update();
 
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
@@ -441,7 +453,10 @@ class Groupware extends plugin
 			
             $smarty->assign($feature."_isActive", $state);
         }
-
+		
+		$smarty->assign("fileBrowser", $this->fileBrowser->render());
+		
+		
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
             $smarty->assign("displayTemplateSelector", "true");

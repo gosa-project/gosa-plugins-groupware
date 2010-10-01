@@ -320,6 +320,9 @@
 {/if}
 {/if}
  {if $mailFolder_isActive}
- <div>Hape, die Folder sind enabled</div>
+ <div>Hape, die Folder sind enabled
+ {$fileBrowser}
+ 
+ </div>
  {/if}
 <input type='hidden' name='groupwarePluginPosted' value='1'>

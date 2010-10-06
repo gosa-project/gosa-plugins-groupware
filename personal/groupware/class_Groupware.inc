@@ -119,13 +119,12 @@ class Groupware extends plugin
 
 		// Initialize file browser list
 		$this->fileBrowser= new sortableListing();
-		$this->fileBrowser->setDeleteable(FALSE);
+		$this->fileBrowser->setDeleteable(TRUE);
 		$this->fileBrowser->setEditable(TRUE);
 		$this->fileBrowser->setColspecs(array('*'));
 		$this->fileBrowser->setWidth("100%");
 		$this->fileBrowser->setHeight("150px");
 		$this->fileBrowser->setAcl("rwcdm");
-		$this->fileBrowser->setListData(array("eins", "zwei"),array("eins" =>array( "data"=> array("Uno") ) , "zwei" =>array( "data"=> array("Due") )) );
 		$this->fileBrowser->update();
 		$this->fileBrowser->sortingEnabled(FALSE);
 
@@ -488,14 +487,23 @@ class Groupware extends plugin
             if($this->currentSelectedFolder == $folderPath){
                 $name = "<b>{$name}</b>";
             }
+
+            $status = (isset($entries['status']))? $entries['status'] : '';        
             $prefix = preg_replace("/^([^\/]*).*$/","\\1", $folderPath);
             $name = str_pad($name, (substr_count($folderPath, '/')*3-3) + strlen($name),'../', STR_PAD_LEFT);
-            $lData[$folderPath]= array('data' => array($name,$prefix,$cnt));
+            $lData[$folderPath]= array('data' => array($name,$prefix,$status,$cnt));
         }    
         $this->fileBrowser->setListData($data, $lData) ;
         $this->fileBrowser->update();
 
+        
         $smarty->assign("currentSelectedFolder", $this->currentSelectedFolder);
+        $folderEntries = array();
+        if(isset($this->mailFolder[$this->currentSelectedFolder])) {
+            $folderEntries = $this->mailFolder[$this->currentSelectedFolder];
+        }
+		$smarty->assign("folderEntries", $folderEntries);
+
 		$smarty->assign("fileBrowser", $this->fileBrowser->render());
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
@@ -524,16 +532,66 @@ class Groupware extends plugin
     {
         if(isset($_POST['groupwarePluginPosted'])){
 
+            // Update folder name   
+            #$current = &$this->mailFolder[$this->currentSelectedFolder];
+            #if(isset($_POST['currentFolderName'])){
+            #    $new_name = get_post('currentFolderName');
+            #    if($new_name != $current['name']){
+            #        if(!in_array($current['status'],array('del','add'))){
+            #            $current['status'] = 'renamed';
+            #        }
+            #        $current['name'] = get_post('currentFolderName');
+            #    }
+            #}
+ 
+ 
+            if(isset($this->mailFolder[$this->currentSelectedFolder])){
+                $current = &$this->mailFolder[$this->currentSelectedFolder];
+                foreach($current['acls'] as $key => $data){
+                    if(isset($_POST["permission_{$key}_name"])){
+                        $current['acls'][$key]['name'] = get_post("permission_{$key}_name"); 
+                    }
+                    if(isset($_POST["permission_{$key}_acl"])){
+                        $current['acls'][$key]['acl'] = get_post("permission_{$key}_acl"); 
+                    }
+                    if(isset($_POST["permission_{$key}_del"])){
+                        unset($current['acls'][$key]);
+                    }
+                }
+                $current['acls'] = array_values($current['acls']);
+            }
+
+            if(isset($_POST['folderName_Add']) && isset($_POST['folderName_Input'])){
+                if(isset($this->mailFolder[$this->currentSelectedFolder])){
+                    $newName = get_post('folderName_Input');
+                    $newPath = $this->currentSelectedFolder."/".$newName;
+                    $entry = array();
+                    $entry['acls'] = array();
+                    $entry['name'] = $newName;
+                    $entry['status'] = 'add';
+                    $this->mailFolder[$newPath] = $entry;
+                }
+            }
+
+
             $this->fileBrowser->save_object();
             $action = $this->fileBrowser->getAction();
             if($action['action'] == "edit"){
                 $folderPath = $this->fileBrowser->getKey($action['targets'][0]);
                 $this->currentSelectedFolder = $folderPath;
             }
-            
-            
+            if($action['action'] == "delete"){
+                $folderPath = $this->fileBrowser->getKey($action['targets'][0]);
+                $this->mailFolder[$folderPath]['status'] = 'del';
+                $this->currentSelectedFolder = "";
+            }
+       
  
-            echo $this->currentSelectedFolder;
+            if(isset($_POST['permission_add'])) {
+                $current = &$this->mailFolder[$this->currentSelectedFolder];
+                $current['acls'][] = array('name' => '','type'=>'user','acl' => '');
+            }
+           
  
             // We ran into a communication error with the backend. 
             // Try a simple communication operation with the backend 
@@ -769,6 +827,8 @@ class Groupware extends plugin
                 msg_dialog::display(_("Error"), _("Groupware account creation failed!"), ERROR_DIALOG);
             }
         }
+
+        $this->groupwareDao->saveFoldersAndAcls($this->uid, $this->mailFolder);
 
         // Save the primary Email Address.
         if(!empty($this->mailAddress)){

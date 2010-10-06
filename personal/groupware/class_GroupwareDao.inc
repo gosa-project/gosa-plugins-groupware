@@ -50,10 +50,15 @@ class GroupwareDao{
             "accountProperties" => array("get"=>"gwAcctGetProperties",
                     "save"=>"gwAcctSetProperties",
                     "delete"=>"gwAcctDelProperties"),
+			//mailFolder is a composite feature - 
 			"mailFolder" => array( "get"=>"gwFolderList",
-                    "save"=>"gwFolderAdd",
-                    "delete"=>"gwFolderDel")
+					"save"=>"gwFolderAdd",
+                    "delete"=>"gwFolderDel"),
+			"private_folderACLS" => array("get"=>"gwFolderGetMembers",
+                    "save"=>"gwFolderSetMembers",
+                    "delete"=>"gwFolderDelMember")
                 );
+			
 
 
     /*! \brief Constructor sets the connection to the rpc service 
@@ -188,30 +193,64 @@ class GroupwareDao{
 			"RIGHTS_POST", RIGHTS_READ | POST);
 			"RIGHTS_APPEND", RIGHTS_POST | INSERT);
 			"RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
-			""
-			*/
-			$resultArr["mailFolder"] = array(
-				'user/wiwu/Aufgaben' => array( 
-					"name" =>"Aufgaben",
-					"acls"=> array( 	array("wiwu"=> RIGHTS_ALL, "type"=>"user"),
-										array("2a"=> RIGHTS_ALL, "type"=>"user"))), 
-				'user/wiwu/Entw\xc3\xbcrfe' =>array(
-					"name" => "Entw\xc3\xbcrfe", 
-					"acls" => array(	array("wiwu"=> RIGHTS_ALL, "type"=>"user"))), 
-				'user/wiwu/Gel\xc3\xb6schte Objekte' => array( 
-					"name" => "Gel\xc3\xb6schte Objekte", 
-					"acls" => array(	array("wiwu"=> RIGHTS_ALL, "type"=>"user"))), 
-				'user/wiwu/Synchronisierungsprobleme/Lokale Fehler'  => array( 
-					"name" =>"Synchronisierungsprobleme/Lokale Fehler",
-					"acls"=> array(array("wiwu"=> RIGHTS_ALL, "type"=>"user"))), 
-				'user/wiwu/Synchronisierungsprobleme/Serverfehler'  => array( 
-					"name" =>"Synchronisierungsprobleme/Serverfehler",
-					"acls"=> array(array("wiwu"=> RIGHTS_ALL, "type"=>"user"))),
-				'shared/publicFolder'  => array( 
-					"name" =>"publicFolder",
-					"acls" => array(array("wiwu"=> RIGHTS_READ, "type"=>"user")))
-				);
-		}
+            ""
+             */
+            $resultArr["mailFolder"] = array(
+                    'user/wiwu/Aufgaben' => array( 
+                        "name" =>"Aufgaben",
+                        "acls"=> array( 	
+                            array(
+                                "name" => "wiwu",
+                                "acl"  => RIGHTS_ALL, 
+                                "type"=>"user"),
+                            array(
+                                "name" => "2a",
+                                "acl" => RIGHTS_ALL, 
+                                "type"=>"user"))), 
+
+                    'user/wiwu/Entw\xc3\xbcrfe' =>array(
+                        "name" => "Entw\xc3\xbcrfe", 
+                        "acls" => array(	
+                            array(
+                                "name" => "wiwu",
+                                "acl" => RIGHTS_ALL, 
+                                "type"=>"user"))), 
+                    'user/wiwu/Gel\xc3\xb6schte Objekte' => array( 
+                        "name" => "Gel\xc3\xb6schte Objekte", 
+                        "acls" => array(	
+                            array(
+                                "name" => "wiwu",
+                                "acl" => RIGHTS_ALL, 
+                                "type"=>"user"))), 
+                    'user/wiwu/Synchronisierungsprobleme/Lokale Fehler'  => array( 
+                            "name" => "Lokale Fehler", 
+                            "acls" => array(	
+                                array(
+                                    "name" => "wiwu",
+                                    "acl" => RIGHTS_ALL, 
+                                    "type"=>"user"))), 
+                    'user/wiwu/Synchronisierungsprobleme/Serverfehler'  => array( 
+                            "name" => "Serverfehler", 
+                            "acls" => array(	
+                                array(
+                                    "name" => "wiwu",
+                                    "acl" => RIGHTS_ALL, 
+                                    "type"=>"user"))), 
+                    'shared/publicFolder'  => array( 
+                            "name" => "publicFolder", 
+                            "acls" => array(	
+                                array(
+                                    "name" => "wiwu",
+                                    "acl" => RIGHTS_ALL, 
+                                    "type"=>"user"))), 
+                    );
+			
+			//need a status for the array - setting them now for the example data.
+            foreach($resultArr["mailFolder"] as $id => $folder){
+                $resultArr["mailFolder"][$id]['status'] = '';
+            }
+
+        }
 
         //TODO: getLocation muss ebenfalls geholt werden 
         // Quota quotaUsage, quotaSize
@@ -272,11 +311,37 @@ class GroupwareDao{
 	//This is a feature with many datasets inside which should be cut in slices and saved separately.
 	//Since the knowledge about the feature is only known in the plugin this has got to be moved.
 	
-	function saveFoldersAndAcls($mailFolder){
-	
+	function saveFoldersAndAcls($id, $mailFolder){
+		echo "Hape";
+		/*
+		 'user/wiwu/Aufgaben' => array( 
+                        "name" =>"Aufgaben",
+                        "acls"=> array( 	
+                            array(
+                                "name" => "wiwu",
+                                "acl"  => RIGHTS_ALL, 
+                                "type"=>"user"),
+                            array(
+                                "name" => "2a",
+                                "acl" => RIGHTS_ALL, 
+                                "type"=>"user"))), 
+		*/
 		foreach($mailFolder as $key => $val)
 		{
-					
+			if(!empty($val["status"])){
+				switch($val["status"]){
+					case "add":
+						$this->save("mailFolder", $id, $key);
+						break;
+					case "del":
+						$this->delete("mailFolder", $id, $key);
+						break;
+				}
+				print_a($val);
+			}
+			$this->save("private_folderACLS", $id, $val["acls"]);
+			//otherwise nothing happened with the entry - no action should be performed.
+			//TODO: Save the acls: $this->save("folderSetMembers", id, array);
 		}
 	
 	}

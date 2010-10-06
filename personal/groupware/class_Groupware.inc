@@ -18,9 +18,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+# Access constants
+define ("LOOKUP", 1);
+define ("READ", 2);
+define ("STATUS", 4);
+define ("WRITE", 8);
+define ("INSERT", 16);
+define ("POST", 32);
+define ("CREATE", 64);
+define ("DELETE", 128);
+define ("ADMINISTRATE", 256);
+
+
+define ("RIGHTS_NONE", 0);
+define ("RIGHTS_READ",  LOOKUP | READ | STATUS);
+define ("RIGHTS_POST", RIGHTS_READ | POST);
+define ("RIGHTS_APPEND", RIGHTS_POST | INSERT);
+define ("RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
+define ("RIGHTS_ALL", RIGHTS_WRITE | ADMINISTRATE);
+
+
+
 
 class Groupware extends plugin
 {
+    // Folder related attributes, will be moved into a speperate widget late on
+    var $currentSelectedFolder = "";     
+
     var $plHeadline     = "Mail";
     var $plDescription  = "GOsa mail extension.";
     var $view_logged = FALSE;
@@ -56,6 +80,7 @@ class Groupware extends plugin
 
     var $mailAddress = "";
     var $mailLocation = "";
+    var $mailFolder = array();
     var $quotaUsage = 0;
     var $quotaSize = 0;
     var $alternateAddresses = array();
@@ -74,7 +99,6 @@ class Groupware extends plugin
     var $mailBoxAutomaticRemovalValue = 100;
     var $localDeliveryOnly = FALSE;
     var $dropOwnMails = FALSE;
-	var $mailFolder = FALSE;
     var $groupwareDao = null;
 
     /*! \brief      
@@ -83,6 +107,7 @@ class Groupware extends plugin
     {
         plugin::plugin($config,$dn); 
 
+		echo "Klasse:".get_class($config);
         // Get attributes from parent object 
         foreach(array("uid","cn") as $attr){
             if(isset($this->parent->by_object['group']) && isset($this->parent->by_object['group']->$attr)){
@@ -91,6 +116,19 @@ class Groupware extends plugin
                 $this->$attr = $this->attrs[$attr][0];
             }
         }
+
+		// Initialize file browser list
+		$this->fileBrowser= new sortableListing();
+		$this->fileBrowser->setDeleteable(FALSE);
+		$this->fileBrowser->setEditable(TRUE);
+		$this->fileBrowser->setColspecs(array('*'));
+		$this->fileBrowser->setWidth("100%");
+		$this->fileBrowser->setHeight("150px");
+		$this->fileBrowser->setAcl("rwcdm");
+		$this->fileBrowser->setListData(array("eins", "zwei"),array("eins" =>array( "data"=> array("Uno") ) , "zwei" =>array( "data"=> array("Due") )) );
+		$this->fileBrowser->update();
+		$this->fileBrowser->sortingEnabled(FALSE);
+
         // Initialize the plugin using rpc.
         $this->init();
     }
@@ -209,16 +247,6 @@ class Groupware extends plugin
 			}
             $this->accountInitialized = TRUE;
         }
-		// Initialize file browser list
-		$this->fileBrowser= new sortableListing();
-		$this->fileBrowser->setDeleteable(FALSE);
-		$this->fileBrowser->setEditable(TRUE);
-		$this->fileBrowser->setColspecs(array('*'));
-		$this->fileBrowser->setWidth("100%");
-		$this->fileBrowser->setHeight("150px");
-		$this->fileBrowser->setAcl("rwcdm");
-		$this->fileBrowser->setListData(array("eins", "zwei"),array("eins" =>array( "data"=> array("Uno") ) , "zwei" =>array( "data"=> array("Due") )) );
-		$this->fileBrowser->update();
 
         // Set vacation start/stop if not set alreasy
         $this->vacationStart = time();
@@ -434,7 +462,6 @@ class Groupware extends plugin
             $this->delAlternate ($_POST['alternateAddressList']);
         }
 
-
         /****************
           SMARTY- Assign smarty variables 
          ****************/
@@ -448,15 +475,28 @@ class Groupware extends plugin
         foreach($plInfo['plProvidedAcls'] as $acl => $name){
             $smarty->assign($acl."ACL", $this->getacl($acl));
         }
-		
         foreach($this->enabledFeatures as $feature => $state){
-			
             $smarty->assign($feature."_isActive", $state);
         }
-		
+       
+        // Build up folder list 
+        $data = $lData = array();
+        foreach($this->mailFolder as $folderPath => $entries){
+            $data[$folderPath] = $entries;
+            $name = $entries['name'];
+            $cnt = count($entries['acls']);
+            if($this->currentSelectedFolder == $folderPath){
+                $name = "<b>{$name}</b>";
+            }
+            $prefix = preg_replace("/^([^\/]*).*$/","\\1", $folderPath);
+            $name = str_pad($name, (substr_count($folderPath, '/')*3-3) + strlen($name),'../', STR_PAD_LEFT);
+            $lData[$folderPath]= array('data' => array($name,$prefix,$cnt));
+        }    
+        $this->fileBrowser->setListData($data, $lData) ;
+        $this->fileBrowser->update();
+
+        $smarty->assign("currentSelectedFolder", $this->currentSelectedFolder);
 		$smarty->assign("fileBrowser", $this->fileBrowser->render());
-		
-		
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
             $smarty->assign("displayTemplateSelector", "true");
@@ -484,6 +524,17 @@ class Groupware extends plugin
     {
         if(isset($_POST['groupwarePluginPosted'])){
 
+            $this->fileBrowser->save_object();
+            $action = $this->fileBrowser->getAction();
+            if($action['action'] == "edit"){
+                $folderPath = $this->fileBrowser->getKey($action['targets'][0]);
+                $this->currentSelectedFolder = $folderPath;
+            }
+            
+            
+ 
+            echo $this->currentSelectedFolder;
+ 
             // We ran into a communication error with the backend. 
             // Try a simple communication operation with the backend 
             // again and let us see if it works.
@@ -853,8 +904,10 @@ class Groupware extends plugin
      */
     function mapComprehensiveUserData($callBackMap)
     {
+
         $map = array(
                 "mailLocations" => "mailLocations",
+                "mailFolder" => "mailFolder",
                 "mailAddress" => "primaryMail",
                 "mailLocation" => "mailLocation",
                 "quotaUsage" => "quotaUsage",

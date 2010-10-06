@@ -50,9 +50,9 @@ class GroupwareDao{
             "accountProperties" => array("get"=>"gwAcctGetProperties",
                     "save"=>"gwAcctSetProperties",
                     "delete"=>"gwAcctDelProperties"),
-			"mailFolder" => array( "get"=>"gwAcctGetFolderList",
-                    "save"=>"gwAcctAddFolder",
-                    "delete"=>"gwAcctDelFolder")		
+			"mailFolder" => array( "get"=>"gwFolderList",
+                    "save"=>"gwFolderAdd",
+                    "delete"=>"gwFolderDel")
                 );
 
 
@@ -176,6 +176,43 @@ class GroupwareDao{
             $resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec('gwAcctGetLocation',$uid);
         }
 
+		//getThefolderList from the user
+		if($this->groupwarePluginRef->isFeatureEnabled("mailFolder")){
+		
+			//Folder Id from the User ...
+			//user/$id/
+			//$resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
+			/*
+			"RIGHTS_NONE", 0);
+			"RIGHTS_READ",  LOOKUP | READ | STATUS);
+			"RIGHTS_POST", RIGHTS_READ | POST);
+			"RIGHTS_APPEND", RIGHTS_POST | INSERT);
+			"RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
+			""
+			*/
+			$resultArr["mailFolder"] = array(
+				'user/wiwu/Aufgaben' => array( 
+					"name" =>"Aufgaben",
+					"acls"=> array( 	array("wiwu"=> RIGHTS_ALL, "type"=>"user"),
+										array("2a"=> RIGHTS_ALL, "type"=>"user"))), 
+				'user/wiwu/Entw\xc3\xbcrfe' =>array(
+					"name" => "Entw\xc3\xbcrfe", 
+					"acls" => array(	array("wiwu"=> RIGHTS_ALL, "type"=>"user"))), 
+				'user/wiwu/Gel\xc3\xb6schte Objekte' => array( 
+					"name" => "Gel\xc3\xb6schte Objekte", 
+					"acls" => array(	array("wiwu"=> RIGHTS_ALL, "type"=>"user"))), 
+				'user/wiwu/Synchronisierungsprobleme/Lokale Fehler'  => array( 
+					"name" =>"Synchronisierungsprobleme/Lokale Fehler",
+					"acls"=> array(array("wiwu"=> RIGHTS_ALL, "type"=>"user"))), 
+				'user/wiwu/Synchronisierungsprobleme/Serverfehler'  => array( 
+					"name" =>"Synchronisierungsprobleme/Serverfehler",
+					"acls"=> array(array("wiwu"=> RIGHTS_ALL, "type"=>"user"))),
+				'shared/publicFolder'  => array( 
+					"name" =>"publicFolder",
+					"acls" => array(array("wiwu"=> RIGHTS_READ, "type"=>"user")))
+				);
+		}
+
         //TODO: getLocation muss ebenfalls geholt werden 
         // Quota quotaUsage, quotaSize
         if($this->groupwarePluginRef->isFeatureEnabled("quotaSize") || 
@@ -230,5 +267,18 @@ class GroupwareDao{
         }   
         return $resultArr;
     }
+	
+	//TODO: move this function into the groupwareplugin. #
+	//This is a feature with many datasets inside which should be cut in slices and saved separately.
+	//Since the knowledge about the feature is only known in the plugin this has got to be moved.
+	
+	function saveFoldersAndAcls($mailFolder){
+	
+		foreach($mailFolder as $key => $val)
+		{
+					
+		}
+	
+	}
 }
 ?>

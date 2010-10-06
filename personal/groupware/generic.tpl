@@ -6,6 +6,9 @@
     <button name="retry">{t}Retry{/t}</button>
 {else}
 
+{if $mailFolder_isActive}
+    {$fileBrowser}
+{/if}
 <table summary="{t}Mail settings{/t}" style='width:100%;'>
     <tr>
         <td style='width:50%; '>  
@@ -319,10 +322,4 @@
 </table>
 {/if}
 {/if}
- {if $mailFolder_isActive}
- <div>Hape, die Folder sind enabled
- {$fileBrowser}
- 
- </div>
- {/if}
 <input type='hidden' name='groupwarePluginPosted' value='1'>

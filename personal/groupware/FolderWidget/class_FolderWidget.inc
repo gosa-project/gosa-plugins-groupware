@@ -36,13 +36,23 @@ class FolderWidget extends plugin
     function buildRecursiveList($arr, $seperator)
     {
         $data = array();
-        $base = &$data;
-        $last = NULL;
         $ret = array();
+
+        // Add root Entry
+        $data['cn=/'] = array(); 
+        $data['cn=/']['name'] = '/';
+        $data['cn=/']['status'] = '';
+        $data['cn=/']['path'] = '/';
+        $data['cn=/']['type'] = 'manual';
+        $data['cn=/']['base'] = 'cn=/';
+        $data['cn=/']['children'] = array();
+        $ret['linear']['cn=/'] = &$data['cn=/'];
+
+        $base = &$data['cn=/']['children'];
+        $last = NULL;
         foreach($arr as $path => $entry){
             $current = &$base;
             $pathSteps = preg_split("/".preg_quote($seperator,'/')."/", $path);
-    
             $entryPath = "";
             $entryBase = "cn=/";
             foreach($pathSteps as $name){
@@ -56,9 +66,7 @@ class FolderWidget extends plugin
                     $current[$entryPath]['status'] = '';
                     $current[$entryPath]['type'] = 'manual';
                     $current[$entryPath]['base'] = $entryBase;
-
                     $ret['linear'][$entryPath] = &$current[$entryPath];
-
                     $this->baseEntryMap[$entryBase] = $entryPath;
                 }
                 $last = &$current[$entryPath];
@@ -68,9 +76,7 @@ class FolderWidget extends plugin
             $last['name'] = $entry['name'];
             $last['type'] = 'real';
             $last['status'] = $entry['status'];
-    
             $ret['linear'][$path] = &$last;
-            
         }
         $ret['recursive'] = $data;
         return($ret);

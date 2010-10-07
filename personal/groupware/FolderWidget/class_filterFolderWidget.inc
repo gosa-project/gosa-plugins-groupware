@@ -13,10 +13,13 @@ class filterFolderWidget {
 
         // Detect starting position in folder tree.
         $items = $data['recursive'];
+        $parent = NULL;
         foreach($data['linear'] as $item){
             if($item['base'] == $base){
                 $items = $item['children'];
+                break;
             }
+            $parent = $item;
         }
 
         // Add entries

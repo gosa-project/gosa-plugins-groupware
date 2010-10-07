@@ -23,8 +23,12 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo(), $this->rootBase);
         $this->FolderWidgetListing->setBase($this->rootBase);
         $this->FolderWidgetListing->setFolderRoot($this->rootBase);
+    }
 
-        
+    function getFolderType($item)
+    {
+        if(preg_match("/^user\//", $item['path'])) return('userFolder');
+        if(preg_match("/^shared\//", $item['path'])) return('sharedFolder');
     }
 
 
@@ -54,6 +58,7 @@ class FolderWidget extends plugin
         $data[$this->rootBase]['path'] = $this->rootName;
         $data[$this->rootBase]['type'] = 'manual';
         $data[$this->rootBase]['base'] = $this->rootBase;
+        $data[$this->rootBase]['parentPath'] = "";
         $data[$this->rootBase]['children'] = array();
         $ret['linear'][$this->rootBase] = &$data[$this->rootBase];
 
@@ -63,8 +68,10 @@ class FolderWidget extends plugin
             $current = &$base;
             $pathSteps = preg_split("/".preg_quote($seperator,'/')."/", $path);
             $entryPath = "";
+            $parentPath = "";
             $entryBase = $this->rootBase;
             foreach($pathSteps as $name){
+                $parentPath = $entryPath;
                 $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$seperator}{$name}";
                 $entryBase =  trim("cn={$name},{$entryBase}", ' ,');
                 if(!isset($current[$entryPath])){
@@ -75,6 +82,9 @@ class FolderWidget extends plugin
                     $current[$entryPath]['status'] = '';
                     $current[$entryPath]['type'] = 'manual';
                     $current[$entryPath]['base'] = $entryBase;
+                    $current[$entryPath]['parentPath'] = $entryPath;
+                    $current[$entryPath]['folderType'] = $this->getFolderType($current[$entryPath]);
+                    
                     $ret['linear'][$entryPath] = &$current[$entryPath];
                     $this->baseEntryMap[$entryBase] = $entryPath;
                 }

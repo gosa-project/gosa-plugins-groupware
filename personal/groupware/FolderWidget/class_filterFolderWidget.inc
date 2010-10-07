@@ -17,17 +17,17 @@ class filterFolderWidget {
         foreach($data['linear'] as $item){
             if($item['base'] == $base){
                 $items = $item['children'];
+                $parent = $item['parentPath'];
                 break;
             }
-            $parent = $item;
         }
-
 
         // Add entries
         $ret = array();
-        if($parent != NULL){
-            $parent['name'] = '..';
-            filterFolderWidget::addEntry($ret, $parent, FALSE, $filter);
+        if(isset($data['linear'][$parent])){
+            $item = $data['linear'][$parent];
+            $item['name'] = '.';
+            filterFolderWidget::addEntry($ret, $item, FALSE, $filter);
         }
         foreach($items as $item){
             filterFolderWidget::addEntry($ret, $item, $scope == 'sub', $filter);
@@ -43,9 +43,11 @@ class filterFolderWidget {
             $entry[] = 'dn';
             $entry['cn'] = array($item['name'], 'count' => 1);
             $entry[] = 'cn';
-            $entry['objectClass'] = array('FAKE_OC_GroupwareFolder','count' => 1);
+            $entry['folderType'] = array($item['folderType'], 'count' => 1);
+            $entry[] = 'folderType';
+            $entry['objectClass'] = array('FAKE_OC_Groupware_'.$item['folderType'],'count' => 1);
             $entry[] = 'objectClass';
-            $entry['count'] = 3;
+            $entry['count'] = 4;
             $ret[] = $entry;
         }
 

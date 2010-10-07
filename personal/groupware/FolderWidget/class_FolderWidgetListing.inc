@@ -32,8 +32,18 @@ class FolderWidgetListing extends management
         //  once setFolderList is called.
         $this->folderSelector = new ItemSelector(array($this->rootBase => '/'),$this->rootBase,$this->rootBase);
         parent::__construct($config, $ui, "Folder", $headpage);
+
+        // Register default actions
+        $this->registerAction("new",        "newEntry");
+        $this->registerAction("edit",       "openEntry"); // !! We forward 'edit' to 'open' to have a department like navigation.
+        $this->registerAction("editEntry",  "editEntry");
     }
 
+    function openEntry($action, $targets)
+    {
+        $this->setBase($targets[0]);
+    }
+    
     
     function setFolderList($folderList)
     {

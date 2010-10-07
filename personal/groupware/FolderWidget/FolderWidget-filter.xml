@@ -6,7 +6,7 @@
     <category>Groupware</category>
     <initial>true</initial>
     <default>default</default>
-    <scope>sub</scope>
+    <scope>auto</scope>
     <attribute>-</attribute>
   </definition>
 
@@ -14,7 +14,7 @@
     <tag>default</tag>
     <label>Default filter</label>
     <query>
-      <backend>LDAP</backend>
+      <backend>FolderWidget</backend>
       <filter>$</filter>
     </query>
     <autocomplete>

@@ -5,10 +5,8 @@
    <div class="mainlist-nav">
     <table summary="{$HEADLINE}">
      <tr>
-      <td>{$ROOT}</td>
-      <td>{$BACK}</td>
-      <td>{$HOME}</td>
       <td>{$RELOAD}</td>
+      <td class="left-border">{t}Basis{/t}: {$RELEASE}</td>
       <td class="left-border">{$ACTIONS}</td>
       <td class="left-border">{$FILTER}</td>
      </tr>
@@ -20,5 +18,8 @@
 </div>
 
 <div class="clear"></div>
-
-<input type="hidden" name="ignore">
+<hr>
+<div class='plugin-actions'>
+    <button name='FolderWidget_ok'>{msgPool type=okButton}</button>
+    <button name='FolderWidget_cancel'>{msgPool type=cancelButton}</button>
+</div>

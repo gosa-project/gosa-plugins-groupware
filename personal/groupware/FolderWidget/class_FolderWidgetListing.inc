@@ -2,15 +2,20 @@
 
 class FolderWidgetListing extends management
 {
+   
+    private $folderSelector = NULL; 
+    private $folderList = array();
+
+    private $rootBase = 'cn=/';
+
     function __construct($config,$ui)
     {
         $this->config = $config;
         $this->ui = $ui;
-
         $this->storagePoints = array("");
 
         // Build filter
-        if (session::global_is_set(get_class($this)."_filter")){
+        if (FALSE && session::global_is_set(get_class($this)."_filter")){
             $filter= session::global_get(get_class($this)."_filter");
         } else {
             $filter = new filter(get_template_path("FolderWidget-filter.xml", true, dirname(__FILE__)));
@@ -21,12 +26,77 @@ class FolderWidgetListing extends management
         // Build headpage
         $headpage = new listing(get_template_path("FolderWidget-list.xml", true, dirname(__FILE__)));
         $headpage->setFilter($filter);
+        $headpage->setBase($this->rootBase);
 
+        // Create folderSelector using dummy entries, those will be replaced 
+        //  once setFolderList is called.
+        $this->folderSelector = new ItemSelector(array($this->rootBase => '/'),$this->rootBase,$this->rootBase);
         parent::__construct($config, $ui, "Folder", $headpage);
     }
 
+    
+    function setFolderList($folderList)
+    {
+        $this->folderList = $folderList;
+    }
 
+
+    function getBase()
+    {
+        return($this->base);
+    }
+
+
+    function setBase($base)
+    {
+        $this->base = $base;
+        $this->folderSelector->setBase($this->base);
+        $headpage = $this->getHeadpage();
+        $headpage->setBase($this->base);
+    }
+
+    
+    function setFolderRoot($base)
+    {
+        $this->rootBase = $base;
+        $this->folderSelector->setRootBase($base);
+    }
+   
+ 
+    /*! \brief   Overridden render method of class mangement.
+     *            this allows us to add a release selection box.
+     */
+    function renderList()
+    {
+        $this->folderSelector->setBases($this->getSimpleFolderList($this->folderList['recursive']));
+        $this->folderSelector->update(true);
+
+        $headpage = $this->getHeadpage();
+        $headpage->update();
+        $smarty = get_smarty();
+        $smarty->assign("RELEASE", $this->folderSelector->render());
+        $display = $headpage->render();
+        return($this->getHeader().$display);
+    }
+
+
+    function getSimpleFolderList($arr)
+    {
+        $ret = array($this->rootBase => '/');
+        foreach($arr as $path => $entry){
+            $ret[$entry['base']] = $entry['name'];
+            if(isset($entry['children'])){
+                $ret = array_merge($ret, $this->getSimpleFolderList($entry['children']));
+            }
+        }
+        return($ret);
+    }
+
+    
+    function save_object()
+    {
+        $this->folderSelector->update();
+        $this->setBase($this->folderSelector->getBase());
+    }
 }
-
-
 ?>

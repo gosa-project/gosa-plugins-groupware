@@ -22,8 +22,13 @@ class filterFolderWidget {
             $parent = $item;
         }
 
+
         // Add entries
         $ret = array();
+        if($parent != NULL){
+            $parent['name'] = '..';
+            filterFolderWidget::addEntry($ret, $parent, FALSE, $filter);
+        }
         foreach($items as $item){
             filterFolderWidget::addEntry($ret, $item, $scope == 'sub', $filter);
         }

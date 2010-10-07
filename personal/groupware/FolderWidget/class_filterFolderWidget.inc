@@ -32,6 +32,7 @@ class filterFolderWidget {
         foreach($items as $item){
             filterFolderWidget::addEntry($ret, $item, $scope == 'sub', $filter);
         }
+    
         return($ret);
     }
 

@@ -13,12 +13,15 @@
 
     <objectType>
       <label>Folder</label>
-      <objectClass>FAKE_OC_Folder</objectClass>
-      <category>users</category>
-      <class>none</class>
-      <image>plugins/sudo/images/select_sudo.png</image>
+      <objectClass>FAKE_OC_Groupware_sharedFolder</objectClass>
+      <image>images/lists/folder.png</image>
     </objectType>
 
+    <objectType>
+      <label>Folder</label>
+      <objectClass>FAKE_OC_Groupware_userFolder</objectClass>
+      <image>plugins/users/images/select_user.png</image>
+    </objectType>
   </definition>
 
   <table>

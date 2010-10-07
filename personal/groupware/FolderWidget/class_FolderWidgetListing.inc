@@ -6,13 +6,14 @@ class FolderWidgetListing extends management
     private $folderSelector = NULL; 
     private $folderList = array();
 
-    private $rootBase = 'cn=/';
+    private $rootBase = '';
 
-    function __construct($config,$ui)
+    function __construct($config,$ui, $rootBase)
     {
         $this->config = $config;
         $this->ui = $ui;
         $this->storagePoints = array("");
+        $this->rootBase = $rootBase;
 
         // Build filter
         if (FALSE && session::global_is_set(get_class($this)."_filter")){

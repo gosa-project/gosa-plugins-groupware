@@ -5,6 +5,12 @@
 
 class FolderWidget extends plugin
 {
+
+    private $pathSeperator = "/";
+    private $rootName = "/";
+    private $fakeCnAttr = "cn=";
+    private $rootBase = "";
+
     public $config;
     private $FolderWidgetListing = NULL;
     private $folderList;
@@ -13,7 +19,12 @@ class FolderWidget extends plugin
 
     function __construct(&$config)
     {
-        $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo());
+        $this->rootBase = $this->fakeCnAttr.$this->rootName;
+        $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo(), $this->rootBase);
+        $this->FolderWidgetListing->setBase($this->rootBase);
+        $this->FolderWidgetListing->setFolderRoot($this->rootBase);
+
+        
     }
 
 
@@ -21,9 +32,7 @@ class FolderWidget extends plugin
      */
     function setFolderList($arr)
     {
-        $this->folderList = $this->buildRecursiveList($arr, '/');
-        $this->FolderWidgetListing->setBase('cn=/');
-        $this->FolderWidgetListing->setFolderRoot('cn=/');
+        $this->folderList = $this->buildRecursiveList($arr, $this->pathSeperator);
     }
 
 
@@ -39,22 +48,22 @@ class FolderWidget extends plugin
         $ret = array();
 
         // Add root Entry
-        $data['cn=/'] = array(); 
-        $data['cn=/']['name'] = '/';
-        $data['cn=/']['status'] = '';
-        $data['cn=/']['path'] = '/';
-        $data['cn=/']['type'] = 'manual';
-        $data['cn=/']['base'] = 'cn=/';
-        $data['cn=/']['children'] = array();
-        $ret['linear']['cn=/'] = &$data['cn=/'];
+        $data[$this->rootBase] = array(); 
+        $data[$this->rootBase]['name'] = $this->rootName;
+        $data[$this->rootBase]['status'] = '';
+        $data[$this->rootBase]['path'] = $this->rootName;
+        $data[$this->rootBase]['type'] = 'manual';
+        $data[$this->rootBase]['base'] = $this->rootBase;
+        $data[$this->rootBase]['children'] = array();
+        $ret['linear'][$this->rootBase] = &$data[$this->rootBase];
 
-        $base = &$data['cn=/']['children'];
+        $base = &$data[$this->rootBase]['children'];
         $last = NULL;
         foreach($arr as $path => $entry){
             $current = &$base;
             $pathSteps = preg_split("/".preg_quote($seperator,'/')."/", $path);
             $entryPath = "";
-            $entryBase = "cn=/";
+            $entryBase = $this->rootBase;
             foreach($pathSteps as $name){
                 $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$seperator}{$name}";
                 $entryBase =  trim("cn={$name},{$entryBase}", ' ,');

@@ -7,6 +7,7 @@
 {else}
 
 {if $mailFolder_isActive}
+
     {$fileBrowser}
 
     {t}Add folder{/t}:&nbsp;

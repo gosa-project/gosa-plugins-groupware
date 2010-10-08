@@ -24,7 +24,7 @@ class filterFolderWidget {
 
         // Add entries
         $ret = array();
-        if(isset($data['linear'][$parent])){
+        if(isset($data['linear'][$parent]) && !empty($parent)){
             $item = $data['linear'][$parent];
             $item['name'] = '.';
             filterFolderWidget::addEntry($ret, $item, FALSE, $filter);

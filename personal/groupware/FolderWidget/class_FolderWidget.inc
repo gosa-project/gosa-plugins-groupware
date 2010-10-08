@@ -24,7 +24,7 @@ class FolderWidget extends plugin
         //  effect on the results.
         $this->rootBase = $this->fakeCnAttr.$this->rootName;
 
-        $this->accountPrefix = rtrim($accountPrefix,'/').'/';
+        $this->accountPrefix = (empty($accountPrefix)) ? "" : rtrim($accountPrefix,$pathSeparator).$pathSeparator;
         $this->rootBase = $this->pathToDn($accountPrefix);
 
         // Update the folder list, initially.
@@ -41,12 +41,12 @@ class FolderWidget extends plugin
 
     function pathToDn($path)
     {
-        $dn ="";
+        $dn ="cn=/";
         $list = preg_split("/".preg_quote($this->pathSeparator,'/')."/", $path,0,PREG_SPLIT_NO_EMPTY);
         foreach($list as $entry){
             $dn ="cn={$entry},{$dn}"; 
         }
-        return(rtrim($dn, ','));
+        return($dn);
     }
 
     function getFolderType($item)

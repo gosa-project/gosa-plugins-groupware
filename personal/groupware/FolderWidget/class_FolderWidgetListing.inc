@@ -7,13 +7,15 @@ class FolderWidgetListing extends management
     private $folderList = array();
 
     private $rootBase = '';
+    private $parent;
 
-    function __construct($config,$ui, $rootBase)
+    function __construct($config,$ui, $rootBase, $parent)
     {
         $this->config = $config;
         $this->ui = $ui;
         $this->storagePoints = array("");
         $this->rootBase = $rootBase;
+        $this->parent = &$parent;
 
         // Build filter
         if (FALSE && session::global_is_set(get_class($this)."_filter")){
@@ -44,7 +46,19 @@ class FolderWidgetListing extends management
     {
         $this->setBase($targets[0]);
     }
-    
+
+    function editEntry($action="",$target=array(),$all=array(), $altTabClass ="", $altTabType = "", $altAclCategory="")
+    {
+        print_a($all);
+    }
+
+    protected function removeEntryRequested($action="",$target=array(),$all=array())
+    {   
+        foreach($target as $tar){
+            $this->parent->removeByBase($tar);
+            if($tar == $this->base) $this->setBase($this->rootBase);
+        }
+    }
     
     function setFolderList($folderList)
     {
@@ -95,9 +109,11 @@ class FolderWidgetListing extends management
     {
         $ret = array($this->rootBase => '/');
         foreach($arr as $path => $entry){
-            $ret[$entry['base']] = $entry['name'];
-            if(isset($entry['children'])){
-                $ret = array_merge($ret, $this->getSimpleFolderList($entry['children']));
+            if($entry['status'] != 'removed'){
+                $ret[$entry['base']] = $entry['name'];
+                if(isset($entry['children'])){
+                    $ret = array_merge($ret, $this->getSimpleFolderList($entry['children']));
+                }
             }
         }
         return($ret);

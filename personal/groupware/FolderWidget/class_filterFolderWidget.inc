@@ -38,7 +38,7 @@ class filterFolderWidget {
 
     static function addEntry(&$ret, $item, $recursive = FALSE, $filter)
     {
-        if(preg_match("/".$filter."/",$item['name'])){
+        if(preg_match("/".$filter."/",$item['name']) && $item['status'] != 'removed'){
             $entry = array();
             $entry['dn'] = $item['base'];
             $entry[] = 'dn';

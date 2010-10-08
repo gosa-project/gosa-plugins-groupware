@@ -20,7 +20,7 @@ class FolderWidget extends plugin
     function __construct(&$config)
     {
         $this->rootBase = $this->fakeCnAttr.$this->rootName;
-        $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo(), $this->rootBase);
+        $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo(), $this->rootBase, $this);
         $this->FolderWidgetListing->setBase($this->rootBase);
         $this->FolderWidgetListing->setFolderRoot($this->rootBase);
     }
@@ -104,6 +104,35 @@ class FolderWidget extends plugin
     }
 
 
+    function removeByBase($base)
+    {
+        $this->_recursiveRemoveByBase($this->folderList['recursive'], $base);
+        $this->_recursiveRemoveByBase($this->folderList['linear'], $base);
+        $this->FolderWidgetListing->setFolderList($this->folderList);
+    }
+
+    function _recursiveRemoveByBase(&$arr, $base)
+    {
+        $ret = array();
+        foreach($arr as $path => $item){
+            if($item['base'] == $base){
+
+                // remove all children too
+                if(isset($item['children']) && count($item['children'])){
+                    foreach($item['children'] as $child){
+                        $this->_recursiveRemoveByBase($this->folderList['recursive'], $child['base']);
+                    }
+                }
+
+                $arr[$path]['status'] = 'removed';
+            }elseif(isset($item['children']) && count($item['children'])){
+                $ret = array_merge($ret, $this->_recursiveRemoveByBase($arr[$path]['children'], $base));
+            }
+        }
+        return($ret);
+        
+    }
+
     function _saveRecursive($arr)
     {
         $ret = array();
@@ -130,6 +159,7 @@ class FolderWidget extends plugin
     function execute()
     {
         session::set('FolderWidgetListing::folderList', $this->folderList);
+
         $this->FolderWidgetListing->setFolderList($this->folderList);
         return($this->FolderWidgetListing->execute());
     }

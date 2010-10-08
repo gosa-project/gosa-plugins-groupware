@@ -3,7 +3,7 @@
 class FolderWidget extends plugin
 {
 
-    private $pathSeperator = "/";
+    private $pathSeparator = "/";
     private $rootName = "/";
     private $fakeCnAttr = "cn=";
     private $rootBase = "";
@@ -16,6 +16,7 @@ class FolderWidget extends plugin
 
     function __construct(&$config, $folderList, $accountPrefix)
     {
+        $this->config = $config;
         // The rootBase is a dn-like representation of the root path
         // e.g.  rootPath is '/'  then is the rootBase 'cn=/'
         // These are just internally used variables and should not have an 
@@ -35,7 +36,7 @@ class FolderWidget extends plugin
     function pathToDn($path)
     {
         $dn ="";
-        $list = preg_split("/".preg_quote($this->pathSeperator,'/')."/", $path,0,PREG_SPLIT_NO_EMPTY);
+        $list = preg_split("/".preg_quote($this->pathSeparator,'/')."/", $path,0,PREG_SPLIT_NO_EMPTY);
         foreach($list as $entry){
             $dn ="cn={$entry},{$dn}"; 
         }
@@ -53,8 +54,7 @@ class FolderWidget extends plugin
      */
     function setFolderList($arr)
     {
-        $this->folderList = $this->buildRecursiveList($arr, $this->pathSeperator);
-        print_a($this->folderList);
+        $this->folderList = $this->buildRecursiveList($arr, $this->pathSeparator);
     }
 
 
@@ -64,7 +64,7 @@ class FolderWidget extends plugin
      * @param   Array   The folder list 
      * @return  Array   A hierarchical representation of the input array.
      */
-    function buildRecursiveList($arr, $seperator)
+    function buildRecursiveList($arr, $separator)
     {
         $data = array();
         $ret = array();
@@ -90,13 +90,13 @@ class FolderWidget extends plugin
             if(!preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $path)) continue;
 
             $current = &$base;
-            $pathSteps = preg_split("/".preg_quote($seperator,'/')."/", $path);
+            $pathSteps = preg_split("/".preg_quote($separator,'/')."/", $path);
             $entryPath = "";
             $parentPath = "";
             $entryBase = "";
             foreach($pathSteps as $name){
                 $parentPath = $entryPath;
-                $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$seperator}{$name}";
+                $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$separator}{$name}";
                 $entryBase =  $this->pathToDn($entryPath);
 
                 // Add eventually missing subFolders, to enable the navigation 
@@ -129,6 +129,21 @@ class FolderWidget extends plugin
         }
         $ret['recursive'] = $data;
         return($ret);
+    }
+
+    
+    function editByBase($base)
+    {
+        $item = NULL;
+        foreach($this->folderList['linear'] as $item){
+            if($item['base'] == $base){
+                break;
+            }
+        }
+        if($item){
+            $this->currentlyEditedItem = $item;
+            $this->dialog = new FolderEditDialog($this->config, $item);
+        }
     }
 
 
@@ -186,10 +201,25 @@ class FolderWidget extends plugin
 
     function execute()
     {
+        // Generate the listing output 
         session::set('FolderWidgetListing::folderList', $this->folderList);
-
         $this->FolderWidgetListing->setFolderList($this->folderList);
-        return($this->FolderWidgetListing->execute());
+        $str = $this->FolderWidgetListing->execute();
+
+        // Handle dialogs 
+        if(isset($_POST['FolderEditDialog_ok'])){
+            $this->dialog = NULL;
+        }
+        if(isset($_POST['FolderEditDialog_cancel'])){
+            $this->dialog = NULL;
+        }
+        if($this->dialog){
+            $this->dialog->save_object();
+            return($this->dialog->execute());
+        }
+
+        // Return listing HTML
+        return($str);
     }
 
     function save_object()

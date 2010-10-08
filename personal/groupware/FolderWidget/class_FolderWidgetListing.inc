@@ -49,7 +49,7 @@ class FolderWidgetListing extends management
 
     function editEntry($action="",$target=array(),$all=array(), $altTabClass ="", $altTabType = "", $altAclCategory="")
     {
-        print_a($all);
+        $this->parent->editByBase($target[0]);
     }
 
     protected function removeEntryRequested($action="",$target=array(),$all=array())

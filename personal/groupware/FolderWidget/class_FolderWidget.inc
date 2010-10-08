@@ -55,6 +55,7 @@ class FolderWidget extends plugin
         $data[$this->rootBase] = array(); 
         $data[$this->rootBase]['name'] = $this->rootName;
         $data[$this->rootBase]['status'] = '';
+        $data[$this->rootBase]['acls'] = array();
         $data[$this->rootBase]['path'] = $this->rootName;
         $data[$this->rootBase]['type'] = 'manual';
         $data[$this->rootBase]['base'] = $this->rootBase;
@@ -80,6 +81,7 @@ class FolderWidget extends plugin
                     $current[$entryPath]['name'] = $name;
                     $current[$entryPath]['path'] = $path;
                     $current[$entryPath]['status'] = '';
+                    $current[$entryPath]['acls'] = array();
                     $current[$entryPath]['type'] = 'manual';
                     $current[$entryPath]['base'] = $entryBase;
                     $current[$entryPath]['parentPath'] = $entryPath;
@@ -101,6 +103,29 @@ class FolderWidget extends plugin
         return($ret);
     }
 
+
+    function _saveRecursive($arr)
+    {
+        $ret = array();
+        foreach($arr as $path => $item){
+            if($item['type'] == 'real'){ 
+                $ret[$path] = array(
+                        'name' => $item['name'],
+                        'status' => $item['status'],
+                        'acls' => $item['acls'],
+                        );
+            }
+            if(isset($item['children']) && count($item['children'])){
+                $ret = array_merge($ret, $this->_saveRecursive($item['children']));
+            }
+        }
+        return($ret);
+    }
+
+    function save()
+    {
+        return($this->_saveRecursive($this->folderList['recursive']));
+    }
 
     function execute()
     {

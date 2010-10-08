@@ -1,8 +1,5 @@
 <?php
 
-
-
-
 class FolderWidget extends plugin
 {
 
@@ -24,14 +21,25 @@ class FolderWidget extends plugin
         // These are just internally used variables and should not have an 
         //  effect on the results.
         $this->rootBase = $this->fakeCnAttr.$this->rootName;
-        
+
         $this->accountPrefix = rtrim($accountPrefix,'/').'/';
+        $this->rootBase = $this->pathToDn($accountPrefix);
 
         // Update the folder list, initially.
         $this->setFolderList($folderList);
         $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo(), $this->rootBase, $this);
         $this->FolderWidgetListing->setBase($this->rootBase);
         $this->FolderWidgetListing->setFolderRoot($this->rootBase);
+    }
+
+    function pathToDn($path)
+    {
+        $dn ="";
+        $list = preg_split("/".preg_quote($this->pathSeperator,'/')."/", $path,0,PREG_SPLIT_NO_EMPTY);
+        foreach($list as $entry){
+            $dn ="cn={$entry},{$dn}"; 
+        }
+        return(rtrim($dn, ','));
     }
 
     function getFolderType($item)
@@ -46,6 +54,7 @@ class FolderWidget extends plugin
     function setFolderList($arr)
     {
         $this->folderList = $this->buildRecursiveList($arr, $this->pathSeperator);
+        print_a($this->folderList);
     }
 
 
@@ -61,18 +70,18 @@ class FolderWidget extends plugin
         $ret = array();
 
         // Add root Entry
-        $data[$this->rootBase] = array(); 
-        $data[$this->rootBase]['name'] = $this->rootName;
-        $data[$this->rootBase]['status'] = '';
-        $data[$this->rootBase]['acls'] = array();
-        $data[$this->rootBase]['path'] = $this->rootName;
-        $data[$this->rootBase]['type'] = 'manual';
-        $data[$this->rootBase]['base'] = $this->rootBase;
-        $data[$this->rootBase]['parentPath'] = "";
-        $data[$this->rootBase]['children'] = array();
-        $ret['linear'][$this->rootBase] = &$data[$this->rootBase];
+        $data[$this->accountPrefix] = array(); 
+        $data[$this->accountPrefix]['name'] = $this->rootName;
+        $data[$this->accountPrefix]['status'] = '';
+        $data[$this->accountPrefix]['acls'] = array();
+        $data[$this->accountPrefix]['path'] = $this->rootName;
+        $data[$this->accountPrefix]['type'] = 'manual';
+        $data[$this->accountPrefix]['base'] = $this->rootBase;
+        $data[$this->accountPrefix]['parentPath'] = "";
+        $data[$this->accountPrefix]['children'] = array();
+        $ret['linear'][$this->accountPrefix] = &$data[$this->accountPrefix];
 
-        $base = &$data[$this->rootBase]['children'];
+        $base = &$data[$this->accountPrefix]['children'];
         $last = NULL;
         foreach($arr as $path => $entry){
 
@@ -84,11 +93,11 @@ class FolderWidget extends plugin
             $pathSteps = preg_split("/".preg_quote($seperator,'/')."/", $path);
             $entryPath = "";
             $parentPath = "";
-            $entryBase = $this->rootBase;
+            $entryBase = "";
             foreach($pathSteps as $name){
                 $parentPath = $entryPath;
                 $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$seperator}{$name}";
-                $entryBase =  trim("cn={$name},{$entryBase}", ' ,');
+                $entryBase =  $this->pathToDn($entryPath);
 
                 // Add eventually missing subFolders, to enable the navigation 
                 //  into these folders via the management lists.

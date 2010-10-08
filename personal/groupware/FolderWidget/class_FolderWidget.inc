@@ -206,13 +206,6 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing->setFolderList($this->folderList);
         $str = $this->FolderWidgetListing->execute();
 
-        // Handle dialogs 
-        if(isset($_POST['FolderEditDialog_ok'])){
-            $this->dialog = NULL;
-        }
-        if(isset($_POST['FolderEditDialog_cancel'])){
-            $this->dialog = NULL;
-        }
         if($this->dialog){
             $this->dialog->save_object();
             return($this->dialog->execute());
@@ -225,6 +218,24 @@ class FolderWidget extends plugin
     function save_object()
     {
         $this->FolderWidgetListing->save_object();
+
+        // Handle dialogs 
+        if(isset($_POST['FolderEditDialog_ok'])){
+    
+            $this->dialog->save_object();
+            $msgs = $this->dialog->check();
+            if(count($msgs)){
+                msg_dialog::displayChecks($msgs);
+            }else{
+                $newItem = $this->dialog->save();
+                $path = $this->currentlyEditedItem['path'];
+                $this->folderList['linear'][$path]['acls'] = $newItem['acls']; 
+                $this->dialog = NULL;
+            }
+        }
+        if(isset($_POST['FolderEditDialog_cancel'])){
+            $this->dialog = NULL;
+        }
     }
 }
 

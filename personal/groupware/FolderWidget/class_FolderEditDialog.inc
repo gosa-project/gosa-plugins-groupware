@@ -21,6 +21,7 @@ class FolderEditDialog extends plugin
         $smarty = get_smarty(); 
         $smarty->assign('folderItem', $this->folderItem);
         $smarty->assign('permissions', $this->permissions);
+        $smarty->assign('permissionCnt', count($this->permissions));
         return($smarty->fetch(get_template_path("FolderEditDialog.tpl", TRUE, dirname(__FILE__))));
     }
 

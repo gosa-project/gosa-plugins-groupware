@@ -17,9 +17,18 @@ class FolderWidget extends plugin
 
     private $baseEntryMap = array();
 
-    function __construct(&$config)
+    function __construct(&$config, $folderList, $accountPrefix)
     {
+        // The rootBase is a dn-like representation of the root path
+        // e.g.  rootPath is '/'  then is the rootBase 'cn=/'
+        // These are just internally used variables and should not have an 
+        //  effect on the results.
         $this->rootBase = $this->fakeCnAttr.$this->rootName;
+        
+        $this->accountPrefix = rtrim($accountPrefix,'/').'/';
+
+        // Update the folder list, initially.
+        $this->setFolderList($folderList);
         $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo(), $this->rootBase, $this);
         $this->FolderWidgetListing->setBase($this->rootBase);
         $this->FolderWidgetListing->setFolderRoot($this->rootBase);
@@ -66,6 +75,11 @@ class FolderWidget extends plugin
         $base = &$data[$this->rootBase]['children'];
         $last = NULL;
         foreach($arr as $path => $entry){
+
+            // Only add entries that match the accountPrefix 
+            //   e.g.  "/user/admin/"
+            if(!preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $path)) continue;
+
             $current = &$base;
             $pathSteps = preg_split("/".preg_quote($seperator,'/')."/", $path);
             $entryPath = "";
@@ -75,23 +89,28 @@ class FolderWidget extends plugin
                 $parentPath = $entryPath;
                 $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$seperator}{$name}";
                 $entryBase =  trim("cn={$name},{$entryBase}", ' ,');
-                if(!isset($current[$entryPath])){
-                    $current[$entryPath] = array();
-                    $current[$entryPath]['children'] = array();
-                    $current[$entryPath]['name'] = $name;
-                    $current[$entryPath]['path'] = $path;
-                    $current[$entryPath]['status'] = '';
-                    $current[$entryPath]['acls'] = array();
-                    $current[$entryPath]['type'] = 'manual';
-                    $current[$entryPath]['base'] = $entryBase;
-                    $current[$entryPath]['parentPath'] = $entryPath;
-                    $current[$entryPath]['folderType'] = $this->getFolderType($current[$entryPath]);
-                    
-                    $ret['linear'][$entryPath] = &$current[$entryPath];
-                    $this->baseEntryMap[$entryBase] = $entryPath;
+
+                // Add eventually missing subFolders, to enable the navigation 
+                //  into these folders via the management lists.
+                if(preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $entryPath)){
+                    if(!isset($current[$entryPath])){
+                        $current[$entryPath] = array();
+                        $current[$entryPath]['children'] = array();
+                        $current[$entryPath]['name'] = $name;
+                        $current[$entryPath]['path'] = $path;
+                        $current[$entryPath]['status'] = '';
+                        $current[$entryPath]['acls'] = array();
+                        $current[$entryPath]['type'] = 'manual';
+                        $current[$entryPath]['base'] = $entryBase;
+                        $current[$entryPath]['parentPath'] = $entryPath;
+                        $current[$entryPath]['folderType'] = $this->getFolderType($current[$entryPath]);
+
+                        $ret['linear'][$entryPath] = &$current[$entryPath];
+                        $this->baseEntryMap[$entryBase] = $entryPath;
+                    }
+                    $last = &$current[$entryPath];
+                    $current = &$current[$entryPath]['children'];
                 }
-                $last = &$current[$entryPath];
-                $current = &$current[$entryPath]['children'];
             }
             $last['acls'] = $entry['acls'];
             $last['name'] = $entry['name'];

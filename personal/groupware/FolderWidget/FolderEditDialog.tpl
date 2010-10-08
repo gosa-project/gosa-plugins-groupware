@@ -1,4 +1,4 @@
-<h3>{t}Folder editing dialog{/t}</h3>
+<h3>{t}Folder{/t}</h3>
 
 <table>
     <tr>
@@ -17,9 +17,9 @@
 
 <table>
     <tr>
-        <td style='width:120px;'>{t}Name{/t}</td>
+        <td style='width:100px;'>{t}Type{/t}</td>
+        <td style='width:180px;'>{t}Name{/t}</td>
         <td style='width:180px;'>{t}Permission{/t}</td>
-        <td style='width:180px;'>{t}Type{/t}</td>
     </tr>
     {foreach from=$folderItem.acls item=item key=key}
         <tr>

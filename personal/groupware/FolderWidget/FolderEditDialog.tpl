@@ -1,5 +1,17 @@
-<h3>{t}Folder{/t}</h3>
 
+{if $isNew}
+
+<h3>{t}Create folder{/t}</h3>
+<table>
+    <tr>
+        <td>{t}Name{/t}:&nbsp;</td>
+        <td><input name='folderName' value="{$folderItem.name}" type="text"></td>
+    </tr>
+</table>
+
+{else}
+
+<h3>{t}Edit folder{/t}</h3>
 <table>
     <tr>
         <td>{t}Name{/t}:&nbsp;</td>
@@ -10,6 +22,7 @@
         <td>{$folderItem.path}</td>
     </tr>
 </table>
+{/if}
 
 <hr>
 

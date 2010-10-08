@@ -24,7 +24,7 @@ class FolderWidget extends plugin
         //  effect on the results.
         $this->rootBase = $this->fakeCnAttr.$this->rootName;
 
-        $this->accountPrefix = (empty($accountPrefix)) ? "" : rtrim($accountPrefix,$pathSeparator).$pathSeparator;
+        $this->accountPrefix = (empty($accountPrefix)) ? "" : rtrim($accountPrefix,$this->pathSeparator).$this->pathSeparator;
         $this->rootBase = $this->pathToDn($accountPrefix);
 
         // Update the folder list, initially.
@@ -80,11 +80,12 @@ class FolderWidget extends plugin
         $data[$this->accountPrefix]['name'] = $this->rootName;
         $data[$this->accountPrefix]['status'] = '';
         $data[$this->accountPrefix]['acls'] = array();
-        $data[$this->accountPrefix]['path'] = $this->rootName;
+        $data[$this->accountPrefix]['path'] = $this->accountPrefix;
         $data[$this->accountPrefix]['type'] = 'manual';
         $data[$this->accountPrefix]['base'] = $this->rootBase;
         $data[$this->accountPrefix]['parentPath'] = "";
         $data[$this->accountPrefix]['children'] = array();
+        $this->baseEntryMap[$this->rootBase] = $this->accountPrefix;
         $ret['linear'][$this->accountPrefix] = &$data[$this->accountPrefix];
 
         $base = &$data[$this->accountPrefix]['children'];
@@ -161,6 +162,15 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing->setFolderList($this->folderList);
     }
 
+
+    function addFolder()
+    {
+            $this->currentlyEditedItem = NULL;
+            $this->dialog = new FolderEditDialog($this->config, array(), TRUE);
+            $this->dialog->setPermissions($this->permissions);
+    }
+
+
     function _recursiveRemoveByBase(&$arr, $base)
     {
         $ret = array();
@@ -227,16 +237,38 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing->save_object();
 
         // Handle dialogs 
-        if(isset($_POST['FolderEditDialog_ok'])){
+        if(isset($_POST['FolderEditDialog_ok']) && is_object($this->dialog)){
     
             $this->dialog->save_object();
             $msgs = $this->dialog->check();
             if(count($msgs)){
                 msg_dialog::displayChecks($msgs);
             }else{
-                $newItem = $this->dialog->save();
-                $path = $this->currentlyEditedItem['path'];
-                $this->folderList['linear'][$path]['acls'] = $newItem['acls']; 
+                if($this->dialog->isNew()){
+                    // Detect the current entry
+                    $base = $this->FolderWidgetListing->getBase();
+   
+                    if(isset($this->baseEntryMap[$base])){
+                        $entry = $this->folderList['linear'][$this->baseEntryMap[$base]];
+                        $path = $entry['path'];
+                        $newItem = $this->dialog->save();
+                        $name = $newItem['name'];
+                        $newPath = "{$path}{$this->pathSeparator}{$name}";
+                        $newItem['status'] = 'added';
+                        $newItem['type'] = 'real';
+                        $newItem['children'] = array();
+                        $newItem['path'] = $newPath;
+                        $newItem['parentPath'] = $entry['path'];
+                        $newItem['folderType'] = $this->getFolderType($newItem);
+                        $newItem['base'] = $this->pathToDn($newPath);
+                        $this->folderList['linear'][$path]['children'][$newPath] = $newItem;
+                        $this->baseEntryMap[$newItem['base']] = $newPath;
+                    }
+                }else{
+                    $newItem = $this->dialog->save();
+                    $path = $this->currentlyEditedItem['path'];
+                    $this->folderList['linear'][$path]['acls'] = $newItem['acls']; 
+                }
                 $this->dialog = NULL;
             }
         }

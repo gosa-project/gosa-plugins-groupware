@@ -52,6 +52,11 @@ class FolderWidgetListing extends management
         $this->parent->editByBase($target[0]);
     }
 
+    function newEntry($action="",$target=array(),$all=array(), $altTabClass ="", $altTabType = "", $altAclCategory="")
+    {
+        $this->parent->addFolder();
+    }
+
     protected function removeEntryRequested($action="",$target=array(),$all=array())
     {   
         foreach($target as $tar){

@@ -129,7 +129,6 @@
       <name>remove</name>
       <type>entry</type>
       <image>images/lists/trash.png</image>
-      <acl>sudo/sudo[d]</acl>
       <label>Remove Sudo role</label>
     </action>
 

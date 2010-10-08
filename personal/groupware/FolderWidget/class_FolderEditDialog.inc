@@ -3,6 +3,7 @@
 class FolderEditDialog extends plugin
 {
     private $folderItem = NULL;    
+    private $permissions = array();
 
     function __construct($config, $folderItem)
     {
@@ -10,10 +11,16 @@ class FolderEditDialog extends plugin
         $this->folderItem = $folderItem;
     }
 
+    function setPermissions($perms)
+    {
+        $this->permissions = $perms;
+    }
+
     function execute()
     {
         $smarty = get_smarty(); 
         $smarty->assign('folderItem', $this->folderItem);
+        $smarty->assign('permissions', $this->permissions);
         return($smarty->fetch(get_template_path("FolderEditDialog.tpl", TRUE, dirname(__FILE__))));
     }
 

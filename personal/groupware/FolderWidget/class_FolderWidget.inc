@@ -13,6 +13,7 @@ class FolderWidget extends plugin
     private $folderList;
 
     private $baseEntryMap = array();
+    private $permissions = array();
 
     function __construct(&$config, $folderList, $accountPrefix)
     {
@@ -31,6 +32,11 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing = new FolderWidgetListing($this->config, get_userinfo(), $this->rootBase, $this);
         $this->FolderWidgetListing->setBase($this->rootBase);
         $this->FolderWidgetListing->setFolderRoot($this->rootBase);
+    }
+
+    function setPermissions($perms)
+    {
+        $this->permissions = $perms;
     }
 
     function pathToDn($path)
@@ -143,6 +149,7 @@ class FolderWidget extends plugin
         if($item){
             $this->currentlyEditedItem = $item;
             $this->dialog = new FolderEditDialog($this->config, $item);
+            $this->dialog->setPermissions($this->permissions);
         }
     }
 

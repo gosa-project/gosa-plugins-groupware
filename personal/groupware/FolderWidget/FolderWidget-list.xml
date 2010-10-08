@@ -64,15 +64,8 @@
      <action>
       <name>new</name>
       <type>entry</type>
-      <image>plugins/sudo/images/select_sudo.png[new]</image>
-      <label>Role</label>
-     </action>
-
-     <action>
-      <name>new_default</name>
-      <type>entry</type>
-      <image>plugins/sudo/images/select_sudo.png</image>
-      <label>Default</label>
+      <image>images/lists/folder.png</image>
+      <label>Sub folder</label>
      </action>
 
     </action>

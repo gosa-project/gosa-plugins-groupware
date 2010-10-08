@@ -25,7 +25,11 @@
         <tr>
             <td>{$item.type}</td>
             <td><input type='text' name="permission_{$key}_name" value="{$item.name}"></td>
-            <td><input type='text' name="permission_{$key}_acl" value="{$item.acl}"></td>
+            <td>
+                <select name="permission_{$key}_acl" size=1>
+                    {html_options options=$permissions selected=$item.acl}
+                </select>
+            </td>
             <td><button name="permission_{$key}_del">{msgPool type=delButton}</button></td>
         </tr>
     {/foreach}

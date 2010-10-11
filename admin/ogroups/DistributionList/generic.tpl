@@ -1,8 +1,8 @@
-<h3>{t}Groupware{/t}</h3>
 
-<table summary="{t}Groupware{/t}">
+<table summary="{t}Groupware{/t}" width="100%">
     <tr>
         <td style='width:50%; vertical-align: top;' class='right-border'>
+            <h3>{t}Groupware{/t}</h3>
             {t}Mail address{/t}:
             {render acl=$primaryMailAddressACL}
                 <input type='text' name="primaryMailAddress" value="{$primaryMailAddress}">

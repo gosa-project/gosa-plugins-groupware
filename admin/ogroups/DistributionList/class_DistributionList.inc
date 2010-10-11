@@ -57,6 +57,7 @@ class DistributionList extends plugin
 #       //  on save();
 #       $memberList = array();
 #       $primaryMailAddress = "";
+#       $mailSizeLimit = NULL;
 #       $alternateAddresses = array();
 #
 #       if($is_account){
@@ -94,12 +95,23 @@ class DistributionList extends plugin
 #               return;
 #           }
 #           
+#           // Load mail size limitation settings 
+#           $mailSizeLimit = $rpc->gwDistGetMailLimit($this->orig_cn); 
+#           if(!$rpc->success()){
+#               $this->rpcError = TRUE;
+#               $this->rpcErrorMessage = $rpc->get_error();
+#               $message = sprintf(_("Failed to load mail size limit for distribution list '%s'! Error was: '%s'."), 
+#                   $this->orig_cn, $rpc->get_error());
+#               msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+#               return;
+#           }
 #       }
 
         $is_account = TRUE;
         $primaryMailAddress = 'technik@gonicus.de';
         $memberList = array('hape');
         $alternateAddresses = array("schinken@gonicus.de","wurst@gonicus.de");
+        $mailSizeLimit = 222;
 
         // Store values as current and initial values (saved_attributes) 
         //  to be able to keep track och changes.
@@ -108,6 +120,7 @@ class DistributionList extends plugin
         $this->memberList = $this->saved_attributes['memberList'] = $memberList;
         $this->primaryMailAddress = $this->saved_attributes['primaryMailAddress'] = $primaryMailAddress;
         $this->alternateAddresses = $this->saved_attributes['alternateAddresses'] = $alternateAddresses;
+        $this->mailSizeLimit = $this->saved_attributes['mailSizeLimit'] = $mailSizeLimit;
         $this->initialized = TRUE;
     }
 
@@ -330,6 +343,18 @@ class DistributionList extends plugin
             $rpc->gwDistSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
             if(!$rpc->success()){
                 $message = sprintf(_("Failed to update the primary mail address for distribution list '%s'! Error was: '%s'."), 
+                        $this->cn, $rpc->get_error());
+                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+            }
+        }
+
+        // Updated mail size limitations, if needed:  
+        //  -> is a new distribution list or
+        //  -> the value for 'mailSizeLimit' has changed.
+        if(!$this->initially_was_account || $this->mailSizeLimit != $this->saved_attributes['mailSizeLimit']){
+            $rpc->gwDistSetMailLimit($this->cn, $this->mailSizeLimit);
+            if(!$rpc->success()){
+                $message = sprintf(_("Failed to update mail size limitations for distribution list '%s'! Error was: '%s'."), 
                         $this->cn, $rpc->get_error());
                 msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
             }

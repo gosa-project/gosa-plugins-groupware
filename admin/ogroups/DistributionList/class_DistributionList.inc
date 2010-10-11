@@ -9,8 +9,12 @@ class DistributionList extends plugin
 
     public $view_logged = FALSE;
 
-    public $attributes = array('primaryMailAddress','alternateAddresses','memberList');
+    public $attributes = array('primaryMailAddress','alternateAddresses','memberList','mailSizeLimit');
 
+    public $mailSizeLimit = NULL;
+    public $primaryMailAddress = "";
+    public $alternateAddresses = array();
+    public $memberList = array();
 
     function __construct($config, $dn, $attrs = NULL)
     {
@@ -187,11 +191,12 @@ class DistributionList extends plugin
 
         $smarty = get_smarty();
         $smarty->assign('rpcError' , $this->rpcError);
-        foreach(array("primaryMailAddress","alternateAddresses") as $attr){
+        foreach(array("primaryMailAddress","alternateAddresses","mailSizeLimit") as $attr){
             $smarty->assign("{$attr}ACL", $this->getacl($attr));
             $smarty->assign($attr, set_post($this->$attr));
         }
 
+        $smarty->assign("useMailSizeLimit", ($this->mailSizeLimit != NULL));
         $smarty->assign("memberList", set_post($this->memberList));
         $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
         return($display.$smarty->fetch(get_template_path('DistributionList/generic.tpl', TRUE)));
@@ -213,6 +218,7 @@ class DistributionList extends plugin
                     "plOptions"       => array(),
                     "plProvidedAcls"  => array(
                         "primaryMailAddress"   => _("Mail address"),
+                        "mailSizeLimit"   => _("Mail size limit"),
                         "alternateAddresses"   => _("Alternate mail addresses"))
                         ));
     }
@@ -222,11 +228,13 @@ class DistributionList extends plugin
 
     function save_object()
     {
-    
-        if(isset($_POST['retryInit'])){
-            $this->init();
+        if(isset($_POST['DistributionList_posted'])){
+            if(isset($_POST['retryInit'])){
+                $this->init();
+            }
+            if(!isset($_POST['useMailSizeLimit'])) $this->mailSizeLimit = NULL;
+            plugin::save_object();
         }
-        plugin::save_object();
     }
 
 

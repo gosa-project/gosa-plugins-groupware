@@ -3,9 +3,22 @@
     <tr>
         <td style='width:50%; vertical-align: top;' class='right-border'>
             <h3>{t}Groupware{/t}</h3>
+
             {t}Mail address{/t}:
             {render acl=$primaryMailAddressACL}
                 <input type='text' name="primaryMailAddress" value="{$primaryMailAddress}">
+            {/render}
+            <hr>
+
+            {render acl=$mailSizeLimitACL}
+                <input type='checkbox' name="useMailSizeLimit" 
+                    onClick="changeState('mailSizeLimit')" 
+                    {if $useMailSizeLimit} checked {/if} value="1">
+            {/render}
+            {t}Use incoming mail size limitation{/t}
+            {render acl=$mailSizeLimitACL}
+                <input type='text' name='mailSizeLimit' id="mailSizeLimit" 
+                    {if $useMailSizeLimit} value="{$mailSizeLimit}" {else} value="" disabled {/if}>
             {/render}
         </td>
         <td style='width:50%; vertical-align: top;'>
@@ -31,4 +44,4 @@
     </tr>
 </table>
 
-
+<input type="hidden" name="DistributionList_posted" value="1">

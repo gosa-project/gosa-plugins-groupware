@@ -247,7 +247,6 @@ class FolderWidget extends plugin
                 if($this->dialog->isNew()){
                     // Detect the current entry
                     $base = $this->FolderWidgetListing->getBase();
-   
                     if(isset($this->baseEntryMap[$base])){
                         $entry = $this->folderList['linear'][$this->baseEntryMap[$base]];
                         $path = $entry['path'];
@@ -261,7 +260,10 @@ class FolderWidget extends plugin
                         $newItem['parentPath'] = $entry['path'];
                         $newItem['folderType'] = $this->getFolderType($newItem);
                         $newItem['base'] = $this->pathToDn($newPath);
+    
                         $this->folderList['linear'][$path]['children'][$newPath] = $newItem;
+                        $this->folderList['linear'][$newPath] = &$this->folderList['linear'][$path]['children'][$newPath];
+
                         $this->baseEntryMap[$newItem['base']] = $newPath;
                     }
                 }else{

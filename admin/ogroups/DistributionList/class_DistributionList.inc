@@ -43,6 +43,16 @@ class DistributionList extends plugin
     }
 
 
+    /*! \brief      Check whether a feature is enabled or not.
+     *  @param      The feature name to check for
+     *  @return     TRUE on success else FALSE
+     */
+    function featureEnabled($name)
+    {
+        return(isset($this->featuresEnabled[$name]) && $this->featuresEnabled[$name]);
+    }
+
+
     /*! \brief      Try to initialize the plugin using a json-rpc connection
      *               to the gosa-ng server.
      */
@@ -117,27 +127,31 @@ class DistributionList extends plugin
             }
 
             // Load alternate mail address 
-            $alternateAddresses = $rpc->gwDistGetAlternateMailAddresses($this->orig_cn); 
-            if(!$rpc->success()){
-                $this->rpcError = TRUE;
-                $this->rpcErrorMessage = $rpc->get_error();
-                $message = sprintf(_("Failed to load alternate mail addresses for distribution list '%s'! Error was: '%s'."), 
-                        $this->orig_cn, $rpc->get_error());
-                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-                return;
+            if($this->featureEnabled('alternateAddresses')){
+                $alternateAddresses = $rpc->gwDistGetAlternateMailAddresses($this->orig_cn); 
+                if(!$rpc->success()){
+                    $this->rpcError = TRUE;
+                    $this->rpcErrorMessage = $rpc->get_error();
+                    $message = sprintf(_("Failed to load alternate mail addresses for distribution list '%s'! Error was: '%s'."), 
+                            $this->orig_cn, $rpc->get_error());
+                    msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                    return;
+                }
             }
 
             // Load mail size limitation settings 
-            $mailSizeLimit = $rpc->gwDistGetMailLimit($this->orig_cn); 
-            if(!$rpc->success()){
-                $this->rpcError = TRUE;
-                $this->rpcErrorMessage = $rpc->get_error();
-                $message = sprintf(_("Failed to load mail size limit for distribution list '%s'! Error was: '%s'."), 
-                        $this->orig_cn, $rpc->get_error());
-                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-                return;
+            if($this->featureEnabled('mailSizeLimit')){
+                $mailSizeLimit = $rpc->gwDistGetMailLimit($this->orig_cn); 
+                if(!$rpc->success()){
+                    $this->rpcError = TRUE;
+                    $this->rpcErrorMessage = $rpc->get_error();
+                    $message = sprintf(_("Failed to load mail size limit for distribution list '%s'! Error was: '%s'."), 
+                            $this->orig_cn, $rpc->get_error());
+                    msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                    return;
+                }
+                $mailSizeLimit = $mailSizeLimit['receive'];
             }
-            $mailSizeLimit = $mailSizeLimit['receive'];
         }
 
         // Store values as current and initial values (saved_attributes) 
@@ -256,6 +270,10 @@ class DistributionList extends plugin
             $smarty->assign("{$attr}ACL", $this->getacl($attr));
             $smarty->assign($attr, set_post($this->$attr));
         }
+        foreach(array('mailSizeLimit','alternateAddresses') as $feature){
+            $smarty->assign("{$feature}_isActive", $this->featureEnabled($feature));
+        }
+        
 
         $smarty->assign("useMailSizeLimit", ($this->mailSizeLimit != NULL));
         $smarty->assign("memberList", set_post($this->memberList));
@@ -399,32 +417,33 @@ class DistributionList extends plugin
         // Updated mail size limitations, if needed:  
         //  -> is a new distribution list or
         //  -> the value for 'mailSizeLimit' has changed.
-        if(!$this->initially_was_account || $this->mailSizeLimit != $this->saved_attributes['mailSizeLimit']){
-            $rpc->gwDistSetMailLimit($this->cn, $this->mailSizeLimit);
-            if(!$rpc->success()){
-                $message = sprintf(_("Failed to update mail size limitations for distribution list '%s'! Error was: '%s'."), 
-                        $this->cn, $rpc->get_error());
-                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+        if($this->featureEnabled('mailSizeLimit')){
+            if(!$this->initially_was_account || $this->mailSizeLimit != $this->saved_attributes['mailSizeLimit']){
+                $rpc->gwDistSetMailLimit($this->cn, $this->mailSizeLimit);
+                if(!$rpc->success()){
+                    $message = sprintf(_("Failed to update mail size limitations for distribution list '%s'! Error was: '%s'."), 
+                            $this->cn, $rpc->get_error());
+                    msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                }
             }
         }
 
         // Updated alternate mail addresses, if needed:  
         //  -> is a new distribution list or
         //  -> the value for 'alternateAddresses' has changed.
-        sort($this->alternateAddresses);
-        sort($this->saved_attributes['alternateAddresses']);
-        $changed = array_differs($this->alternateAddresses,$this->saved_attributes['alternateAddresses']);
-        if(!$this->initially_was_account || $changed){
-            $rpc->gwDistSetAlternateMailAddresses($this->cn, $this->alternateAddresses);
-            if(!$rpc->success()){
-                $message = sprintf(_("Failed to update alternate addresses for distribution list '%s'! Error was: '%s'."), 
-                        $this->cn, $rpc->get_error());
-                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+        if($this->featureEnabled('alternateAddresses')){
+            sort($this->alternateAddresses);
+            sort($this->saved_attributes['alternateAddresses']);
+            $changed = array_differs($this->alternateAddresses,$this->saved_attributes['alternateAddresses']);
+            if(!$this->initially_was_account || $changed){
+                $rpc->gwDistSetAlternateMailAddresses($this->cn, $this->alternateAddresses);
+                if(!$rpc->success()){
+                    $message = sprintf(_("Failed to update alternate addresses for distribution list '%s'! Error was: '%s'."), 
+                            $this->cn, $rpc->get_error());
+                    msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                }
             }
         }
-
-        // Update member list       
-        $this->memberList = $this->getOgroupMemberList();
 
         // Check which accounts have valid groupware mail addresses.
         $uids = $this->getOgroupMemberList();

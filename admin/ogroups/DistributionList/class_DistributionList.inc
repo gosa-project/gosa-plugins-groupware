@@ -48,8 +48,29 @@ class DistributionList extends plugin
      */
     function init()
     {
-        // Check whether a mathing distribution-list exsits or not?
+        // Detect supported capabilities 
         $rpc = $this->config->getRpcHandle();
+        $capabilities = $rpc->gwGetCapabilities();
+        if(!$rpc->success()){
+            $this->rpcError = TRUE;
+            $this->rpcErrorMessage = $rpc->get_error();
+            $message = sprintf(_("Failed to load supported capabilities from server! Error was: '%s'."), 
+                    $rpc->get_error());
+            msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+            return;
+        }
+
+        // Detect features we can use
+        $map['alternateAddresses'] = array('distGetAlternateMailAddresses','distSetAlternateMailAddresses');
+        $map['mailSizeLimit'] = array('distGetMailLimit','distGetMailLimit');
+        foreach($map as $name => $required){
+            $this->featuresEnabled[$name] = TRUE;
+            foreach($required as $func){
+                $this->featuresEnabled[$name] &= isset($capabilities[$func]) && $capabilities[$func];
+            }
+        }
+
+        // Check whether a mathing distribution-list exsits or not?
         $is_account = $rpc->gwDistExists($this->orig_cn);
         $this->rpcError = FALSE;
 
@@ -83,6 +104,8 @@ class DistributionList extends plugin
                 msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
                 return;
             }
+
+            print_a(array("memberList" => $memberList));
 
             // Now get the primary mail address
             $primaryMailAddress = $rpc->gwDistGetPrimaryMailAddress($this->orig_cn); 
@@ -127,7 +150,29 @@ class DistributionList extends plugin
         $this->primaryMailAddress = $this->saved_attributes['primaryMailAddress'] = $primaryMailAddress;
         $this->alternateAddresses = $this->saved_attributes['alternateAddresses'] = $alternateAddresses;
         $this->mailSizeLimit = $this->saved_attributes['mailSizeLimit'] = $mailSizeLimit;
+        $this->capabilities = $capabilities;        
         $this->initialized = TRUE;
+    }
+
+
+    /*!  \brief     Gets the mail addresses for the ogroups members.
+     *              This will then be stored together with the dist list.
+     */
+    function getOgroupMemberList()
+    {
+        $ldap = $this->config->get_ldap_link();
+        $ldap->cd($this->config->current['BASE']);
+        $members = array();
+        foreach($this->parent->by_object['ogroup']->memberList as $dn => $data){
+            if($data['type'] == 'U'){
+                $ldap->cat($dn, array('mail'));
+                if($ldap->count()){
+                    $attrs = $ldap->fetch();
+                    if(isset($attrs['mail'][0])) $members[] = $attrs['mail'][0];
+                }
+            }
+        }
+        return($members);
     }
 
 
@@ -321,7 +366,6 @@ class DistributionList extends plugin
      */  
     function save()
     {
-        // First check if we've to add a new list.
         $rpc = $this->config->getRpcHandle();
         if(!$this->initially_was_account){
             $rpc->gwDistAdd($this->cn, $this->primaryMailAddress);
@@ -383,13 +427,15 @@ class DistributionList extends plugin
         }
 
         // Update member list       
+        $this->memberList = $this->getOgroupMemberList();
+            print_a(array("memberList" => $this->memberList));
         $all = array_merge($this->memberList, $this->saved_attributes['memberList']);
         foreach($all as $member){
             if(!in_array($member,$this->memberList)){
                 echo "<br>Del {$member}";
                 $rpc->gwDistDelMember($this->cn, $member);
                 if(!$rpc->success()){
-                    $message = sprintf(_("Failed to add member '%s' to distribution list '%s'! Error was: '%s'."), 
+                    $message = sprintf(_("Failed to remove member '%s' from distribution list '%s'! Error was: '%s'."), 
                             $member, $this->cn, $rpc->get_error());
                     msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
                 }
@@ -397,7 +443,7 @@ class DistributionList extends plugin
                 echo "<br>Add {$member}";
                 $rpc->gwDistAddMember($this->cn, $member);
                 if(!$rpc->success()){
-                    $message = sprintf(_("Failed to remove member '%s' from distribution list '%s'! Error was: '%s'."), 
+                    $message = sprintf(_("Failed to add member '%s' to distribution list '%s'! Error was: '%s'."), 
                             $member, $this->cn, $rpc->get_error());
                     msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
                 }

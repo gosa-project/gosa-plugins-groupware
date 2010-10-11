@@ -51,6 +51,8 @@ class Groupware extends plugin
     var $plDescription  = "GOsa mail extension.";
     var $view_logged = FALSE;
 
+    var $FolderWidget = NULL;
+
     var $accountInitialized = FALSE;
     var $rpcError = FALSE;
     var $rpcErrorMessage = "";

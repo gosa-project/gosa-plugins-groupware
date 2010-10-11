@@ -259,6 +259,18 @@ class Groupware extends plugin
     }
 
 
+    function getPermissions()
+    {
+        $ret[GROUPWARE_RIGHTS_NONE] = _("None");
+        $ret[RIGHTS_GROUPWARE_READ] = _("Read");
+        $ret[RIGHTS_GROUPWARE_POST] = _("Post");
+        $ret[GROUPWARE_RIGHTS_APPEND] = _("Append");
+        $ret[RIGHTS_GROUPWARE_WRITE] = _("Write");
+        $ret[GROUPWARE_RIGHTS_ALL] = _("All");
+        return($ret);
+    }
+
+
     /*! \brief  Generates the HTML user interface for the groupware plugin
      *           and take of several ui actions like adding or removing 
      *           forward addresses, filters and the account itself.
@@ -318,6 +330,36 @@ class Groupware extends plugin
             $this->dialog = TRUE;
             return($this->filterManager->execute());
         }
+
+
+        /****************
+          Folder editor
+         ****************/
+
+        if(isset($_POST['FolderWidget_cancel'])) $this->FolderWidget = NULL;
+        if(isset($_POST['FolderWidget_ok'])){
+            $this->FolderWidget->save_object();
+            $msgs = $this->FolderWidget->check();
+            if(count($msgs)){
+                msg_dialog::displayChecks($msgs);
+            }else{
+                $this->mailFolder = $this->FolderWidget->save();
+                $this->FolderWidget = NULL;
+            }
+        }
+        if(isset($_POST['configureFolder'])){
+            $this->FolderWidget = new FolderWidget($this->config,$this->mailFolder, "user/wiwu/Inbox");
+            $this->FolderWidget->setPermissions($this->getPermissions());
+            $this->FolderWidget->acl_base = $this->acl_base;
+            $this->FolderWidget->acl_category = $this->acl_category;
+        }
+        $this->dialog = FALSE;
+        if($this->FolderWidget instanceOf FolderWidget){
+            $this->FolderWidget->save_object();
+            $this->dialog = TRUE;
+            return($this->FolderWidget->execute());
+        }
+   
 
         /****************
           Account status

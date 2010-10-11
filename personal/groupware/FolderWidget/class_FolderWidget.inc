@@ -2,6 +2,7 @@
 
 class FolderWidget extends plugin
 {
+    public $pathTitle = "Folder";
 
     private $pathSeparator = "/";
     private $rootName = "/";

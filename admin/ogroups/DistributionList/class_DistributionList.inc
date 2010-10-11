@@ -33,11 +33,11 @@ class DistributionList extends plugin
 
     function init()
     {
-        // Check whether a mathing distribution-list exsits or not?
-        $rpc = $this->config->getRpcHandle();
-        $is_account = $rpc->gwDistExists($this->orig_cn);
-        $this->rpcError = FALSE;
-         
+#       // Check whether a mathing distribution-list exsits or not?
+#       $rpc = $this->config->getRpcHandle();
+#       $is_account = $rpc->gwDistExists($this->orig_cn);
+#       $this->rpcError = FALSE;
+#        
 #       // An error occured abort here
 #       if(!$rpc->success()){
 #           $this->rpcError = TRUE;
@@ -297,16 +297,16 @@ class DistributionList extends plugin
         $rpc = $this->config->getRpcHandle();
         if(!$this->initially_was_account){
             $rpc->gwDistAdd($this->orig_cn);
-        }
-        if(!$rpc->success()){
-            $message = sprintf(_("Failed to add distribution list '%s'! Error was: '%s'."), 
-                    $this->cn, $rpc->get_error());
-            return;
+            if(!$rpc->success()){
+                $message = sprintf(_("Failed to add distribution list '%s'! Error was: '%s'."), 
+                        $this->cn, $rpc->get_error());
+                return;
+            }
         }
 
         // Rename distribution list if cn has changed.
-        if(!$this->cn != $this->orig_cn && $this->initially_was_account){
-            $rpc->distRename($this->orig_cn, $this->cn);
+        if($this->cn != $this->orig_cn && $this->initially_was_account){
+            $rpc->gwDistRename($this->orig_cn, $this->cn);
             if(!$rpc->success()){
                 $message = sprintf(_("Failed to rename distribution list '%s' to '%s'! Error was: '%s'."), 
                         $this->orig_cn,$this->cn, $rpc->get_error());
@@ -319,7 +319,7 @@ class DistributionList extends plugin
         //  -> is a new distribution list or
         //  -> the value for 'primaryMailAddress' has changed.
         if(!$this->initially_was_account || $this->primaryMailAddress != $this->saved_attributes['primaryMailAddress']){
-            $rpc->distSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
+            $rpc->gwDistSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
             if(!$rpc->success()){
                 $message = sprintf(_("Failed to update the primary mail address for distribution list '%s'! Error was: '%s'."), 
                         $this->cn, $rpc->get_error());
@@ -334,7 +334,7 @@ class DistributionList extends plugin
         sort($this->saved_attributes['alternateAddresses']);
         $changed = count(array_diff($this->alternateAddresses,$this->saved_attributes['alternateAddresses']));
         if(!$this->initially_was_account || $changed){
-            $rpc->distSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
+            $rpc->gwDistSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
             if(!$rpc->success()){
                 $message = sprintf(_("Failed to update alternate addresses for distribution list '%s'! Error was: '%s'."), 
                         $this->cn, $rpc->get_error());

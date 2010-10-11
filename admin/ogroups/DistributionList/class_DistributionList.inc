@@ -9,6 +9,9 @@ class DistributionList extends plugin
 
     public $view_logged = FALSE;
 
+    public $attributes = array('primaryMailAddress','alternateAddresses','memberList');
+
+
     function __construct($config, $dn, $attrs = NULL)
     {
         plugin::plugin($config, $dn, $attrs);
@@ -125,7 +128,12 @@ class DistributionList extends plugin
                 return ($display);
             }
         }
-        return($display);
+
+        // Generate HTML output
+        $smarty = get_smarty();
+        $smarty->assign('rpcError' , $this->rpcError);
+        $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
+        return($display.$smarty->fetch(get_template_path('DistributionList/generic.tpl', TRUE)));
     }
 
 

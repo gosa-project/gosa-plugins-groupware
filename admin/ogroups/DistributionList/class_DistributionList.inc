@@ -7,9 +7,11 @@ class DistributionList extends plugin
     private $rpcError = FALSE;
     private $rpcErrorMessage = "";
 
-    function __construct($config, $dn, $attrs)
+    public $view_logged = FALSE;
+
+    function __construct($config, $dn, $attrs = NULL)
     {
-        plugin::plugin($config, $dn, $attr);
+        plugin::plugin($config, $dn, $attrs);
 
         // Get attributes from parent object
         foreach(array("uid","cn") as $attr){
@@ -29,12 +31,13 @@ class DistributionList extends plugin
         // Check whether a mathing distribution-list exsits or not?
         $rpc = $this->config->getRpcHandle();
         $is_account = $rpc->gwDistExists($this->cn);
-        
+        $this->rpcError = FALSE;
+         
         // An error occured abort here
         if(!$rpc->success()){
             $this->rpcError = TRUE;
             $this->rpcErrorMessage = $rpc->get_error();
-            msg_dialog::display(msgPool::rpcError($this->rpcErrorMessage));
+            msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
             return;
         }
 
@@ -50,7 +53,7 @@ class DistributionList extends plugin
             if(!$rpc->success()){
                 $this->rpcError = TRUE;
                 $this->rpcErrorMessage = $rpc->get_error();
-                msg_dialog::display(msgPool::rpcError($this->rpcErrorMessage));
+                msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
                 return;
             }
 
@@ -59,7 +62,7 @@ class DistributionList extends plugin
             if(!$rpc->success()){
                 $this->rpcError = TRUE;
                 $this->rpcErrorMessage = $rpc->get_error();
-                msg_dialog::display(msgPool::rpcError($this->rpcErrorMessage));
+                msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
                 return;
             }
 
@@ -68,7 +71,7 @@ class DistributionList extends plugin
             if(!$rpc->success()){
                 $this->rpcError = TRUE;
                 $this->rpcErrorMessage = $rpc->get_error();
-                msg_dialog::display(msgPool::rpcError($this->rpcErrorMessage));
+                msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
                 return;
             }
             
@@ -78,12 +81,23 @@ class DistributionList extends plugin
         $this->memberList = $memberList;
         $this->primaryMailAddress = $primaryMailAddress;
         $this->alternateAddresses = $alternateAddresses;
+        $this->initialized = TRUE;
     }
 
 
     function execute()
     {
         plugin::execute();
+
+        // Initialization failed - Display a stripped template which allows 
+        //  to retry initialization
+        if(!$this->initialized){
+            $smarty = get_smarty();
+            $smarty->assign('rpcError' , $this->rpcError);
+            $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
+            return($smarty->fetch(get_template_path('DistributionList/initFailed.tpl', TRUE)));
+        }
+
 
         // Log account access
         if($this->is_account && !$this->view_logged){
@@ -112,6 +126,15 @@ class DistributionList extends plugin
             }
         }
         return($display);
+    }
+
+
+    function save_object()
+    {
+    
+        if(isset($_POST['retryInit'])){
+            $this->init();
+        }
     }
 }
 

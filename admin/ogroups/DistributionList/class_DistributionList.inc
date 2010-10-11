@@ -132,10 +132,38 @@ class DistributionList extends plugin
         // Generate HTML output
         $smarty = get_smarty();
         $smarty->assign('rpcError' , $this->rpcError);
+        foreach(array("primaryMailAddress","alternateAddresses") as $attr){
+            $smarty->assign("{$attr}ACL", $this->getacl($attr));
+            $smarty->assign($attr, set_post($this->$attr));
+        }
+
+        $smarty->assign("memberList", set_post($this->memberList));
         $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
         return($display.$smarty->fetch(get_template_path('DistributionList/generic.tpl', TRUE)));
     }
 
+
+    /*! \brief  ACL settings
+     */
+    static function plInfo()
+    {
+        return (array(
+                    "plShortName"     => _("Distribution list"),
+                    "plDescription"   => _("Groupware distribution lists"),
+                    "plSelfModify"    => FALSE,
+                    "plDepends"       => array("ogroup"),                     // This plugin depends on
+                    "plPriority"      => 4,                                 // Position in tabs
+                    "plSection"     => array("administration"),
+                    "plCategory"    => array("ogroups"),
+                    "plOptions"       => array(),
+                    "plProvidedAcls"  => array(
+                        "primaryMailAddress"   => _("Mail address"),
+                        "alternateAddresses"   => _("Alternate mail addresses"))
+                        ));
+    }
+
+
+ 
 
     function save_object()
     {

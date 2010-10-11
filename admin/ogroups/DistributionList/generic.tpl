@@ -4,8 +4,8 @@
     <tr>
         <td style='width:50%; vertical-align: top;' class='right-border'>
             {t}Mail address{/t}:
-            {render acl=$primaryMailACL}
-                <input type='text' name="primaryMail" value="{$primaryMail}">
+            {render acl=$primaryMailAddressACL}
+                <input type='text' name="primaryMailAddress" value="{$primaryMailAddress}">
             {/render}
         </td>
         <td style='width:50%; vertical-align: top;'>

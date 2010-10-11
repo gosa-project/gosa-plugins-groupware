@@ -2,20 +2,27 @@
 
 class DistributionList extends plugin
 {
+    public $view_logged = FALSE;
 
+    // Error hanlding related attributes.
     private $initialized  = FALSE;
     private $rpcError = FALSE;
     private $rpcErrorMessage = "";
 
-    public $view_logged = FALSE;
 
+    // Attribute definition 
     public $attributes = array('primaryMailAddress','alternateAddresses','memberList','mailSizeLimit');
-
     public $mailSizeLimit = NULL;
     public $primaryMailAddress = "";
     public $alternateAddresses = array();
     public $memberList = array();
 
+    // Feature handling
+    private $featuresEnabled = array();
+
+    /*! \brief  Constructs the plugin, loads required parent values 
+     *           and initiates the initialization.
+     */
     function __construct($config, $dn, $attrs = NULL)
     {
         plugin::plugin($config, $dn, $attrs);
@@ -35,6 +42,10 @@ class DistributionList extends plugin
         $this->init();
     }
 
+
+    /*! \brief      Try to initialize the plugin using a json-rpc connection
+     *               to the gosa-ng server.
+     */
     function init()
     {
 #       // Check whether a mathing distribution-list exsits or not?
@@ -238,7 +249,8 @@ class DistributionList extends plugin
 
 
  
-
+    /*! \brief  Get posted values and check which are interesting for us.
+     */ 
     function save_object()
     {
         if(isset($_POST['DistributionList_posted'])){

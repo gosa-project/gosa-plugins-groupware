@@ -105,8 +105,6 @@ class DistributionList extends plugin
                 return;
             }
 
-            print_a(array("memberList" => $memberList));
-
             // Now get the primary mail address
             $primaryMailAddress = $rpc->gwDistGetPrimaryMailAddress($this->orig_cn); 
             if(!$rpc->success()){
@@ -155,8 +153,7 @@ class DistributionList extends plugin
     }
 
 
-    /*!  \brief     Gets the mail addresses for the ogroups members.
-     *              This will then be stored together with the dist list.
+    /*!  \brief     Gets the uids for the ogroups members.
      */
     function getOgroupMemberList()
     {
@@ -165,10 +162,10 @@ class DistributionList extends plugin
         $members = array();
         foreach($this->parent->by_object['ogroup']->memberList as $dn => $data){
             if($data['type'] == 'U'){
-                $ldap->cat($dn, array('mail'));
+                $ldap->cat($dn, array('uid'));
                 if($ldap->count()){
                     $attrs = $ldap->fetch();
-                    if(isset($attrs['mail'][0])) $members[] = $attrs['mail'][0];
+                    if(isset($attrs['uid'][0])) $members[] = $attrs['uid'][0];
                 }
             }
         }
@@ -428,11 +425,23 @@ class DistributionList extends plugin
 
         // Update member list       
         $this->memberList = $this->getOgroupMemberList();
-            print_a(array("memberList" => $this->memberList));
-        $all = array_merge($this->memberList, $this->saved_attributes['memberList']);
+
+        // Check which accounts have valid groupware mail addresses.
+        $uids = $this->getOgroupMemberList();
+        $rpc = $this->config->getRpcHandle(); 
+        $verified = $rpc->gwVerifyAcct($uids);
+        $hasExt = array();
+        if(!$rpc->success()){
+            $messages[] = sprintf(_("Failed to verify account ids! Error was: '%s'."),$rpc->get_error());
+        }else{
+            $hasExt = array();
+            foreach($verified as $uid => $mail){
+                if(!empty($mail)) $hasExt[] = $mail;
+            }   
+        }
+        $all = array_merge($hasExt, $this->saved_attributes['memberList']);
         foreach($all as $member){
-            if(!in_array($member,$this->memberList)){
-                echo "<br>Del {$member}";
+            if(!in_array($member,$hasExt)){
                 $rpc->gwDistDelMember($this->cn, $member);
                 if(!$rpc->success()){
                     $message = sprintf(_("Failed to remove member '%s' from distribution list '%s'! Error was: '%s'."), 
@@ -440,7 +449,6 @@ class DistributionList extends plugin
                     msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
                 }
             }elseif(!in_array($member,$this->saved_attributes['memberList'])){
-                echo "<br>Add {$member}";
                 $rpc->gwDistAddMember($this->cn, $member);
                 if(!$rpc->success()){
                     $message = sprintf(_("Failed to add member '%s' to distribution list '%s'! Error was: '%s'."), 
@@ -462,6 +470,31 @@ class DistributionList extends plugin
         }else{
             msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
         }
+    }
+
+    
+    function check()
+    {
+        $messages = plugin::check();
+
+        // Check which accounts have valid groupware mail addresses.
+        $uids = $this->getOgroupMemberList();
+        $rpc = $this->config->getRpcHandle(); 
+        $verified = $rpc->gwVerifyAcct($uids);
+        if(!$rpc->success()){
+            $messages[] = sprintf(_("Failed to verify account ids! Error was: '%s'."),$rpc->get_error());
+        }else{
+            $noExt = array();
+            foreach($verified as $uid => $mail){
+                if(empty($mail)) $noExt[] = $uid;
+            }   
+            if(count($noExt)){
+                $message = sprintf(_("The following object group members do not have a valid groupware extension and will be ignored as distribution list members: %s"),msgPool::buildList($noExt));
+                msg_dialog::display(_("Info"),$message, INFO_DIALOG);
+            }
+        }
+        
+        return($messages);
     }
 }
 ?>

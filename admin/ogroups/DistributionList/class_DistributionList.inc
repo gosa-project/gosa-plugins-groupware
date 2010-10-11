@@ -36,54 +36,62 @@ class DistributionList extends plugin
         $is_account = $rpc->gwDistExists($this->cn);
         $this->rpcError = FALSE;
          
-        // An error occured abort here
-        if(!$rpc->success()){
-            $this->rpcError = TRUE;
-            $this->rpcErrorMessage = $rpc->get_error();
-            msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
-            return;
-        }
+#       // An error occured abort here
+#       if(!$rpc->success()){
+#           $this->rpcError = TRUE;
+#           $this->rpcErrorMessage = $rpc->get_error();
+#           msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
+#           return;
+#       }
+#
+#       // We've detected a valid distribution list, now load all
+#       //  configured members, so we're able to update the memberlist
+#       //  on save();
+#       $memberList = array();
+#       $primaryMailAddress = "";
+#       if($is_account){
+#   
+#           // Load list of members 
+#           $memberList = $rpc->gwDistGetMembers($this->cn);
+#           if(!$rpc->success()){
+#               $this->rpcError = TRUE;
+#               $this->rpcErrorMessage = $rpc->get_error();
+#               msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
+#               return;
+#           }
+#
+#           // Now get the primary mail address
+#           $primaryMailAddress = $rpc->gwDistGetPrimaryMailAddress($this->cn); 
+#           if(!$rpc->success()){
+#               $this->rpcError = TRUE;
+#               $this->rpcErrorMessage = $rpc->get_error();
+#               msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
+#               return;
+#           }
+#
+#           // Load alternate mail address 
+#           $alternateAddresses = $rpc->gwDistGetAlternateMailAddresses($this->cn); 
+#           if(!$rpc->success()){
+#               $this->rpcError = TRUE;
+#               $this->rpcErrorMessage = $rpc->get_error();
+#               msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
+#               return;
+#           }
+#           
+#       }
 
-        // We've detected a valid distribution list, now load all
-        //  configured members, so we're able to update the memberlist
-        //  on save();
-        $memberList = array();
-        $primaryMailAddress = "";
-        if($is_account){
-    
-            // Load list of members 
-            $memberList = $rpc->gwDistGetMembers($this->cn);
-            if(!$rpc->success()){
-                $this->rpcError = TRUE;
-                $this->rpcErrorMessage = $rpc->get_error();
-                msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
-                return;
-            }
+        $is_account = TRUE;
+        $primaryMailAddress = 'technik@gonicus.de';
+        $memberList = 'hape';
+        $alternateAddresses = array("schinken@gonicus.de","wurst@gonicus.de");
 
-            // Now get the primary mail address
-            $primaryMailAddress = $rpc->gwDistGetPrimaryMailAddress($this->cn); 
-            if(!$rpc->success()){
-                $this->rpcError = TRUE;
-                $this->rpcErrorMessage = $rpc->get_error();
-                msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
-                return;
-            }
-
-            // Load alternate mail address 
-            $alternateAddresses = $rpc->gwDistGetAlternateMailAddresses($this->cn); 
-            if(!$rpc->success()){
-                $this->rpcError = TRUE;
-                $this->rpcErrorMessage = $rpc->get_error();
-                msg_dialog::display(_("Error"),msgPool::rpcError($this->rpcErrorMessage), ERROR_DIALOG);
-                return;
-            }
-            
-        }
-
-        $this->is_account = $is_account;
-        $this->memberList = $memberList;
-        $this->primaryMailAddress = $primaryMailAddress;
-        $this->alternateAddresses = $alternateAddresses;
+        // Store values as current and initial values (saved_attributes) 
+        //  to be able to keep track och changes.
+        $this->is_account = $this->initially_was_account = $is_account;
+        $this->saved_attributes = array();
+        $this->memberList = $this->saved_attributes['memberList'] = $memberList;
+        $this->primaryMailAddress = $this->saved_attributes['primaryMailAddress'] = $primaryMailAddress;
+        $this->alternateAddresses = $this->saved_attributes['alternateAddresses'] = $alternateAddresses;
         $this->initialized = TRUE;
     }
 
@@ -100,7 +108,6 @@ class DistributionList extends plugin
             $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
             return($smarty->fetch(get_template_path('DistributionList/initFailed.tpl', TRUE)));
         }
-
 
         // Log account access
         if($this->is_account && !$this->view_logged){
@@ -128,6 +135,42 @@ class DistributionList extends plugin
                 return ($display);
             }
         }
+
+        /****************
+          Alternate addresses
+         ****************/
+        // Add manually inserted alternate mail address.
+        if (isset($_POST['addAlternateAddress'])){
+            $valid= FALSE;
+            if (!tests::is_email($_POST['alternateAddressInput'])){
+                msg_dialog::display(_("Error"),msgPool::invalid(_("Mail address"),
+                            "","","your-domain@your-domain.com"),ERROR_DIALOG);
+            } else {
+                $valid= TRUE;
+            }
+            if ($valid && ($user= $this->addAlternate (get_post('alternateAddressInput'))) != ""){
+                $ui= get_userinfo();
+                $addon= "";
+                if ($user[0] == "!") {
+                    $addon= sprintf(_("Address is already in use by group '%s'."), mb_substr($user, 1));
+                } else {
+                    $addon= sprintf(_("Address is already in use by user '%s'."), $user);
+                }
+                msg_dialog::display(_("Error"), msgPool::duplicated(_("Mail address"))."<br><br><i>".
+                        "$addon</i>", ERROR_DIALOG);
+            }
+        }
+
+        // Remove alternate mail address.
+        if (isset($_POST['deleteAlternateAddress']) && isset($_POST['alternateAddressList'])){
+            $this->delAlternate ($_POST['alternateAddressList']);
+        }
+
+
+
+    
+
+
 
         // Generate HTML output
         $smarty = get_smarty();
@@ -171,7 +214,54 @@ class DistributionList extends plugin
         if(isset($_POST['retryInit'])){
             $this->init();
         }
+        plugin::save_object();
+    }
+
+
+    /*! \brief  Add given mail address to the list of alternate adresses ,
+     *           check if this mal address is used, skip adding in this case
+     */
+    function addAlternate($address)
+    {
+        if(empty($address)) return;
+        if($this->acl_is_writeable("alternateAddresses")){
+            $ldap= $this->config->get_ldap_link();
+            $address= strtolower($address);
+
+            /* Is this address already assigned in LDAP? */
+            $ldap->cd ($this->config->current['BASE']);
+            $ldap->search ("(&(!(objectClass=gosaUserTemplate))(objectClass=gosaMailAccount)(|(mail=$address)".
+                    "(alias=$address)(gosaMailAlternateAddress=$address)))", array("uid", "cn"));
+            if ($ldap->count() > 0){
+                $attrs= $ldap->fetch ();
+                if (!isset($attrs["uid"])) {
+                    return ("!".$attrs["cn"][0]);
+                }
+                return ($attrs["uid"][0]);
+            }
+            if (!in_array($address, $this->alternateAddresses)){
+                $this->alternateAddresses[]= $address;
+                $this->is_modified= TRUE;
+            }
+            sort ($this->alternateAddresses);
+            reset ($this->alternateAddresses);
+            return ("");
+        }else{
+            msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
+        }
+    }
+
+
+    /*! \brief  Removes the given mail address from the alternate addresses list
+     */
+    function delAlternate($addresses)
+    {
+        if($this->acl_is_writeable("alternateAddresses")){
+            $this->alternateAddresses= array_remove_entries ($addresses,$this->alternateAddresses);
+            $this->is_modified= TRUE;
+        }else{
+            msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
+        }
     }
 }
-
 ?>

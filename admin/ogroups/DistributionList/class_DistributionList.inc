@@ -15,7 +15,7 @@ class DistributionList extends plugin
     public $mailSizeLimit = NULL;
     public $primaryMailAddress = "";
     public $alternateAddresses = array();
-    public $memberList = array();
+    public $memberList = array();   
 
     // Feature handling
     private $featuresEnabled = array();
@@ -48,81 +48,76 @@ class DistributionList extends plugin
      */
     function init()
     {
-#       // Check whether a mathing distribution-list exsits or not?
-#       $rpc = $this->config->getRpcHandle();
-#       $is_account = $rpc->gwDistExists($this->orig_cn);
-#       $this->rpcError = FALSE;
-#        
-#       // An error occured abort here
-#       if(!$rpc->success()){
-#           $this->rpcError = TRUE;
-#           $this->rpcErrorMessage = $rpc->get_error();
-#           $message = sprintf(_("Failed to check existence for distribution list '%s'! Error was: '%s'."), 
-#               $this->orig_cn, $rpc->get_error());
-#           msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-#           return;
-#       }
-#
-#       // We've detected a valid distribution list, now load all
-#       //  configured members, so we're able to update the memberlist
-#       //  on save();
-#       $memberList = array();
-#       $primaryMailAddress = "";
-#       $mailSizeLimit = NULL;
-#       $alternateAddresses = array();
-#
-#       if($is_account){
-#   
-#           // Load list of members 
-#           $memberList = $rpc->gwDistGetMembers($this->orig_cn);
-#           if(!$rpc->success()){
-#               $this->rpcError = TRUE;
-#               $this->rpcErrorMessage = $rpc->get_error();
-#               $message = sprintf(_("Failed to load members for distribution list '%s'! Error was: '%s'."), 
-#                   $this->orig_cn, $rpc->get_error());
-#               msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-#               return;
-#           }
-#
-#           // Now get the primary mail address
-#           $primaryMailAddress = $rpc->gwDistGetPrimaryMailAddress($this->orig_cn); 
-#           if(!$rpc->success()){
-#               $this->rpcError = TRUE;
-#               $this->rpcErrorMessage = $rpc->get_error();
-#               $message = sprintf(_("Failed to load the primary mail address for distribution list '%s'! Error was: '%s'."), 
-#                   $this->orig_cn, $rpc->get_error());
-#               msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-#               return;
-#           }
-#
-#           // Load alternate mail address 
-#           $alternateAddresses = $rpc->gwDistGetAlternateMailAddresses($this->orig_cn); 
-#           if(!$rpc->success()){
-#               $this->rpcError = TRUE;
-#               $this->rpcErrorMessage = $rpc->get_error();
-#               $message = sprintf(_("Failed to load alternate mail addresses for distribution list '%s'! Error was: '%s'."), 
-#                   $this->orig_cn, $rpc->get_error());
-#               msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-#               return;
-#           }
-#           
-#           // Load mail size limitation settings 
-#           $mailSizeLimit = $rpc->gwDistGetMailLimit($this->orig_cn); 
-#           if(!$rpc->success()){
-#               $this->rpcError = TRUE;
-#               $this->rpcErrorMessage = $rpc->get_error();
-#               $message = sprintf(_("Failed to load mail size limit for distribution list '%s'! Error was: '%s'."), 
-#                   $this->orig_cn, $rpc->get_error());
-#               msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-#               return;
-#           }
-#       }
+        // Check whether a mathing distribution-list exsits or not?
+        $rpc = $this->config->getRpcHandle();
+        $is_account = $rpc->gwDistExists($this->orig_cn);
+        $this->rpcError = FALSE;
 
-        $is_account = TRUE;
-        $primaryMailAddress = 'technik@gonicus.de';
-        $memberList = array('hape');
-        $alternateAddresses = array("schinken@gonicus.de","wurst@gonicus.de");
-        $mailSizeLimit = 222;
+        // An error occured abort here
+        if(!$rpc->success()){
+            $this->rpcError = TRUE;
+            $this->rpcErrorMessage = $rpc->get_error();
+            $message = sprintf(_("Failed to check existence for distribution list '%s'! Error was: '%s'."), 
+                    $this->orig_cn, $rpc->get_error());
+            msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+            return;
+        }
+
+        // We've detected a valid distribution list, now load all
+        //  configured members, so we're able to update the memberlist
+        //  on save();
+        $memberList = array();
+        $primaryMailAddress = "";
+        $mailSizeLimit = NULL;
+        $alternateAddresses = array();
+
+        if($is_account){
+
+            // Load list of members 
+            $memberList = $rpc->gwDistGetMembers($this->orig_cn);
+            if(!$rpc->success()){
+                $this->rpcError = TRUE;
+                $this->rpcErrorMessage = $rpc->get_error();
+                $message = sprintf(_("Failed to load members for distribution list '%s'! Error was: '%s'."), 
+                        $this->orig_cn, $rpc->get_error());
+                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                return;
+            }
+
+            // Now get the primary mail address
+            $primaryMailAddress = $rpc->gwDistGetPrimaryMailAddress($this->orig_cn); 
+            if(!$rpc->success()){
+                $this->rpcError = TRUE;
+                $this->rpcErrorMessage = $rpc->get_error();
+                $message = sprintf(_("Failed to load the primary mail address for distribution list '%s'! Error was: '%s'."), 
+                        $this->orig_cn, $rpc->get_error());
+                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                return;
+            }
+
+            // Load alternate mail address 
+            $alternateAddresses = $rpc->gwDistGetAlternateMailAddresses($this->orig_cn); 
+            if(!$rpc->success()){
+                $this->rpcError = TRUE;
+                $this->rpcErrorMessage = $rpc->get_error();
+                $message = sprintf(_("Failed to load alternate mail addresses for distribution list '%s'! Error was: '%s'."), 
+                        $this->orig_cn, $rpc->get_error());
+                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                return;
+            }
+
+            // Load mail size limitation settings 
+            $mailSizeLimit = $rpc->gwDistGetMailLimit($this->orig_cn); 
+            if(!$rpc->success()){
+                $this->rpcError = TRUE;
+                $this->rpcErrorMessage = $rpc->get_error();
+                $message = sprintf(_("Failed to load mail size limit for distribution list '%s'! Error was: '%s'."), 
+                        $this->orig_cn, $rpc->get_error());
+                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                return;
+            }
+            $mailSizeLimit = $mailSizeLimit['receive'];
+        }
 
         // Store values as current and initial values (saved_attributes) 
         //  to be able to keep track och changes.
@@ -244,11 +239,11 @@ class DistributionList extends plugin
                         "primaryMailAddress"   => _("Mail address"),
                         "mailSizeLimit"   => _("Mail size limit"),
                         "alternateAddresses"   => _("Alternate mail addresses"))
-                        ));
+                    ));
     }
 
 
- 
+
     /*! \brief  Get posted values and check which are interesting for us.
      */ 
     function save_object()
@@ -296,7 +291,7 @@ class DistributionList extends plugin
         }
     }
 
-   
+
     /*!   \brief    Removes the distribution list extension for the current 
      *               object group.
      */  
@@ -304,7 +299,7 @@ class DistributionList extends plugin
     {
         // Do nothing if this asn't an active account before.
         if(!$this->initially_was_account) return;
-        
+
         // Remove distribution list 
         $rpc = $this->config->getRpcHandle();
         $rpc->gwDistDel($this->orig_cn);
@@ -329,7 +324,7 @@ class DistributionList extends plugin
         // First check if we've to add a new list.
         $rpc = $this->config->getRpcHandle();
         if(!$this->initially_was_account){
-            $rpc->gwDistAdd($this->orig_cn);
+            $rpc->gwDistAdd($this->cn, $this->primaryMailAddress);
             if(!$rpc->success()){
                 $message = sprintf(_("Failed to add distribution list '%s'! Error was: '%s'."), 
                         $this->cn, $rpc->get_error());
@@ -377,9 +372,9 @@ class DistributionList extends plugin
         //  -> the value for 'alternateAddresses' has changed.
         sort($this->alternateAddresses);
         sort($this->saved_attributes['alternateAddresses']);
-        $changed = count(array_diff($this->alternateAddresses,$this->saved_attributes['alternateAddresses']));
+        $changed = array_differs($this->alternateAddresses,$this->saved_attributes['alternateAddresses']);
         if(!$this->initially_was_account || $changed){
-            $rpc->gwDistSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
+            $rpc->gwDistSetAlternateMailAddresses($this->cn, $this->alternateAddresses);
             if(!$rpc->success()){
                 $message = sprintf(_("Failed to update alternate addresses for distribution list '%s'! Error was: '%s'."), 
                         $this->cn, $rpc->get_error());
@@ -391,6 +386,7 @@ class DistributionList extends plugin
         $all = array_merge($this->memberList, $this->saved_attributes['memberList']);
         foreach($all as $member){
             if(!in_array($member,$this->memberList)){
+                echo "<br>Del {$member}";
                 $rpc->gwDistDelMember($this->cn, $member);
                 if(!$rpc->success()){
                     $message = sprintf(_("Failed to add member '%s' to distribution list '%s'! Error was: '%s'."), 
@@ -398,6 +394,7 @@ class DistributionList extends plugin
                     msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
                 }
             }elseif(!in_array($member,$this->saved_attributes['memberList'])){
+                echo "<br>Add {$member}";
                 $rpc->gwDistAddMember($this->cn, $member);
                 if(!$rpc->success()){
                     $message = sprintf(_("Failed to remove member '%s' from distribution list '%s'! Error was: '%s'."), 

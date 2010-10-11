@@ -6,45 +6,10 @@
     <button name="retry">{t}Retry{/t}</button>
 {else}
 
-{if $mailFolder_isActive}
-
-    {$fileBrowser}
-
-    {t}Add folder{/t}:&nbsp;
-    <input name='folderName_Input' type='text'><button name="folderName_Add">{msgPool type=addButton}</button>
-
-    {if $currentSelectedFolder != ""}
-    <b>{t}Folder permission{/t}</b><br> 
-
-    <p>
-    {t}Current folder{/t}: <i>{$currentSelectedFolder}</i> <!--<input type='text' name="currentFolderName" value="{$folderEntries.name}">-->
-    <b>{$folderEntries.name}</b>
-    </p>
-
-    <table>
-        <tr>
-            <td>{t}Name{/t}</td>
-            <td>{t}Permission{/t}</td>
-            <td>{t}Type{/t}</td>
-        </tr>
-        {foreach from=$folderEntries.acls item=item key=key}
-            <tr>
-                <td>{$item.type}</td>
-                <td><input type='text' name="permission_{$key}_name" value="{$item.name}"></td>
-                <td><input type='text' name="permission_{$key}_acl" value="{$item.acl}"></td>
-                <td><button name="permission_{$key}_del">{msgPool type=delButton}</button></td>
-            </tr>
-        {/foreach}
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><button name="permission_add">{msgPool type=addButton}</button></td>
-        </tr>
-    </table>
-    <hr>
+    {if $mailFolder_isActive}
+        {t}Mail folder{/t}:&nbps;<button name='configureFolder'>{msgPool type=editButton}</button>
     {/if}
-{/if}
+
 <table summary="{t}Mail settings{/t}" style='width:100%;'>
     <tr>
         <td style='width:50%; '>  

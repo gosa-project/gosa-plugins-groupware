@@ -76,8 +76,6 @@ class Groupware extends plugin
     var $filterRules = array();
     var $vacationTemplates = array(); 
 
-	var $fileBrowser = NULL;
-
 	
     //the dropdown
     var $mailLocations = array();
@@ -121,17 +119,6 @@ class Groupware extends plugin
 
         // Set initial folder prefix
         $this->folderPrefix = "user/{$this->uid}";
-
-		// Initialize file browser list
-		$this->fileBrowser= new sortableListing();
-		$this->fileBrowser->setDeleteable(TRUE);
-		$this->fileBrowser->setEditable(TRUE);
-		$this->fileBrowser->setColspecs(array('*'));
-		$this->fileBrowser->setWidth("100%");
-		$this->fileBrowser->setHeight("150px");
-		$this->fileBrowser->setAcl("rwcdm");
-		$this->fileBrowser->update();
-		$this->fileBrowser->sortingEnabled(FALSE);
 
         // Initialize the plugin using rpc.
         $this->init();
@@ -516,25 +503,6 @@ class Groupware extends plugin
         foreach($this->enabledFeatures as $feature => $state){
             $smarty->assign($feature."_isActive", $state);
         }
-       
-        // Build up folder list 
-        $data = $lData = array();
-        foreach($this->mailFolder as $folderPath => $entries){
-            $data[$folderPath] = $entries;
-            $name = $entries['name'];
-            $cnt = count($entries['acls']);
-            if($this->currentSelectedFolder == $folderPath){
-                $name = "<b>{$name}</b>";
-            }
-
-            $status = (isset($entries['status']))? $entries['status'] : '';        
-            $prefix = preg_replace("/^([^\/]*).*$/","\\1", $folderPath);
-            $name = str_pad($name, (substr_count($folderPath, '/')*3-3) + strlen($name),'../', STR_PAD_LEFT);
-            $lData[$folderPath]= array('data' => array($name,$prefix,$status,$cnt));
-        }    
-        $this->fileBrowser->setListData($data, $lData) ;
-        $this->fileBrowser->update();
-
         
         $smarty->assign("currentSelectedFolder", $this->currentSelectedFolder);
         $folderEntries = array();
@@ -543,7 +511,6 @@ class Groupware extends plugin
         }
 		$smarty->assign("folderEntries", $folderEntries);
 
-		$smarty->assign("fileBrowser", $this->fileBrowser->render());
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
             $smarty->assign("displayTemplateSelector", "true");
@@ -554,6 +521,7 @@ class Groupware extends plugin
             $smarty->assign("displayTemplateSelector", "false");
         }
 
+        $smarty->assign("uid", $this->uid);
         $smarty->assign("initFailed", !$this->accountInitialized);
         $smarty->assign("rpcError", $this->rpcError);
         $smarty->assign("rpcErrorMessage", $this->rpcErrorMessage);

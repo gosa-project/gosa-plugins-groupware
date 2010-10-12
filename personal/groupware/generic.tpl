@@ -35,9 +35,13 @@
                 <tr>
                     <td><label for="mailFolder">{t}Mail folder{/t}</label></td>
                     <td>
-                        {render acl=$mailFolderACL}
-                            <button name='configureFolder'>{msgPool type=editButton}</button>
-                        {/render}
+                        {if $uid == ""}
+                            <i>{t}Can only be set for existing accounts!{/t}</i>
+                        {else}
+                            {render acl=$mailFolderACL}
+                                <button name='configureFolder'>{msgPool type=editButton}</button>
+                            {/render}
+                        {/if}
                     </td>
                 </tr>
                 {/if}

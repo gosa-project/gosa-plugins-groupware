@@ -1,5 +1,28 @@
 <?php
 
+
+# Access constants
+if(!defined("GROUPWARE_LOOKUP")){
+    define ("GROUPWARE_LOOKUP", 1);
+    define ("GROUPWARE_READ", 2);
+    define ("GROUPWARE_STATUS", 4);
+    define ("GROUPWARE_WRITE", 8);
+    define ("GROUPWARE_INSERT", 16);
+    define ("GROUPWARE_POST", 32);
+    define ("GROUPWARE_CREATE", 64);
+    define ("GROUPWARE_DELETE", 128);
+    define ("GROUPWARE_ADMINISTRATE", 256);
+
+
+    define ("GROUPWARE_RIGHTS_NONE", 0);
+    define ("RIGHTS_GROUPWARE_READ",  GROUPWARE_LOOKUP | GROUPWARE_READ | GROUPWARE_STATUS);
+    define ("RIGHTS_GROUPWARE_POST", RIGHTS_GROUPWARE_READ | GROUPWARE_POST);
+    define ("GROUPWARE_RIGHTS_APPEND", RIGHTS_GROUPWARE_POST | GROUPWARE_INSERT);
+    define ("RIGHTS_GROUPWARE_WRITE", GROUPWARE_RIGHTS_APPEND | GROUPWARE_WRITE | GROUPWARE_CREATE | GROUPWARE_DELETE);
+    define ("GROUPWARE_RIGHTS_ALL", RIGHTS_GROUPWARE_WRITE | GROUPWARE_ADMINISTRATE);
+}
+
+
 class GroupwareSharedFolder extends plugin
 {
     public $view_logged = FALSE;
@@ -16,6 +39,7 @@ class GroupwareSharedFolder extends plugin
 
     // Feature handling
     private $featuresEnabled = array();
+    private $FolderWidget = NULL;
 
     /*! \brief  Constructs the plugin, loads required parent values 
      *           and initiates the initialization.
@@ -51,6 +75,15 @@ class GroupwareSharedFolder extends plugin
      */
     function init()
     {
+
+        $capabilities = array();
+
+
+
+
+         
+
+    
 #       // Detect supported capabilities 
 #       $rpc = $this->config->getRpcHandle();
 #       $capabilities = $rpc->gwGetCapabilities();
@@ -62,17 +95,16 @@ class GroupwareSharedFolder extends plugin
 #           msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
 #           return;
 #       }
-#
-#       // Detect features we can use
-#       $map['folder'] = array("folderList","folderAdd","folderDel","folderExists");
-#       $map['members'] = array("folderGetMembers","folderSetMembers","folderAddMember","folderDelMember");
-#       foreach($map as $name => $required){
-#           $this->featuresEnabled[$name] = TRUE;
-#           foreach($required as $func){
-#               $this->featuresEnabled[$name] &= isset($capabilities[$func]) && $capabilities[$func];
-#           }
-#       }
 
+        // Detect features we can use
+        $map['folder'] = array("folderList","folderAdd","folderDel","folderExists");
+        $map['members'] = array("folderGetMembers","folderSetMembers","folderAddMember","folderDelMember");
+        foreach($map as $name => $required){
+            $this->featuresEnabled[$name] = TRUE;
+            foreach($required as $func){
+                $this->featuresEnabled[$name] &= isset($capabilities[$func]) && $capabilities[$func];
+            }
+        }
 
         // If we're creating a new ogroup, then we definately have no extension yet.
         $this->rpcError = FALSE;
@@ -102,10 +134,43 @@ class GroupwareSharedFolder extends plugin
         $this->initialized = TRUE;
     }
 
+    function getFolderList()
+    {
+        $folders = array(
+                "shared/Favorites",
+                "shared/All Public Folders",
+                "shared/All Public Folders/Internet Newsgroups",
+                "shared/All Public Folders/testordner",
+                "shared/All Public Folders/testordner/klaus ist auch ein ordner",
+                "shared/All Public Folders/testordner/klaus ist auch ein ordner/testordner",
+                "shared/All Public Folders/testordner/klaus ist auch ein ordner/testordner/xcbdxfgh");
+
+        $ret = array();
+        foreach($folders as $folder){
+            $name = preg_replace("/^.*\//","",$folder);
+            $ret[$folder] = array('status' => '', 'name' => $name, 'acls' => array());
+        } 
+        return($ret);
+    }
+
+    function getPermissions()
+    {
+        $ret[GROUPWARE_RIGHTS_NONE] = _("None");
+        $ret[RIGHTS_GROUPWARE_READ] = _("Read");
+        $ret[RIGHTS_GROUPWARE_POST] = _("Post");
+        $ret[GROUPWARE_RIGHTS_APPEND] = _("Append");
+        $ret[RIGHTS_GROUPWARE_WRITE] = _("Write");
+        $ret[GROUPWARE_RIGHTS_ALL] = _("All");
+        return($ret);
+    }
+
+
 
     function execute()
     {
         plugin::execute();
+
+        $this->folderList = $this->getFolderList();
 
         // Initialization failed - Display a stripped template which allows 
         //  to retry initialization
@@ -141,6 +206,34 @@ class GroupwareSharedFolder extends plugin
                         msgPool::featuresDisabled(_("Shared folder")));
                 return ($display);
             }
+        }
+
+        /****************
+          Folder editor
+         ****************/
+
+        if(isset($_POST['FolderWidget_cancel'])) $this->FolderWidget = NULL;
+        if(isset($_POST['FolderWidget_ok'])){
+            $this->FolderWidget->save_object();
+            $msgs = $this->FolderWidget->check();
+            if(count($msgs)){
+                msg_dialog::displayChecks($msgs);
+            }else{
+                $this->folderList = $this->FolderWidget->save();
+                $this->FolderWidget = NULL;
+            }
+        }
+        if(isset($_POST['configureFolder'])){
+            $this->FolderWidget = new FolderWidget($this->config,$this->folderList, "shared/");
+            $this->FolderWidget->setPermissions($this->getPermissions());
+            $this->FolderWidget->acl_base = $this->acl_base;
+            $this->FolderWidget->acl_category = $this->acl_category;
+        }
+        $this->dialog = FALSE;
+        if($this->FolderWidget instanceOf FolderWidget){
+            $this->FolderWidget->save_object();
+            $this->dialog = TRUE;
+            return($this->FolderWidget->execute());
         }
 
 

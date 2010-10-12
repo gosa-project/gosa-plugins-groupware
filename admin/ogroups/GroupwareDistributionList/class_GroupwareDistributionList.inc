@@ -411,7 +411,7 @@ class GroupwareDistributionList extends plugin
         // Updated primaryMailAddress value, if needed:  
         //  -> is a new distribution list or
         //  -> the value for 'primaryMailAddress' has changed.
-        if(!$this->initially_was_account || $this->primaryMailAddress != $this->saved_attributes['primaryMailAddress']){
+        if($this->initially_was_account && $this->primaryMailAddress != $this->saved_attributes['primaryMailAddress']){
             $rpc->gwDistSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
             if(!$rpc->success()){
                 $message = sprintf(_("Failed to update the primary mail address for distribution list '%s'! Error was: '%s'."), 

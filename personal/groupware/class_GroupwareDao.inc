@@ -171,9 +171,10 @@ class GroupwareDao{
         }
 
         if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
-		$FWaddresses = $this->get("forwardingAddresses", array($uid));		
-//		$FWaddresses = current($FWaddresses);
-            $resultArr["forwardingAddresses"] = key($FWaddresses);
+    		$FWaddresses = $this->get("forwardingAddresses", array($uid));		
+            if($FWaddresses) {
+                $resultArr["forwardingAddresses"] = key($FWaddresses);
+            }
         }
 
         // Location dropdownlist - only readable
@@ -202,11 +203,11 @@ class GroupwareDao{
                         "acls"=> array( 	
                             array(
                                 "name" => "wiwu",
-                                "acl"  => RIGHTS_ALL, 
+                                "acl"  => GROUPWARE_RIGHTS_ALL, 
                                 "type"=>"user"),
                             array(
                                 "name" => "2a",
-                                "acl" => RIGHTS_ALL, 
+                                "acl" => GROUPWARE_RIGHTS_ALL, 
                                 "type"=>"user"))), 
 
                     'user/wiwu/Entw\xc3\xbcrfe' =>array(
@@ -214,35 +215,35 @@ class GroupwareDao{
                         "acls" => array(	
                             array(
                                 "name" => "wiwu",
-                                "acl" => RIGHTS_ALL, 
+                                "acl" => GROUPWARE_RIGHTS_ALL, 
                                 "type"=>"user"))), 
                     'user/wiwu/Gel\xc3\xb6schte Objekte' => array( 
                         "name" => "Gel\xc3\xb6schte Objekte", 
                         "acls" => array(	
                             array(
                                 "name" => "wiwu",
-                                "acl" => RIGHTS_ALL, 
+                                "acl" => GROUPWARE_RIGHTS_ALL, 
                                 "type"=>"user"))), 
                     'user/wiwu/Synchronisierungsprobleme/Lokale Fehler'  => array( 
                             "name" => "Lokale Fehler", 
                             "acls" => array(	
                                 array(
                                     "name" => "wiwu",
-                                    "acl" => RIGHTS_ALL, 
+                                    "acl" => GROUPWARE_RIGHTS_ALL, 
                                     "type"=>"user"))), 
                     'user/wiwu/Synchronisierungsprobleme/Serverfehler'  => array( 
                             "name" => "Serverfehler", 
                             "acls" => array(	
                                 array(
                                     "name" => "wiwu",
-                                    "acl" => RIGHTS_ALL, 
+                                    "acl" => GROUPWARE_RIGHTS_ALL, 
                                     "type"=>"user"))), 
                     'shared/publicFolder'  => array( 
                             "name" => "publicFolder", 
                             "acls" => array(	
                                 array(
                                     "name" => "wiwu",
-                                    "acl" => RIGHTS_ALL, 
+                                    "acl" => GROUPWARE_RIGHTS_ALL, 
                                     "type"=>"user"))), 
                     );
 			

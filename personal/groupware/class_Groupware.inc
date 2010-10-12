@@ -112,8 +112,8 @@ class Groupware extends plugin
         plugin::plugin($config,$dn); 
 
         // Get attributes from parent object 
-        if(isset($this->attrs['cn'])){
-            $this->cn = $this->attrs['cn'][0];
+        if(isset($this->attrs['uid'])){
+            $this->uid = $this->attrs['uid'][0];
         }
 
 		// Initialize file browser list

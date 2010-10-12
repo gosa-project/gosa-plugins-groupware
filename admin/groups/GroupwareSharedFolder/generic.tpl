@@ -13,4 +13,4 @@
     </tr>
 </table>
 
-<input type="hidden" name="DistributionList_posted" value="1">
+<input type="hidden" name="GroupwareSharedFolder_posted" value="1">

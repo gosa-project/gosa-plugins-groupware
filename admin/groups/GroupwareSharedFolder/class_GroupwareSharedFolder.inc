@@ -51,31 +51,33 @@ class GroupwareSharedFolder extends plugin
      */
     function init()
     {
-        // Detect supported capabilities 
-        $rpc = $this->config->getRpcHandle();
-        $capabilities = $rpc->gwGetCapabilities();
-        if(!$rpc->success()){
-            $this->rpcError = TRUE;
-            $this->rpcErrorMessage = $rpc->get_error();
-            $message = sprintf(_("Failed to load supported capabilities from server! Error was: '%s'."), 
-                    $rpc->get_error());
-            msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-            return;
-        }
+#       // Detect supported capabilities 
+#       $rpc = $this->config->getRpcHandle();
+#       $capabilities = $rpc->gwGetCapabilities();
+#       if(!$rpc->success()){
+#           $this->rpcError = TRUE;
+#           $this->rpcErrorMessage = $rpc->get_error();
+#           $message = sprintf(_("Failed to load supported capabilities from server! Error was: '%s'."), 
+#                   $rpc->get_error());
+#           msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+#           return;
+#       }
+#
+#       // Detect features we can use
+#       $map['folder'] = array("folderList","folderAdd","folderDel","folderExists");
+#       $map['members'] = array("folderGetMembers","folderSetMembers","folderAddMember","folderDelMember");
+#       foreach($map as $name => $required){
+#           $this->featuresEnabled[$name] = TRUE;
+#           foreach($required as $func){
+#               $this->featuresEnabled[$name] &= isset($capabilities[$func]) && $capabilities[$func];
+#           }
+#       }
 
-        // Detect features we can use
-        $map['folder'] = array("folderList","folderAdd","folderDel","folderExists");
-        $map['members'] = array("folderGetMembers","folderSetMembers","folderAddMember","folderDelMember");
-        foreach($map as $name => $required){
-            $this->featuresEnabled[$name] = TRUE;
-            foreach($required as $func){
-                $this->featuresEnabled[$name] &= isset($capabilities[$func]) && $capabilities[$func];
-            }
-        }
 
         // If we're creating a new ogroup, then we definately have no extension yet.
         $this->rpcError = FALSE;
         $folderList = array();
+        $is_account = FALSE;
         if($this->cn == "" || $this->dn == "new"){
             $is_account = FALSE;
         }else{
@@ -146,7 +148,14 @@ class GroupwareSharedFolder extends plugin
           Generate HTML output
          ****************/
 
+        $plInfo = $this->plInfo();
+
         $smarty = get_smarty();
+
+        foreach($plInfo['plProvidedAcls'] as $name => $translation){
+            $smarty->assign("{$name}ACL", $this->getacl($name));
+        }
+
         $smarty->assign('rpcError' , $this->rpcError);
         $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
         return($display.$smarty->fetch(get_template_path('GroupwareSharedFolder/generic.tpl', TRUE)));
@@ -177,10 +186,10 @@ class GroupwareSharedFolder extends plugin
      */ 
     function save_object()
     {
+        if(isset($_POST['retryInit'])){
+            $this->init();
+        }
         if(isset($_POST['GroupwareSharedFolder_posted'])){
-            if(isset($_POST['retryInit'])){
-                $this->init();
-            }
             plugin::save_object();
         }
     }

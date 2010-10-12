@@ -308,10 +308,10 @@ class GroupwareDistributionList extends plugin
      */ 
     function save_object()
     {
+        if(isset($_POST['retryInit'])){
+            $this->init();
+        }
         if(isset($_POST['DistributionList_posted'])){
-            if(isset($_POST['retryInit'])){
-                $this->init();
-            }
             if(!isset($_POST['useMailSizeLimit'])) $this->mailSizeLimit = NULL;
             plugin::save_object();
         }

@@ -23,6 +23,10 @@ if(!defined("GROUPWARE_LOOKUP")){
 }
 
 
+
+/*! \brief  Allows to update groupware shared-folders 
+ *           using the jsonRPC backend.
+ */
 class GroupwareSharedFolder extends plugin
 {
     public $view_logged = FALSE;
@@ -32,7 +36,6 @@ class GroupwareSharedFolder extends plugin
     private $rpcError = FALSE;
     private $rpcErrorMessage = "";
 
-
     // Attribute definition 
     public $attributes = array('folderList');
     public $folderList = array();   
@@ -40,6 +43,7 @@ class GroupwareSharedFolder extends plugin
     // Feature handling
     private $featuresEnabled = array();
     private $FolderWidget = NULL;
+
 
     /*! \brief  Constructs the plugin, loads required parent values 
      *           and initiates the initialization.
@@ -58,6 +62,7 @@ class GroupwareSharedFolder extends plugin
         // Initialize the distribution list using the gosa-ng backend 
         $this->init();
     }
+
 
 
     /*! \brief      Check whether a feature is enabled or not.
@@ -79,10 +84,9 @@ class GroupwareSharedFolder extends plugin
         $capabilities = array();
 
 
-
-
-         
-
+        #FIXME
+        /* Not working at all, have to wait for backend funtions.
+         */
     
 #       // Detect supported capabilities 
 #       $rpc = $this->config->getRpcHandle();
@@ -134,6 +138,8 @@ class GroupwareSharedFolder extends plugin
         $this->initialized = TRUE;
     }
 
+
+    // Returns a dummy folder list . #Fixme remove this.
     function getFolderList()
     {
         $folders = array(
@@ -152,19 +158,6 @@ class GroupwareSharedFolder extends plugin
         } 
         return($ret);
     }
-
-    function getPermissions()
-    {
-        $ret[GROUPWARE_RIGHTS_NONE] = _("None");
-        $ret[RIGHTS_GROUPWARE_READ] = _("Read");
-        $ret[RIGHTS_GROUPWARE_POST] = _("Post");
-        $ret[GROUPWARE_RIGHTS_APPEND] = _("Append");
-        $ret[RIGHTS_GROUPWARE_WRITE] = _("Write");
-        $ret[GROUPWARE_RIGHTS_ALL] = _("All");
-        return($ret);
-    }
-
-
 
     function execute()
     {
@@ -255,26 +248,6 @@ class GroupwareSharedFolder extends plugin
     }
 
 
-    /*! \brief  ACL settings
-     */
-    static function plInfo()
-    {
-        return (array(
-                    "plShortName"     => _("Shared folder"),
-                    "plDescription"   => _("Groupware shared folder"),
-                    "plSelfModify"    => FALSE,
-                    "plDepends"       => array("ogroup"),                     // This plugin depends on
-                    "plPriority"      => 4,                                 // Position in tabs
-                    "plSection"     => array("administration"),
-                    "plCategory"    => array("groups"),
-                    "plOptions"       => array(),
-                    "plProvidedAcls"  => array(
-                        "folderList"   => _("Shared folder"))
-                    ));
-    }
-
-
-
     /*! \brief  Get posted values and check which are interesting for us.
      */ 
     function save_object()
@@ -286,7 +259,6 @@ class GroupwareSharedFolder extends plugin
             plugin::save_object();
         }
     }
-
 
 
     /*!   \brief    Removes the distribution list extension for the current 
@@ -314,6 +286,38 @@ class GroupwareSharedFolder extends plugin
             $this->cn = &$this->parent->by_object['ogroup']->cn;
         }
         return($messages);
+    }
+
+
+    /*! \brief  ACL settings
+     */
+    static function plInfo()
+    {
+        return (array(
+                    "plShortName"     => _("Shared folder"),
+                    "plDescription"   => _("Groupware shared folder"),
+                    "plSelfModify"    => FALSE,
+                    "plDepends"       => array("ogroup"),                     // This plugin depends on
+                    "plPriority"      => 4,                                 // Position in tabs
+                    "plSection"     => array("administration"),
+                    "plCategory"    => array("groups"),
+                    "plOptions"       => array(),
+                    "plProvidedAcls"  => array(
+                        "folderList"   => _("Shared folder"))
+                    ));
+    }
+
+
+    // Should come from the sever later.  #FIXME
+    function getPermissions()
+    {
+        $ret[GROUPWARE_RIGHTS_NONE] = _("None");
+        $ret[RIGHTS_GROUPWARE_READ] = _("Read");
+        $ret[RIGHTS_GROUPWARE_POST] = _("Post");
+        $ret[GROUPWARE_RIGHTS_APPEND] = _("Append");
+        $ret[RIGHTS_GROUPWARE_WRITE] = _("Write");
+        $ret[GROUPWARE_RIGHTS_ALL] = _("All");
+        return($ret);
     }
 }
 ?>

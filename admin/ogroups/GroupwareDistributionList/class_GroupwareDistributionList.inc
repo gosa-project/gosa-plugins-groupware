@@ -1,6 +1,6 @@
 <?php
 
-class DistributionList extends plugin
+class GroupwareDistributionList extends plugin
 {
     public $view_logged = FALSE;
 

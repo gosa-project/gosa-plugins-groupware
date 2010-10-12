@@ -1,4 +1,5 @@
 <?php
+
  
 /*! \brief Data Access Object for groupwares 
  */
@@ -311,8 +312,8 @@ class GroupwareDao{
 	//This is a feature with many datasets inside which should be cut in slices and saved separately.
 	//Since the knowledge about the feature is only known in the plugin this has got to be moved.
 	
-	function saveFoldersAndAcls($id, $mailFolder){
-		echo "Hape";
+	function saveFoldersAndAcls($id, $mailFolder)
+    {
 		/*
 		 'user/wiwu/Aufgaben' => array( 
                         "name" =>"Aufgaben",

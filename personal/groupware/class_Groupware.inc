@@ -219,8 +219,10 @@ class Groupware extends plugin
 
         // If this is a new user, then do not try to check account status 
         //  the account cannot exists.			
+        $this->mailLocations = $this->groupwareDao->get('mailLocations', array());
         if($this->dn == "new"){
             $this->initially_was_account = $this->is_account = FALSE;
+            $this->accountInitialized = TRUE;
         }else{
 
             // Get rpc handle to fetch account info and feature availability.
@@ -230,9 +232,6 @@ class Groupware extends plugin
                 if($this->is_account){
                     $response = $this->groupwareDao->getComprehensiverUser($this->uid);
                     $this->mapComprehensiveUserData($response);
-                }else{
-                    $emptyUser["mailLocations"] = $this->rpcExec('gwGetMailboxLocations');
-                    $this->mapComprehensiveUserData($emptyUser);
                 }
                 $this->accountInitialized = TRUE;
             }

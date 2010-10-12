@@ -111,14 +111,9 @@ class Groupware extends plugin
     {
         plugin::plugin($config,$dn); 
 
-		echo "Klasse:".get_class($config);
         // Get attributes from parent object 
-        foreach(array("uid","cn") as $attr){
-            if(isset($this->parent->by_object['group']) && isset($this->parent->by_object['group']->$attr)){
-                $this->$attr = &$this->parent->by_object['group']->$attr;
-            }elseif(isset($this->attrs[$attr])){
-                $this->$attr = $this->attrs[$attr][0];
-            }
+        if(isset($this->attrs['cn'])){
+            $this->cn = $this->attrs['cn'][0];
         }
 
 		// Initialize file browser list
@@ -136,6 +131,7 @@ class Groupware extends plugin
         $this->init();
     }
 
+
     /*! \brief  Try to execute a function on the gosa backend using json-rpc.
      *          This method also takes care about errors and sets the required
      *           class members, such as rpcError and rpcErrorMessage. 
@@ -143,15 +139,11 @@ class Groupware extends plugin
      *  @param  Mixed   args[0-n]   The parameter to use.
      *  @return Mixed   The result of the function call on success else NULL.
      */
-
     function rpcExec($function)
     {
         $params = func_get_args();
         unset($params[0]);
-        echo "------<br>Calling function:".$function." Params".var_dump($params)."<br>";
-
         $rpc = $this->config->getRpcHandle();
-
         $res = call_user_func_array(array($rpc,$function),array_values($params));
         $this->rpcError = !$rpc->success();
         if($this->rpcError){
@@ -161,15 +153,14 @@ class Groupware extends plugin
         return($res);
     }
 
+
     /*! \brief     TODO: comment
      */
     public function isFeatureEnabled($featureName)
     {
-        if(isset($this->enabledFeatures[$featureName]) &&  $this->enabledFeatures[$featureName]){
-            return TRUE;
-        }
-        return FALSE;
+        return(isset($this->enabledFeatures[$featureName]) && $this->enabledFeatures[$featureName]);
     }
+
 
     /*! \brief  Try initialize the groupware account.
      *          This method fetches all required information to manage the
@@ -180,9 +171,8 @@ class Groupware extends plugin
         // Detect feature availability and enable/disable services correspondingly.
         $this->groupwareDao = new GroupwareDao($this);
 
+        // Feature names with a list of groupware functions that must be available.
         $features = array();
-        //feature names with a list of groupware function that must be availabele
-        //these groupware functions are not the rpc functions, because they are asked from the groupware server
         $featureReq = array(
                 "primaryMail" 				=> array(
                     'acctGetPrimaryMailAddress'),
@@ -218,13 +208,7 @@ class Groupware extends plugin
 						'folderList','folderDel','folderAdd')
 				);
 
-		if($this->dn == "new"){
-			// empty features if the user is brand new
-			$this->enabledFeatures = array();
-			return;
-		}
-		
-        // Check if all required methods cann be called! 
+        // Check if all required methods can be called! 
 		foreach($featureReq as $name => $requires){
 			$active = TRUE;
 			foreach($requires as $methodName){
@@ -232,23 +216,26 @@ class Groupware extends plugin
 			}
 			$this->enabledFeatures[$name] = $active;
 		}
-			
-        // Get rpc handle to fetch account info and feature availability.
-        $status = $this->rpcExec('gwAcctExists', $this->uid);
-		// mailboxlocations for the dropdownBox
-        
-        if($status !== NULL){
-            $this->initially_was_account = $this->is_account = $status;
 
-            if($this->is_account){
-                $response = $this->groupwareDao->getComprehensiverUser($this->uid);
-                $this->mapComprehensiveUserData($response);
+        // If this is a new user, then do not try to check account status 
+        //  the account cannot exists.			
+        if($this->dn == "new"){
+            $this->initially_was_account = $this->is_account = FALSE;
+        }else{
+
+            // Get rpc handle to fetch account info and feature availability.
+            $status = $this->rpcExec('gwAcctExists', $this->uid);
+            if($status !== NULL){
+                $this->initially_was_account = $this->is_account = $status;
+                if($this->is_account){
+                    $response = $this->groupwareDao->getComprehensiverUser($this->uid);
+                    $this->mapComprehensiveUserData($response);
+                }else{
+                    $emptyUser["mailLocations"] = $this->rpcExec('gwGetMailboxLocations');
+                    $this->mapComprehensiveUserData($emptyUser);
+                }
+                $this->accountInitialized = TRUE;
             }
-			else{
-				$emptyUser["mailLocations"] = $this->rpcExec('gwGetMailboxLocations');
-				$this->mapComprehensiveUserData($emptyUser);
-			}
-            $this->accountInitialized = TRUE;
         }
 
         // Set vacation start/stop if not set alreasy
@@ -305,6 +292,7 @@ class Groupware extends plugin
             $smarty->assign("rpcError", $this->rpcError);
             return($smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
         }
+
 
         /****************
           Filter editor
@@ -578,67 +566,6 @@ class Groupware extends plugin
     {
         if(isset($_POST['groupwarePluginPosted'])){
 
-            // Update folder name   
-            #$current = &$this->mailFolder[$this->currentSelectedFolder];
-            #if(isset($_POST['currentFolderName'])){
-            #    $new_name = get_post('currentFolderName');
-            #    if($new_name != $current['name']){
-            #        if(!in_array($current['status'],array('del','add'))){
-            #            $current['status'] = 'renamed';
-            #        }
-            #        $current['name'] = get_post('currentFolderName');
-            #    }
-            #}
- 
- 
-            if(isset($this->mailFolder[$this->currentSelectedFolder])){
-                $current = &$this->mailFolder[$this->currentSelectedFolder];
-                foreach($current['acls'] as $key => $data){
-                    if(isset($_POST["permission_{$key}_name"])){
-                        $current['acls'][$key]['name'] = get_post("permission_{$key}_name"); 
-                    }
-                    if(isset($_POST["permission_{$key}_acl"])){
-                        $current['acls'][$key]['acl'] = get_post("permission_{$key}_acl"); 
-                    }
-                    if(isset($_POST["permission_{$key}_del"])){
-                        unset($current['acls'][$key]);
-                    }
-                }
-                $current['acls'] = array_values($current['acls']);
-            }
-
-            if(isset($_POST['folderName_Add']) && isset($_POST['folderName_Input'])){
-                if(isset($this->mailFolder[$this->currentSelectedFolder])){
-                    $newName = get_post('folderName_Input');
-                    $newPath = $this->currentSelectedFolder."/".$newName;
-                    $entry = array();
-                    $entry['acls'] = array();
-                    $entry['name'] = $newName;
-                    $entry['status'] = 'add';
-                    $this->mailFolder[$newPath] = $entry;
-                }
-            }
-
-
-            $this->fileBrowser->save_object();
-            $action = $this->fileBrowser->getAction();
-            if($action['action'] == "edit"){
-                $folderPath = $this->fileBrowser->getKey($action['targets'][0]);
-                $this->currentSelectedFolder = $folderPath;
-            }
-            if($action['action'] == "delete"){
-                $folderPath = $this->fileBrowser->getKey($action['targets'][0]);
-                $this->mailFolder[$folderPath]['status'] = 'del';
-                $this->currentSelectedFolder = "";
-            }
-       
- 
-            if(isset($_POST['permission_add'])) {
-                $current = &$this->mailFolder[$this->currentSelectedFolder];
-                $current['acls'][] = array('name' => '','type'=>'user','acl' => '');
-            }
-           
- 
             // We ran into a communication error with the backend. 
             // Try a simple communication operation with the backend 
             // again and let us see if it works.
@@ -869,7 +796,8 @@ class Groupware extends plugin
     {
         // Get rpc handle to create or update the account
         if(!$this->initially_was_account){
-            if($this->rpcExec('gwAcctAdd', $this->uid, $this->mailAddress) === NULL){
+            $this->rpcExec('gwAcctAdd', $this->uid, $this->mailAddress);
+            if(!$rpc->succeess()){
                 msg_dialog::display(_("Error"), _("Groupware account creation failed!"), ERROR_DIALOG);
             }
         }
@@ -882,7 +810,6 @@ class Groupware extends plugin
         }
 
         // Save alternateAddresses and forwarding. 
-
         if(!empty($this->alternateAddresses) 
         		&& isset($this->alternateAddresses) 
         		&& is_array($this->alternateAddresses)){
@@ -893,24 +820,19 @@ class Groupware extends plugin
         		&& isset($this->forwardingAddresses) 
         		&& is_array($this->forwardingAddresses)){
 				
+				// Only the first Address will be set as forward Address.
 				$fw = array();
-				//only the first Address will be set as forward Address.
 				$fw[$this->forwardingAddresses[0]] = true;
 				$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
         }
-        // Save the quota
-        if(true){
 
-            $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
-                    "send_limit" => $this->mailBoxSendSizelimitValue,
-                    "hard_limit" => $this->mailBoxHardSizelimitValue,
-                    "hold" => $this->quotaSize);
-                    
-            $this->groupwareDao->save("quotaSize", $this->uid, $quota);
-        }
+        $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
+                "send_limit" => $this->mailBoxSendSizelimitValue,
+                "hard_limit" => $this->mailBoxHardSizelimitValue,
+                "hold" => $this->quotaSize);
 
+        $this->groupwareDao->save("quotaSize", $this->uid, $quota);
         // TODO: save Mailbox location
-
     }
 
 

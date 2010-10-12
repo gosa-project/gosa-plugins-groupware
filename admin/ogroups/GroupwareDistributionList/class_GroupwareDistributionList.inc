@@ -28,15 +28,11 @@ class GroupwareDistributionList extends plugin
         plugin::plugin($config, $dn, $attrs);
 
         // Get attributes from parent object
-        foreach(array("uid","cn") as $attr){
-            if(isset($this->parent->by_object['group']) && isset($this->parent->by_object['group']->$attr)){
-                $this->$attr = &$this->parent->by_object['group']->$attr;
-            }elseif(isset($this->attrs[$attr])){
-                $this->$attr = $this->attrs[$attr][0];
-            }
-            $orig = "orig_{$attr}";
-            $this->$orig = "{$this->$attr}";
+        $this->cn = "";
+        if(isset($this->attrs['cn'])){
+            $this->cn = $this->attrs['cn'][0];
         }
+        $this->orig_cn = $this->cn;
 
         // Initialize the distribution list using the gosa-ng backend 
         $this->init();
@@ -80,18 +76,22 @@ class GroupwareDistributionList extends plugin
             }
         }
 
-        // Check whether a mathing distribution-list exsits or not?
-        $is_account = $rpc->gwDistExists($this->orig_cn);
+        // If we're creating a new ogroup, then we definately have no extension yet.
         $this->rpcError = FALSE;
+        if($this->cn == "" || $this->dn == "new"){
+            $is_account = FALSE;
+        }else{
 
-        // An error occured abort here
-        if(!$rpc->success()){
-            $this->rpcError = TRUE;
-            $this->rpcErrorMessage = $rpc->get_error();
-            $message = sprintf(_("Failed to check existence for distribution list '%s'! Error was: '%s'."), 
-                    $this->orig_cn, $rpc->get_error());
-            msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-            return;
+            // Check whether a mathing distribution-list exsits or not?
+            $is_account = $rpc->gwDistExists($this->orig_cn);
+            if(!$rpc->success()){
+                $this->rpcError = TRUE;
+                $this->rpcErrorMessage = $rpc->get_error();
+                $message = sprintf(_("Failed to check existence for distribution list '%s'! Error was: '%s'."), 
+                        $this->orig_cn, $rpc->get_error());
+                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                return;
+            }
         }
 
         // We've detected a valid distribution list, now load all
@@ -381,6 +381,8 @@ class GroupwareDistributionList extends plugin
      */  
     function save()
     {
+
+        // If this is a new account then add it.
         $rpc = $this->config->getRpcHandle();
         if(!$this->initially_was_account){
             $rpc->gwDistAdd($this->cn, $this->primaryMailAddress);

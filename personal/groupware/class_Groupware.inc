@@ -796,10 +796,13 @@ class Groupware extends plugin
         // Get rpc handle to create or update the account
         if(!$this->initially_was_account){
             $this->rpcExec('gwAcctAdd', $this->uid, $this->mailAddress);
-            if(!$rpc->succeess()){
+            if($this->rpcError){
                 msg_dialog::display(_("Error"), _("Groupware account creation failed!"), ERROR_DIALOG);
+                return;
             }
         }
+
+        
 
         $this->groupwareDao->saveFoldersAndAcls($this->uid, $this->mailFolder);
 

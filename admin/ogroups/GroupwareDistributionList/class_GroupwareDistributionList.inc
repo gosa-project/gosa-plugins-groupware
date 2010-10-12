@@ -197,7 +197,7 @@ class GroupwareDistributionList extends plugin
             $smarty = get_smarty();
             $smarty->assign('rpcError' , $this->rpcError);
             $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
-            return($smarty->fetch(get_template_path('DistributionList/initFailed.tpl', TRUE)));
+            return($smarty->fetch(get_template_path('GroupwareDistributionList/initFailed.tpl', TRUE)));
         }
 
         // Log account access
@@ -278,7 +278,7 @@ class GroupwareDistributionList extends plugin
         $smarty->assign("useMailSizeLimit", ($this->mailSizeLimit != NULL));
         $smarty->assign("memberList", set_post($this->memberList));
         $smarty->assign('rpcErrorMessage' , $this->rpcErrorMessage);
-        return($display.$smarty->fetch(get_template_path('DistributionList/generic.tpl', TRUE)));
+        return($display.$smarty->fetch(get_template_path('GroupwareDistributionList/generic.tpl', TRUE)));
     }
 
 

@@ -381,6 +381,10 @@ class GroupwareDistributionList extends plugin
      */  
     function save()
     {
+        // Cast mailSizeLimit to integer
+        if($this->mailSizeLimit!=NULL){
+           $this->mailSizeLimit += 0;
+        }
 
         // If this is a new account then add it.
         $rpc = $this->config->getRpcHandle();
@@ -498,20 +502,40 @@ class GroupwareDistributionList extends plugin
     {
         $messages = plugin::check();
 
+        // Get current object-group name maybe it is invalid for us.
+        if(isset($this->parent->by_object['ogroup']->cn)){
+            $this->cn = &$this->parent->by_object['ogroup']->cn;
+        }
+        // Validate name later...  #FIXME
+
+        // Validate email address
+        if(!tests::is_email($this->primaryMailAddress)) {
+            $messages[] = msgPool::invalid(_("Mail address"), $this->primaryMailAddress, '', 'example@gonicus.de');
+        }
+
+        // Validate email address
+        if($this->featureEnabled('mailSizeLimit')){
+            if($this->mailSizeLimit != NULL && !is_numeric($this->mailSizeLimit)){
+                $messages[] = msgPool::invalid(_("Incoming mail size limitation"), $this->mailSizeLimit, '/[0-9]/' );
+            }
+        }
+
         // Check which accounts have valid groupware mail addresses.
-        $uids = $this->getOgroupMemberList();
-        $rpc = $this->config->getRpcHandle(); 
-        $verified = $rpc->gwVerifyAcct($uids);
-        if(!$rpc->success()){
-            $messages[] = sprintf(_("Failed to verify account ids! Error was: '%s'."),$rpc->get_error());
-        }else{
-            $noExt = array();
-            foreach($verified as $uid => $mail){
-                if(empty($mail)) $noExt[] = $uid;
-            }   
-            if(count($noExt)){
-                $message = sprintf(_("The following object group members do not have a valid groupware extension and will be ignored as distribution list members: %s"),msgPool::buildList($noExt));
-                msg_dialog::display(_("Info"),$message, INFO_DIALOG);
+        if(!count($messages)){
+            $uids = $this->getOgroupMemberList();
+            $rpc = $this->config->getRpcHandle(); 
+            $verified = $rpc->gwVerifyAcct($uids);
+            if(!$rpc->success()){
+                $messages[] = sprintf(_("Failed to verify account ids! Error was: '%s'."),$rpc->get_error());
+            }else{
+                $noExt = array();
+                foreach($verified as $uid => $mail){
+                    if(empty($mail)) $noExt[] = $uid;
+                }   
+                if(count($noExt)){
+                    $message = sprintf(_("The following object group members do not have a valid groupware extension and will be ignored as distribution list members: %s"),msgPool::buildList($noExt));
+                    msg_dialog::display(_("Info"),$message, INFO_DIALOG);
+                }
             }
         }
         

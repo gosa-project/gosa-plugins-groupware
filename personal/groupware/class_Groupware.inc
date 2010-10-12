@@ -105,6 +105,9 @@ class Groupware extends plugin
     var $dropOwnMails = FALSE;
     var $groupwareDao = null;
 
+    // Used in the folder editor as the starting folder, usually user/username
+    var $folderPrefix = "";
+
     /*! \brief      
      */
     function __construct ($config, $dn= NULL)
@@ -115,6 +118,9 @@ class Groupware extends plugin
         if(isset($this->attrs['uid'])){
             $this->uid = $this->attrs['uid'][0];
         }
+
+        // Set initial folder prefix
+        $this->folderPrefix = "user/{$this->uid}";
 
 		// Initialize file browser list
 		$this->fileBrowser= new sortableListing();
@@ -337,7 +343,7 @@ class Groupware extends plugin
             }
         }
         if(isset($_POST['configureFolder'])){
-            $this->FolderWidget = new FolderWidget($this->config,$this->mailFolder, "user/wiwu/Inbox");
+            $this->FolderWidget = new FolderWidget($this->config,$this->mailFolder, $this->folderPrefix);
             $this->FolderWidget->setPermissions($this->getPermissions());
             $this->FolderWidget->acl_base = $this->acl_base;
             $this->FolderWidget->acl_category = $this->acl_category;

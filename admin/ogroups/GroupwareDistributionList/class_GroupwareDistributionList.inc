@@ -20,6 +20,7 @@ class GroupwareDistributionList extends plugin
     // Feature handling
     private $featuresEnabled = array();
 
+
     /*! \brief  Constructs the plugin, loads required parent values 
      *           and initiates the initialization.
      */
@@ -167,7 +168,7 @@ class GroupwareDistributionList extends plugin
     }
 
 
-    /*!  \brief     Gets the uids for the ogroups members.
+    /*!  \brief     Gets the uids for the ogroup members.
      */
     function getOgroupMemberList()
     {
@@ -301,7 +302,6 @@ class GroupwareDistributionList extends plugin
                         "alternateAddresses"   => _("Alternate mail addresses"))
                     ));
     }
-
 
 
     /*! \brief  Get posted values and check which are interesting for us.

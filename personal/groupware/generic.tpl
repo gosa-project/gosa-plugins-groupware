@@ -6,10 +6,6 @@
     <button name="retry">{t}Retry{/t}</button>
 {else}
 
-    {if $mailFolder_isActive}
-        {t}Mail folder{/t}:&nbps;<button name='configureFolder'>{msgPool type=editButton}</button>
-    {/if}
-
 <table summary="{t}Mail settings{/t}" style='width:100%;'>
     <tr>
         <td style='width:50%; '>  
@@ -35,6 +31,16 @@
                         {/render}
                     </td>
                 </tr>
+                {if $mailFolder_isActive}
+                <tr>
+                    <td><label for="mailFolder">{t}Mail folder{/t}</label></td>
+                    <td>
+                        {render acl=$mailFolderACL}
+                            <button name='configureFolder'>{msgPool type=editButton}</button>
+                        {/render}
+                    </td>
+                </tr>
+                {/if}
                 {if $quotaUsage_isActive}
                 <tr>
                     <td><label for='quotaUsage_dummy'>{t}Quota usage{/t}</label></td>

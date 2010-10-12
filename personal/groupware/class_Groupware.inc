@@ -909,6 +909,7 @@ class Groupware extends plugin
                     "plProvidedAcls"  => array(
                         "mailAddress"                   => _("Mail address"),
                         "mailLocation"                  => _("Mail location"),
+                        "mailFolder"                    => _("Mail folder"),
                         "quotaUsage"                    => _("Quota usage"),
                         "mailFilter"                    => _("Mail filter"),
                         "quotaSize"                     => _("Quota size"),

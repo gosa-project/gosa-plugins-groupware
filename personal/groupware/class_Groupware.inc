@@ -147,13 +147,19 @@ class Groupware extends plugin
     }
 
 
-    /*! \brief     TODO: comment
+    /*! \brief    Checks if feature is availavle on the server (a call to getCapabilities achieves this.)
      */
     public function isFeatureEnabled($featureName)
     {
         return(isset($this->enabledFeatures[$featureName]) && $this->enabledFeatures[$featureName]);
     }
-
+	/*! \brief     Checking if the feature has been changed since loading it from server (initial state)
+     */
+    public function hasFeaturebeenChanged($featureName)
+    {
+		//TODO: must be implemented.
+        return true;
+    }
 
     /*! \brief  Try initialize the groupware account.
      *          This method fetches all required information to manage the
@@ -785,38 +791,55 @@ class Groupware extends plugin
                 return;
             }
         }
-
-        $this->groupwareDao->saveFoldersAndAcls($this->uid, $this->mailFolder);
+		if($this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
+			$this->groupwareDao->saveFoldersAndAcls($this->uid, $this->mailFolder);
+		}
 
         // Save the primary Email Address.
-        if(!empty($this->mailAddress)){
-            $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
-        }
+		if($this->isFeatureEnabled("primaryMail")&& $this->hasFeaturebeenChanged("primaryMail")){
+			if(!empty($this->mailAddress )){
+				$this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
+			}
+		}
 
-        // Save alternateAddresses and forwarding. 
-        if(!empty($this->alternateAddresses) 
-        		&& isset($this->alternateAddresses) 
-        		&& is_array($this->alternateAddresses)){
-			$this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
+        // Save alternateAddresses 
+		if($this->isFeatureEnabled("alternateAddresses")&& $this->hasFeaturebeenChanged("alternateAddresses")){
+			if(!empty($this->alternateAddresses) 
+					&& isset($this->alternateAddresses) 
+					&& is_array($this->alternateAddresses)){
+				$this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
 
-        }
-        if(!empty($this->forwardingAddresses) 
-        		&& isset($this->forwardingAddresses) 
-        		&& is_array($this->forwardingAddresses)){
-				
-				// Only the first Address will be set as forward Address.
-				$fw = array();
-				$fw[$this->forwardingAddresses[0]] = true;
-				$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
-        }
+			}
+		}
+		// Save forwardingAddresses
+		if($this->isFeatureEnabled("forwardingAddresses") && $this->hasFeaturebeenChanged("forwardingAddresses")){
+			if(!empty($this->forwardingAddresses) 
+					&& isset($this->forwardingAddresses) 
+					&& is_array($this->forwardingAddresses)){
+					
+					// Only the first Address will be set as forward Address.
+					$fw = array();
+					$fw[$this->forwardingAddresses[0]] = true;
+					$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
+			}
+		}
+		//Save quota
+		if( ($this->isFeatureEnabled("mailBoxWarnLimit") ||
+			$this->isFeatureEnabled("mailBoxSendSizelimit") ||
+			$this->isFeatureEnabled("mailBoxHardSizelimit") ||
+			$this->isFeatureEnabled("mailBoxAutomaticRemoval"))
+		&& ($this->hasFeaturebeenChanged("mailBoxWarnLimit") ||
+			$this->hasFeaturebeenChanged("mailBoxSendSizelimit") ||
+			$this->hasFeaturebeenChanged("mailBoxHardSizelimit") ||
+			$this->hasFeaturebeenChanged("mailBoxAutomaticRemoval") )){
+			$quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
+					"send_limit" => $this->mailBoxSendSizelimitValue,
+					"hard_limit" => $this->mailBoxHardSizelimitValue,
+					"hold" => $this->quotaSize);
 
-        $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
-                "send_limit" => $this->mailBoxSendSizelimitValue,
-                "hard_limit" => $this->mailBoxHardSizelimitValue,
-                "hold" => $this->quotaSize);
-
-        $this->groupwareDao->save("quotaSize", $this->uid, $quota);
-        // TODO: save Mailbox location
+			$this->groupwareDao->save("quotaSize", $this->uid, $quota);
+		}
+		// TODO: save Mailbox location
     }
 
 

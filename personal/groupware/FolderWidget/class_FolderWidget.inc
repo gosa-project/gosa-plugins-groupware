@@ -160,11 +160,9 @@ class FolderWidget extends plugin
                 $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$separator}{$name}";
                 $entryBase =  $this->pathToDn($entryPath);
 
-                echo $entryPath."<br>";
-
                 // Add eventually missing subFolders, to enable the navigation 
                 //  into these folders via the management lists.
-                if(preg_match("/^".preg_quote($this->accountPrefix,'/').$this->accountPrefix, $entryPath)){
+                if(preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $entryPath)){
                     if(!isset($current[$entryPath])){
                         $current[$entryPath] = array();
                         $current[$entryPath]['children'] = array();

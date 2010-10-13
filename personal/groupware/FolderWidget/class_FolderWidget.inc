@@ -46,6 +46,9 @@ class FolderWidget extends plugin
     private $baseEntryMap = array();
     private $permissions = array();
 
+    
+    /*! \brief  Constructs the widget and initializes all required sub-widgets.
+     */
     function __construct(&$config, $folderList, $accountPrefix)
     {
         $this->config = $config;
@@ -66,11 +69,25 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing->setFolderRoot($this->rootBase);
     }
 
+
+    /*! \brief  Updates the list of all selectable ACLs
+     *  @param  Array   The list of acls to use 
+     *                  Syntax is [ 'ACLname'] => 'diplayName', 0=>'None',1=>'Read',...]
+     */
     function setPermissions($perms)
     {
         $this->permissions = $perms;
     }
 
+
+    /*! \brief  The be able to use the LDAP-Based listint widget we've to create
+     *           some kind of fake dns/bases, this method converts a path to such a dn/base.
+     *
+     *          e.g. 'shared/technik/test' will return 'cn=test,cn=technik,cn=test,cn=/'; 
+     *
+     * @param   String  The path to convert
+     * @return  String  The generated base.
+     */
     function pathToDn($path)
     {
         $dn ="cn=/";
@@ -81,6 +98,11 @@ class FolderWidget extends plugin
         return($dn);
     }
 
+    
+    /*! \brief  A function to detect the folderType for a given foldePath
+     *          This folderType tells the listing widget hat images has to be used.
+     *          See: FolderWidget-list.xml <objectType>
+     */
     function getFolderType($item)
     {
         if(preg_match("/^user\//", $item['path'])) return('userFolder');
@@ -172,7 +194,10 @@ class FolderWidget extends plugin
         return($ret);
     }
 
-    
+   
+    /*! \brief  Initiates editing of a folder, a sub dialog will be shown on next
+     *          render() call. this sub-dialog allows to edit the ACLs for the folder.
+     */ 
     function editByBase($base)
     {
         $item = NULL;
@@ -189,6 +214,8 @@ class FolderWidget extends plugin
     }
 
 
+    /*! \brief  Removes a given folder, internally it is just marked with status => 'removed';
+     */
     function removeByBase($base)
     {
         $this->_recursiveRemoveByBase($this->folderList['recursive'], $base);
@@ -197,15 +224,20 @@ class FolderWidget extends plugin
     }
 
 
+    /*! \brief  Shows a sub-dialog on next render call, which allows to specify 
+     *           a folder name and acls, which will then be added to the list of folders.
+     */
     function addFolder()
     {
-            $this->currentlyEditedItem = NULL;
-            $this->dialog = new FolderEditDialog($this->config, array(), TRUE);
-            $this->dialog->setPermissions($this->permissions);
+        $this->currentlyEditedItem = NULL;
+        $this->dialog = new FolderEditDialog($this->config, array(), TRUE);
+        $this->dialog->setPermissions($this->permissions);
     }
 
 
-    function _recursiveRemoveByBase(&$arr, $base)
+    /*!\brief   Recursivly removes a folder by its base.
+     */
+    private function _recursiveRemoveByBase(&$arr, $base)
     {
         $ret = array();
         foreach($arr as $path => $item){
@@ -227,7 +259,10 @@ class FolderWidget extends plugin
         
     }
 
-    function _saveRecursive($arr)
+
+    /*!\brief   Recursivly collects all folders, this is called from save().
+     */
+    private function _saveRecursive($arr)
     {
         $ret = array();
         foreach($arr as $path => $item){
@@ -245,11 +280,19 @@ class FolderWidget extends plugin
         return($ret);
     }
 
+    
+    /*! \brief  Returns the folder list with all changes made during 
+     *           the session. 
+     */
     function save()
     {
         return($this->_saveRecursive($this->folderList['recursive']));
     }
 
+
+    /*! \brief  Generates the HTML output for the current widget.
+     *          Handles add/edit dialogs too.
+     */
     function execute()
     {
         // Generate the listing output 
@@ -266,6 +309,10 @@ class FolderWidget extends plugin
         return($str);
     }
 
+
+    /*! \brief  Check GET and POST for interesting informations.
+     *          Like edit request from the folder listing
+     */
     function save_object()
     {
         $this->FolderWidgetListing->save_object();

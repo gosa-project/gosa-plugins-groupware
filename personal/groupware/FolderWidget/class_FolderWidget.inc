@@ -3,6 +3,33 @@
 // Not yet finished need to be reviewed once the folder handling is working.
 
 
+/*! \brief  A groupware folder widget which allow to navigate through a 
+ *           given list of user or shared folders.
+ *          Folders can be added or removed and ACLs assigned and updated.
+ *
+ *
+ *  @param  Config  The GOsa configuration object
+ *  @param  Array   The folder list to handle, e.g.
+ *                  
+ *                  $folders['shared/support']['status'] = ''; 
+ *                  $folders['shared/support']['name'] = 'support'; 
+ *                  $folders['shared/support']['acls'] = array();
+ *
+ *                  $folders['shared/support/2010']['status'] = 'added'; 
+ *                  $folders['shared/support/2010']['name'] = '2010'; 
+ *                  $folders['shared/support/2010']['acls'] = array('anne' => 1024, 'klaus' => '210');
+ *                 
+ *                  // 'status' Represents the folder status, maybe it wasn't touched then status is '';
+ *                  //          If the folder was added, then the status is 'added'. Status 'removed' 
+ *                  //          handles the folder as removed.
+ *
+ *                  // 'name'   Represents the entry name, this should match the name in the path.
+ *
+ *                  // 'acls'   Represents ACLs set for the folder.
+ *                              Syntax  ['userNmae' => ACL] // See $this->setPermissions();
+ *                              
+ *
+ */
 class FolderWidget extends plugin
 {
     public $pathTitle = "Folder";

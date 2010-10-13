@@ -303,6 +303,14 @@ class GroupwareSharedFolder extends plugin
         if(isset($this->parent->by_object['group']->cn)){
             $this->cn = &$this->parent->by_object['group']->cn;
         }
+
+        // Check if group name has changed, this is not allowed while a groupware extension is active.
+        if($this->initially_was_account && $this->cn != $this->orig_cn && $this->orig_cn != ""){
+            $messages[] = sprintf(
+                _("Groups cannot be renamed, while their groupware extension is active, please use the intial name '%s' again!"),
+                $this->orig_cn);
+        }
+
         return($messages);
     }
 

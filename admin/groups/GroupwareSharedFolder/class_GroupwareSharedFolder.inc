@@ -60,8 +60,6 @@ class GroupwareSharedFolder extends plugin
         }
         $this->orig_cn = $this->cn;
 
-        $this->folderPrefix = "shared/{$this->cn}";
-
         // Initialize the distribution list using the gosa-ng backend 
         $this->init();
     }
@@ -83,25 +81,17 @@ class GroupwareSharedFolder extends plugin
      */
     function init()
     {
-
-        $capabilities = array();
-
-
-        #FIXME
-        /* Not working at all, have to wait for backend funtions.
-         */
-    
-#       // Detect supported capabilities 
-#       $rpc = $this->config->getRpcHandle();
-#       $capabilities = $rpc->gwGetCapabilities();
-#       if(!$rpc->success()){
-#           $this->rpcError = TRUE;
-#           $this->rpcErrorMessage = $rpc->get_error();
-#           $message = sprintf(_("Failed to load supported capabilities from server! Error was: '%s'."), 
-#                   $rpc->get_error());
-#           msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-#           return;
-#       }
+        // Detect supported capabilities 
+        $rpc = $this->config->getRpcHandle();
+        $capabilities = $rpc->gwGetCapabilities();
+        if(!$rpc->success()){
+            $this->rpcError = TRUE;
+            $this->rpcErrorMessage = $rpc->get_error();
+            $message = sprintf(_("Failed to load supported capabilities from server! Error was: '%s'."), 
+                    $rpc->get_error());
+            msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+            return;
+        }
 
         // Detect features we can use
         $map['folder'] = array("folderList","folderAdd","folderDel","folderExists");
@@ -120,16 +110,19 @@ class GroupwareSharedFolder extends plugin
         if($this->cn == "" || $this->dn == "new"){
             $is_account = FALSE;
         }else{
-            
-            // Check if account exists
-            
+            // DETECT ACCOUNT STATE
         }
 
-        // If account exists then load further info
+
+        // Load list of folder, or in case of a new account set an initial folder list
         if($is_account){
-    
-            // Load further info
             
+            // Check if account exists
+            $this->folderPrefix = "shared/{$this->cn}";
+            $this->folderList = $this->getFolderList();
+        }else{
+            $this->folderPrefix = "shared/{%cn}";
+            $intialFolderEntry = array('name' => '{%cn}', 'status' => '', 'acls' => array());
         }
 
         // Store values as current and initial values (saved_attributes) 
@@ -146,7 +139,6 @@ class GroupwareSharedFolder extends plugin
     {
         plugin::execute();
 
-        $this->folderList = $this->getFolderList();
 
         // Initialization failed - Display a stripped template which allows 
         //  to retry initialization
@@ -257,6 +249,9 @@ class GroupwareSharedFolder extends plugin
      */  
     function save()
     {
+        print_a($this->folderList);
+        print_a($this->saved_attributes['folderList']);
+
     }
 
 

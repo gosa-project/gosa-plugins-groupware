@@ -1,5 +1,8 @@
 <?php
 
+// Not yet finished need to be reviewed once the folder handling is working.
+
+
 class FolderWidget extends plugin
 {
     public $pathTitle = "Folder";
@@ -19,6 +22,7 @@ class FolderWidget extends plugin
     function __construct(&$config, $folderList, $accountPrefix)
     {
         $this->config = $config;
+
         // The rootBase is a dn-like representation of the root path
         // e.g.  rootPath is '/'  then is the rootBase 'cn=/'
         // These are just internally used variables and should not have an 
@@ -107,9 +111,11 @@ class FolderWidget extends plugin
                 $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$separator}{$name}";
                 $entryBase =  $this->pathToDn($entryPath);
 
+                echo $entryPath."<br>";
+
                 // Add eventually missing subFolders, to enable the navigation 
                 //  into these folders via the management lists.
-                if(preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $entryPath)){
+                if(preg_match("/^".preg_quote($this->accountPrefix,'/').$this->accountPrefix, $entryPath)){
                     if(!isset($current[$entryPath])){
                         $current[$entryPath] = array();
                         $current[$entryPath]['children'] = array();
@@ -253,7 +259,8 @@ class FolderWidget extends plugin
                         $path = $entry['path'];
                         $newItem = $this->dialog->save();
                         $name = $newItem['name'];
-                        $newPath = "{$path}{$this->pathSeparator}{$name}";
+                        $newPath = rtrim($path,$this->pathSeparator).$this->pathSeparator.$name;
+
                         $newItem['status'] = 'added';
                         $newItem['type'] = 'real';
                         $newItem['children'] = array();

@@ -59,7 +59,8 @@ class FolderWidget extends plugin
         //  effect on the results.
         $this->rootBase = $this->fakeCnAttr.$this->rootName;
 
-        $this->accountPrefix = (empty($accountPrefix)) ? "" : rtrim($accountPrefix,$this->pathSeparator).$this->pathSeparator;
+        // Remove trailing / from accountPrefix.
+        $this->accountPrefix = (empty($accountPrefix)) ? "" : rtrim($accountPrefix,$this->pathSeparator);
         $this->rootBase = $this->pathToDn($accountPrefix);
 
         // Update the folder list, initially.
@@ -114,7 +115,9 @@ class FolderWidget extends plugin
      */
     function setFolderList($arr)
     {
-        $this->folderList = $this->buildRecursiveList($arr, $this->pathSeparator);
+        print_a($arr);
+        $this->buildRecursiveList($arr, $this->pathSeparator);
+        print_a($this->folderList);
     }
 
 
@@ -130,69 +133,93 @@ class FolderWidget extends plugin
         $ret = array();
 
         // Add root Entry
-        $data[$this->accountPrefix] = array(); 
-        $data[$this->accountPrefix]['name'] = $this->rootName;
-        $data[$this->accountPrefix]['status'] = '';
-        $data[$this->accountPrefix]['acls'] = array();
-        $data[$this->accountPrefix]['path'] = $this->accountPrefix;
-        $data[$this->accountPrefix]['type'] = 'manual';
-        $data[$this->accountPrefix]['base'] = $this->rootBase;
-        $data[$this->accountPrefix]['parentPath'] = "";
-        $data[$this->accountPrefix]['children'] = array();
-        $this->baseEntryMap[$this->rootBase] = $this->accountPrefix;
-        $ret['linear'][$this->accountPrefix] = &$data[$this->accountPrefix];
+        $data['/'] = array(); 
+        $data['/']['name'] = '/';
+        $data['/']['status'] = '';
+        $data['/']['acls'] = array();
+        $data['/']['path'] = '/';
+        $data['/']['type'] = 'manual';
+        $data['/']['base'] = 'cn=/';
+        $data['/']['parentPath'] = "";
+        $data['/']['children'] = array();
 
-        $base = &$data[$this->accountPrefix]['children'];
+        $this->baseEntryMap = array();
+        $this->baseEntryMap['cn=/'] = '/';
+        $this->folderList = array();
+        $this->folderList['linear']['/'] = &$data['/'];
+        $this->folderList['recursive']['/'] = &$data['/'];
+
+        foreach($arr as $path => $data){
+            $name = $data['name'];
+            $acls = $data['acls'];
+            $status = $data['status'];
+            $this->addPath($path, $name, $acls, $status);
+        }   
+    }
+    
+
+    /*! \brief  Adds a new folder entry to the used folderList.
+     */
+    function addPath($path, $name, $acls = array(), $status = "")
+    {
+        $base = &$this->folderList['linear']['/']['children'];
         $last = NULL;
-        foreach($arr as $path => $entry){
 
-            // Only add entries that match the accountPrefix 
-            //   e.g.  "/user/admin/"
-            if(!preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $path)) continue;
-
+        // Only add entries that match the accountPrefix 
+        //   e.g.  "/user/admin/"
+        $path = rtrim($path,$this->pathSeparator);
+        if(!preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $path)){
+            // Skipping not mathing folders.
+        }else{
             $current = &$base;
-            $pathSteps = preg_split("/".preg_quote($separator,'/')."/", $path);
+            $pathSteps = preg_split("/".preg_quote($this->pathSeparator,'/')."/", $path);
             $entryPath = "";
             $parentPath = "";
             $entryBase = "";
-            foreach($pathSteps as $name){
+
+            // Walk through path entries and add missing entries to our folder list
+            foreach($pathSteps as $pathName){
+
+                // The parent path is the last path.
                 $parentPath = $entryPath;
-                $entryPath = (empty($entryPath)) ? $name : "{$entryPath}{$separator}{$name}";
+
+                // Calculate entry path by combining last path and current pathName.
+                $entryPath = (empty($entryPath)) ? $pathName : "{$entryPath}{$this->pathSeparator}{$pathName}";
                 $entryBase =  $this->pathToDn($entryPath);
 
                 // Add eventually missing subFolders, to enable the navigation 
                 //  into these folders via the management lists.
-                if(preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $entryPath)){
-                    if(!isset($current[$entryPath])){
-                        $current[$entryPath] = array();
-                        $current[$entryPath]['children'] = array();
-                        $current[$entryPath]['name'] = $name;
-                        $current[$entryPath]['path'] = $path;
-                        $current[$entryPath]['status'] = '';
-                        $current[$entryPath]['acls'] = array();
-                        $current[$entryPath]['type'] = 'manual';
-                        $current[$entryPath]['base'] = $entryBase;
-                        $current[$entryPath]['parentPath'] = $entryPath;
-                        $current[$entryPath]['folderType'] = $this->getFolderType($current[$entryPath]);
+                if(!isset($current[$entryPath])){
+                    $current[$entryPath] = array();
+                    $current[$entryPath]['children'] = array();
+                    $current[$entryPath]['name'] = $pathName;
+                    $current[$entryPath]['path'] = $path;
+                    $current[$entryPath]['status'] = '';
+                    $current[$entryPath]['acls'] = array();
+                    $current[$entryPath]['type'] = 'manual';
+                    $current[$entryPath]['base'] = $entryBase;
+                    $current[$entryPath]['parentPath'] = $entryPath;
+                    $current[$entryPath]['folderType'] = $this->getFolderType($current[$entryPath]);
 
-                        $ret['linear'][$entryPath] = &$current[$entryPath];
-                        $this->baseEntryMap[$entryBase] = $entryPath;
-                    }
-                    $last = &$current[$entryPath];
-                    $current = &$current[$entryPath]['children'];
+                    $this->folderList['linear'][$entryPath] = &$current[$entryPath];
+                    $this->baseEntryMap[$entryBase] = $entryPath;
                 }
-            }
-            $last['acls'] = $entry['acls'];
-            $last['name'] = $entry['name'];
-            $last['type'] = 'real';
-            $last['status'] = $entry['status'];
-            $ret['linear'][$path] = &$last;
-        }
-        $ret['recursive'] = $data;
-        return($ret);
-    }
 
-   
+                // Remeber the last added sub-folder and update the current folder position.
+                $last = &$current[$entryPath];
+                $current = &$current[$entryPath]['children'];
+            }
+
+            // Now that we've created all subfolders we can set the folder
+            //  paramters of the folder we originally wanted to add.
+            $last['acls'] = $acls;
+            $last['name'] = $name;
+            $last['type'] = 'real';
+            $last['status'] = $status;
+        }
+    }
+  
+ 
     /*! \brief  Initiates editing of a folder, a sub dialog will be shown on next
      *          render() call. this sub-dialog allows to edit the ACLs for the folder.
      */ 

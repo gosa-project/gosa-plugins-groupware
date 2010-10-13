@@ -77,13 +77,13 @@ class GroupwareDistributionList extends plugin
             }
         }
 
-        // If we're creating a new ogroup, then we definately have no extension yet.
+        // If we're creating a new ogroup, then we've definately no extension, yet.
         $this->rpcError = FALSE;
         if($this->cn == "" || $this->dn == "new"){
             $is_account = FALSE;
         }else{
 
-            // Check whether a mathing distribution-list exsits or not?
+            // Check whether a mathing distribution-list exists or not!
             $is_account = $rpc->gwDistExists($this->orig_cn);
             if(!$rpc->success()){
                 $this->rpcError = TRUE;
@@ -318,8 +318,8 @@ class GroupwareDistributionList extends plugin
     }
 
 
-    /*! \brief  Add given mail address to the list of alternate adresses ,
-     *           check if this mal address is used, skip adding in this case
+    /*! \brief  Add given mail address to the list of alternate adresses,
+     *           check if this mal address is used, skip addition in this case.
      */
     function addAlternate($address)
     {
@@ -352,7 +352,7 @@ class GroupwareDistributionList extends plugin
     }
 
 
-    /*!   \brief    Removes the distribution list extension for the current 
+    /*!   \brief    Removes the distribution list extension from the current 
      *               object group.
      */  
     function remove_from_parent()
@@ -409,7 +409,6 @@ class GroupwareDistributionList extends plugin
         }
 
         // Updated primaryMailAddress value, if needed:  
-        //  -> is a new distribution list or
         //  -> the value for 'primaryMailAddress' has changed.
         if($this->initially_was_account && $this->primaryMailAddress != $this->saved_attributes['primaryMailAddress']){
             $rpc->gwDistSetPrimaryMailAddress($this->cn, $this->primaryMailAddress);
@@ -451,7 +450,8 @@ class GroupwareDistributionList extends plugin
             }
         }
 
-        // Check which accounts have valid groupware mail addresses.
+        // Check which object-group member have a valid groupware mail addresses.
+        // We can only add valid groupware extensions as distribution list member.
         $uids = $this->getOgroupMemberList();
         $rpc = $this->config->getRpcHandle(); 
         $verified = $rpc->gwVerifyAcct($uids);
@@ -464,6 +464,8 @@ class GroupwareDistributionList extends plugin
                 if(!empty($mail)) $hasExt[] = $mail;
             }   
         }
+
+        // Check for added or removed distribution list members now.
         $all = array_merge($hasExt, $this->saved_attributes['memberList']);
         foreach($all as $member){
             if(!in_array($member,$hasExt)){

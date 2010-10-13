@@ -508,7 +508,6 @@ class GroupwareDistributionList extends plugin
         if(isset($this->parent->by_object['ogroup']->cn)){
             $this->cn = &$this->parent->by_object['ogroup']->cn;
         }
-        // Validate name later...  #FIXME
 
         // Validate email address
         if(!tests::is_email($this->primaryMailAddress)) {

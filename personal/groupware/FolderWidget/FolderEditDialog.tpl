@@ -15,11 +15,11 @@
 <table>
     <tr>
         <td>{t}Name{/t}:&nbsp;</td>
-        <td>{$folderItem.name}</td>
+        <td>{$folderName}</td>
     </tr>
     <tr>
         <td>{t}Path{/t}:&nbsp;</td>
-        <td>{$folderItem.path}</td>
+        <td>{$folderPath}</td>
     </tr>
 </table>
 {/if}

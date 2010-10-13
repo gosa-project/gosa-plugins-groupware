@@ -27,7 +27,13 @@ class FolderEditDialog extends plugin
 
     function execute()
     {
-        $smarty = get_smarty(); 
+        $smarty = get_smarty();
+
+        // Prepare folder name and path     
+        $smarty->assign('folderName', preg_replace("/\{%cn\}/", "<i>Group name</i>", $this->folderItem['name']));
+        $smarty->assign('folderPath', preg_replace("/\{%cn\}/", "<i>Group name</i>", $this->folderItem['path']));
+        
+ 
         $smarty->assign('folderItem', $this->folderItem);
         $smarty->assign('permissions', $this->permissions);
         $smarty->assign('permissionCnt', count($this->permissions));

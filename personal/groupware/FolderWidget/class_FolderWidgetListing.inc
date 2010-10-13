@@ -98,7 +98,7 @@ class FolderWidgetListing extends management
      */
     function renderList()
     {
-        $this->folderSelector->setBases($this->getSimpleFolderList($this->folderList['recursive']));
+        $this->folderSelector->setBases($this->getSimpleFolderList($this->folderList['recursive']['/']['children']));
         $this->folderSelector->update(true);
 
         $headpage = $this->getHeadpage();

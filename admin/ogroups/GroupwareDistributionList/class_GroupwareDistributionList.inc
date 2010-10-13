@@ -220,10 +220,10 @@ class GroupwareDistributionList extends plugin
         if ($this->parent !== NULL){
             if ($this->is_account){
                 $display= $this->show_disable_header(_("Remove distribution list"),
-                        msgPool::featuresEnabled(_("distribution list")));
+                        msgPool::featuresEnabled(_("Distribution list")));
             } else {
                 $display= $this->show_enable_header(_("Create distribution list"),
-                        msgPool::featuresDisabled(_("distribution list")));
+                        msgPool::featuresDisabled(_("Distribution list")));
                 return ($display);
             }
         }

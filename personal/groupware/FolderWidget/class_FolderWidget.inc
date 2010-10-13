@@ -115,9 +115,7 @@ class FolderWidget extends plugin
      */
     function setFolderList($arr)
     {
-        print_a($arr);
         $this->buildRecursiveList($arr, $this->pathSeparator);
-        print_a($this->folderList);
     }
 
 

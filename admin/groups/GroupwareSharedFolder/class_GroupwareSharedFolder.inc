@@ -1,28 +1,7 @@
 <?php
 
-
-# Access constants
-if(!defined("GROUPWARE_LOOKUP")){
-    define ("GROUPWARE_LOOKUP", 1);
-    define ("GROUPWARE_READ", 2);
-    define ("GROUPWARE_STATUS", 4);
-    define ("GROUPWARE_WRITE", 8);
-    define ("GROUPWARE_INSERT", 16);
-    define ("GROUPWARE_POST", 32);
-    define ("GROUPWARE_CREATE", 64);
-    define ("GROUPWARE_DELETE", 128);
-    define ("GROUPWARE_ADMINISTRATE", 256);
-
-
-    define ("GROUPWARE_RIGHTS_NONE", 0);
-    define ("RIGHTS_GROUPWARE_READ",  GROUPWARE_LOOKUP | GROUPWARE_READ | GROUPWARE_STATUS);
-    define ("RIGHTS_GROUPWARE_POST", RIGHTS_GROUPWARE_READ | GROUPWARE_POST);
-    define ("GROUPWARE_RIGHTS_APPEND", RIGHTS_GROUPWARE_POST | GROUPWARE_INSERT);
-    define ("RIGHTS_GROUPWARE_WRITE", GROUPWARE_RIGHTS_APPEND | GROUPWARE_WRITE | GROUPWARE_CREATE | GROUPWARE_DELETE);
-    define ("GROUPWARE_RIGHTS_ALL", RIGHTS_GROUPWARE_WRITE | GROUPWARE_ADMINISTRATE);
-}
-
-
+# Load Groupware defintions and ACLs
+new GroupwareDefinitions();
 
 /*! \brief  Allows to update groupware shared-folders 
  *           using the jsonRPC backend.
@@ -134,16 +113,16 @@ class GroupwareSharedFolder extends plugin
                     $entry = array();
                     $entry['name'] = $name;
                     $entry['status'] = '';
-
-                    $acls = $rpc->gwFolderGetMembers($path);
-                    if(!$rpc->success()){
-                        $this->rpcError = TRUE;
-                        $this->rpcErrorMessage = $rpc->get_error();
-                        $message = sprintf(_("Failed to load permissions for folder '%s'! Error was: '%s'."), 
-                                $path,$rpc->get_error());
-                        msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-                        return;
-                    }
+                    $acls = array();        
+#                   $acls = $rpc->gwFolderGetMembers($path);
+#                   if(!$rpc->success()){
+#                       $this->rpcError = TRUE;
+#                       $this->rpcErrorMessage = $rpc->get_error();
+#                       $message = sprintf(_("Failed to load permissions for folder '%s'! Error was: '%s'."), 
+#                               $path,$rpc->get_error());
+#                       msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+#                       return;
+#                   }
                     $entry['acls'] = $acls;
                     $folderList[$path] = $entry;
                 }
@@ -155,7 +134,7 @@ class GroupwareSharedFolder extends plugin
         // {%cn} will be replaced by the groups cn when save() is called.
         if(!$is_account){
             $this->folderPrefix = "shared/{%cn}";
-            $intialFolderEntry = array('name' => '{%cn}', 'status' => '', 'acls' => array());
+            $intialFolderEntry = array('name' => '{%cn}', 'status' => 'added', 'acls' => array());
             $folderList = array();
             $folderList[$this->folderPrefix] = $intialFolderEntry;
         }
@@ -228,7 +207,7 @@ class GroupwareSharedFolder extends plugin
         }
         if(isset($_POST['configureFolder'])){
             $this->FolderWidget = new FolderWidget($this->config,$this->folderList, $this->folderPrefix);
-            $this->FolderWidget->setPermissions($this->getPermissions());
+            $this->FolderWidget->setPermissions(GroupwareDefinitions::getPermissions());
             $this->FolderWidget->acl_base = $this->acl_base;
             $this->FolderWidget->acl_category = $this->acl_category;
         }
@@ -276,6 +255,7 @@ class GroupwareSharedFolder extends plugin
      */  
     function remove_from_parent()
     {
+        echo "<br>Remove all folders";
     }
 
 
@@ -284,8 +264,34 @@ class GroupwareSharedFolder extends plugin
      */  
     function save()
     {
-        print_a(array('current' => $this->folderList));
-        print_a(array('old' => $this->saved_attributes['folderList']));
+        // Walk through folders and perform requested actions
+        foreach($this->folderList as $path => $folder){
+
+            // Update folder names for newly created groupware extensions.
+            $path = preg_replace("/\{%cn\}/", $this->cn, $path);
+            $folder['name'] = preg_replace("/\{%cn\}/", $this->cn, $folder['name']);
+
+            // Call requested backend methods, for added/removed
+            if($folder['status'] == 'removed'){
+                echo "<br>Remove folder {$path}";
+                continue;
+            }
+            if($folder['status'] == 'added'){
+                echo "<br>Add folder {$path}";
+                continue;
+            }
+            
+            // Set members 
+            echo "<br>Set members for {$path} ";
+            $members   = array();
+            foreach($folder['acls'] as $id => $data) $members[] = $data['name'];
+            print_a($members);
+
+            // Set permissions
+            foreach($folder['acls'] as $id => $data){
+                echo "<br>Set acls for {$data['name']} : {$data['acl']}";
+            }
+        }
     }
 
 
@@ -317,40 +323,6 @@ class GroupwareSharedFolder extends plugin
                     "plProvidedAcls"  => array(
                         "folderList"   => _("Shared folder"))
                     ));
-    }
-
-
-    // #Fixme: Put this in a separate class
-    function getPermissions()
-    {
-        $ret[GROUPWARE_RIGHTS_NONE] = _("None");
-        $ret[RIGHTS_GROUPWARE_READ] = _("Read");
-        $ret[RIGHTS_GROUPWARE_POST] = _("Post");
-        $ret[GROUPWARE_RIGHTS_APPEND] = _("Append");
-        $ret[RIGHTS_GROUPWARE_WRITE] = _("Write");
-        $ret[GROUPWARE_RIGHTS_ALL] = _("All");
-        return($ret);
-    }
-
-
-    // Returns a dummy folder list . #Fixme remove this.
-    function getFolderList()
-    {
-        $folders = array(
-                "shared/{$this->cn}/Favorites",
-                "shared/{$this->cn}/All Public Folders",
-                "shared/{$this->cn}/All Public Folders/Internet Newsgroups",
-                "shared/{$this->cn}/All Public Folders/testordner",
-                "shared/{$this->cn}/All Public Folders/testordner/klaus ist auch ein ordner",
-                "shared/{$this->cn}/All Public Folders/testordner/klaus ist auch ein ordner/testordner",
-                "shared/{$this->cn}/All Public Folders/testordner/klaus ist auch ein ordner/testordner/xcbdxfgh");
-
-        $ret = array();
-        foreach($folders as $folder){
-            $name = preg_replace("/^.*\//","",$folder);
-            $ret[$folder] = array('status' => '', 'name' => $name, 'acls' => array());
-        } 
-        return($ret);
     }
 }
 ?>

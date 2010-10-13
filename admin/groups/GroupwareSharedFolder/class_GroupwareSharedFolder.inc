@@ -43,6 +43,7 @@ class GroupwareSharedFolder extends plugin
     // Feature handling
     private $featuresEnabled = array();
     private $FolderWidget = NULL;
+    private $folderPrefix = "shared/";
 
 
     /*! \brief  Constructs the plugin, loads required parent values 
@@ -58,6 +59,8 @@ class GroupwareSharedFolder extends plugin
             $this->cn = $this->attrs['cn'][0];
         }
         $this->orig_cn = $this->cn;
+
+        $this->folderPrefix = "shared/{$this->cn}";
 
         // Initialize the distribution list using the gosa-ng backend 
         $this->init();
@@ -139,26 +142,6 @@ class GroupwareSharedFolder extends plugin
     }
 
 
-    // Returns a dummy folder list . #Fixme remove this.
-    function getFolderList()
-    {
-        $folders = array(
-                "shared/Favorites",
-                "shared/All Public Folders",
-                "shared/All Public Folders/Internet Newsgroups",
-                "shared/All Public Folders/testordner",
-                "shared/All Public Folders/testordner/klaus ist auch ein ordner",
-                "shared/All Public Folders/testordner/klaus ist auch ein ordner/testordner",
-                "shared/All Public Folders/testordner/klaus ist auch ein ordner/testordner/xcbdxfgh");
-
-        $ret = array();
-        foreach($folders as $folder){
-            $name = preg_replace("/^.*\//","",$folder);
-            $ret[$folder] = array('status' => '', 'name' => $name, 'acls' => array());
-        } 
-        return($ret);
-    }
-
     function execute()
     {
         plugin::execute();
@@ -217,7 +200,7 @@ class GroupwareSharedFolder extends plugin
             }
         }
         if(isset($_POST['configureFolder'])){
-            $this->FolderWidget = new FolderWidget($this->config,$this->folderList, "shared/");
+            $this->FolderWidget = new FolderWidget($this->config,$this->folderList, $this->folderPrefix);
             $this->FolderWidget->setPermissions($this->getPermissions());
             $this->FolderWidget->acl_base = $this->acl_base;
             $this->FolderWidget->acl_category = $this->acl_category;
@@ -282,8 +265,8 @@ class GroupwareSharedFolder extends plugin
         $messages = plugin::check();
 
         // Get current object-group name maybe it is invalid for us.
-        if(isset($this->parent->by_object['ogroup']->cn)){
-            $this->cn = &$this->parent->by_object['ogroup']->cn;
+        if(isset($this->parent->by_object['group']->cn)){
+            $this->cn = &$this->parent->by_object['group']->cn;
         }
         return($messages);
     }
@@ -308,7 +291,7 @@ class GroupwareSharedFolder extends plugin
     }
 
 
-    // Should come from the sever later.  #FIXME
+    // #Fixme: Put this in a separate class
     function getPermissions()
     {
         $ret[GROUPWARE_RIGHTS_NONE] = _("None");
@@ -317,6 +300,27 @@ class GroupwareSharedFolder extends plugin
         $ret[GROUPWARE_RIGHTS_APPEND] = _("Append");
         $ret[RIGHTS_GROUPWARE_WRITE] = _("Write");
         $ret[GROUPWARE_RIGHTS_ALL] = _("All");
+        return($ret);
+    }
+
+
+    // Returns a dummy folder list . #Fixme remove this.
+    function getFolderList()
+    {
+        $folders = array(
+                "shared/{$this->cn}/Favorites",
+                "shared/{$this->cn}/All Public Folders",
+                "shared/{$this->cn}/All Public Folders/Internet Newsgroups",
+                "shared/{$this->cn}/All Public Folders/testordner",
+                "shared/{$this->cn}/All Public Folders/testordner/klaus ist auch ein ordner",
+                "shared/{$this->cn}/All Public Folders/testordner/klaus ist auch ein ordner/testordner",
+                "shared/{$this->cn}/All Public Folders/testordner/klaus ist auch ein ordner/testordner/xcbdxfgh");
+
+        $ret = array();
+        foreach($folders as $folder){
+            $name = preg_replace("/^.*\//","",$folder);
+            $ret[$folder] = array('status' => '', 'name' => $name, 'acls' => array());
+        } 
         return($ret);
     }
 }

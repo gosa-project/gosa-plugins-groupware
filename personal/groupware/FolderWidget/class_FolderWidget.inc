@@ -185,8 +185,10 @@ class FolderWidget extends plugin
                 $entryPath = (empty($entryPath)) ? $pathName : "{$entryPath}{$this->pathSeparator}{$pathName}";
                 $entryBase =  $this->pathToDn($entryPath);
 
+                // To not add sub-folders which are not nescessary to be displayed
+                // e.g. We have shared/technik/test
+                // Then do not all sub-folders for shared, it is not selectable in the listing later.
                 if(!preg_match("/".preg_quote($this->accountPrefix,'/')."/", $entryPath)){
-                    echo "Skipped {$entryPath} <br>";
                     continue;
                 }
 

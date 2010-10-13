@@ -117,7 +117,7 @@ class GroupwareSharedFolder extends plugin
             if(!$rpc->success()){
                 $this->rpcError = TRUE;
                 $this->rpcErrorMessage = $rpc->get_error();
-                $message = sprintf(_("Failed to folder list! Error was: '%s'."), 
+                $message = sprintf(_("Failed to load folder list! Error was: '%s'."), 
                         $rpc->get_error());
                 msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
                 return;
@@ -134,7 +134,17 @@ class GroupwareSharedFolder extends plugin
                     $entry = array();
                     $entry['name'] = $name;
                     $entry['status'] = '';
-                    $entry['acls'] = array();
+
+                    $acls = $rpc->gwFolderGetMembers($path);
+                    if(!$rpc->success()){
+                        $this->rpcError = TRUE;
+                        $this->rpcErrorMessage = $rpc->get_error();
+                        $message = sprintf(_("Failed to load permissions for folder '%s'! Error was: '%s'."), 
+                                $path,$rpc->get_error());
+                        msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                        return;
+                    }
+                    $entry['acls'] = $acls;
                     $folderList[$path] = $entry;
                 }
             }
@@ -149,8 +159,6 @@ class GroupwareSharedFolder extends plugin
             $folderList = array();
             $folderList[$this->folderPrefix] = $intialFolderEntry;
         }
-
-        print_a(array("--------" => $folderList));
 
         // Store values as current and initial values (saved_attributes) 
         //  to be able to keep track och changes.
@@ -276,9 +284,8 @@ class GroupwareSharedFolder extends plugin
      */  
     function save()
     {
-        print_a($this->folderList);
-        print_a($this->saved_attributes['folderList']);
-
+        print_a(array('current' => $this->folderList));
+        print_a(array('old' => $this->saved_attributes['folderList']));
     }
 
 

@@ -189,6 +189,7 @@ class GroupwareDao{
 			//Folder Id from the User ...
 			//user/$id/
 			//$resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
+			//print_a($resultArr["mailFolder"]);
 			/*
 			"RIGHTS_NONE", 0);
 			"RIGHTS_READ",  LOOKUP | READ | STATUS);

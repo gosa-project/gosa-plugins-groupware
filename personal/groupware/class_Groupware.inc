@@ -285,7 +285,6 @@ class Groupware extends plugin
             return($smarty->fetch(get_template_path("generic.tpl",TRUE,dirname(__FILE__))));
         }
 
-
         /****************
           Filter editor
          ****************/
@@ -378,8 +377,10 @@ class Groupware extends plugin
         // Display dialog to select a local fowarder 
         if (isset($_POST['addLocalForwardingAddress'])){
             $this->mailAddressSelectDialog=  new mailAddressSelect($this->config, get_userinfo());
+			
             $this->dialog= TRUE;
         }
+		
 
         // Close dialogs, action was canceled 
         if (isset($_POST['mailAddressSelect_cancel'])){
@@ -569,7 +570,7 @@ class Groupware extends plugin
                     }
                 }
             }
-
+			
             // Get posted flag changes 
             $flagAttrs = array("localDeliveryOnly","dropOwnMails");
             foreach($flagAttrs as $attr){
@@ -618,12 +619,20 @@ class Groupware extends plugin
     function addForwarder($address)
     {
         if(empty($address)) return;
-        if($this->acl_is_writeable("forwardingAddresses")){
-            $this->forwardingAddresses[]= $address;
-            $this->forwardingAddresses= array_unique ($this->forwardingAddresses);
-            sort ($this->forwardingAddresses);
-            reset ($this->forwardingAddresses);
-            $this->is_modified= TRUE;
+        if($this->acl_is_writeable("forwardingAddresses")){		
+			//Check if the address is a valid address on the Groupwareserver
+			
+			$isMailAvailabel = $this->rpcExec("gwMailAddressExists", $address);
+			if(empty($isMailAvailabel)){
+				msg_dialog::display(_("Permission error"), _("This email address is not available as forwarding recipient in your groupware."), ERROR_DIALOG);
+			}
+			else{
+				$this->forwardingAddresses[]= $address;
+				$this->forwardingAddresses= array_unique ($this->forwardingAddresses);
+				sort ($this->forwardingAddresses);
+				reset ($this->forwardingAddresses);
+				$this->is_modified= TRUE;
+			}
         }else{
             msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
         }
@@ -634,6 +643,7 @@ class Groupware extends plugin
      */ 
     function delForwarder($addresses)
     {
+		print_a(array("Del forwarder"));
         if($this->acl_is_writeable("forwardingAddresses")){
             $this->forwardingAddresses= array_remove_entries ($addresses, $this->forwardingAddresses);
             $this->is_modified= TRUE;
@@ -776,8 +786,6 @@ class Groupware extends plugin
             }
         }
 
-        
-
         $this->groupwareDao->saveFoldersAndAcls($this->uid, $this->mailFolder);
 
         // Save the primary Email Address.
@@ -843,21 +851,27 @@ class Groupware extends plugin
         if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
             foreach($this->forwardingAddresses as $fAddress){
                 if(!tests::is_email ($fAddress)){
-                    $messages[] = msgPool::invalid(_("Alternate address"),$fAddress, "", 
+                    $messages[] = msgPool::invalid(_("Forwarding address"),$fAddress, "", 
                             "user@exdom.intranet.gonicus.de");
                 }
+				//Check if the address is a valid address on the Groupwareserver
+				$isMailAvailabel = $this->rpcExec("gwMailAddressExists", $fAddress);
+				if(empty($isMailAvailabel)){
+					$messages[] = _("This email address is not available as forwarding recipient in your groupware.");
+				}
                 if($fAddress == $this->mailAddress){
-                    $messages[] = _("The primary address cannot be used as alternative address!");
+                    $messages[] = _("The primary address cannot be used as forwarding address!");
                 }
             }
         }
         if(isset($this->alternateAddresses) && is_array($this->alternateAddresses)){
+		
             foreach($this->alternateAddresses as $fAddress){
                 if(!tests::is_email ($fAddress)){
-                    $messages[] = msgPool::invalid(_("Forward address"),$fAddress, "", "user@excom.intranet.gonicus.de");
+                    $messages[] = msgPool::invalid(_("Alternate address"),$fAddress, "", "user@excom.intranet.gonicus.de");
                 }
                 if($fAddress == $this->mailAddress){
-                    $messages[] = _("The primary address cannot be used as forward address!");
+                    $messages[] = _("The primary address cannot be used as alternate address!");
                 }
             }
         }

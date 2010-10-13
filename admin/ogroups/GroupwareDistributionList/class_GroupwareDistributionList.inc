@@ -1,5 +1,7 @@
 <?php
 
+new GroupwareDefinitions();
+
 class GroupwareDistributionList extends plugin
 {
     public $view_logged = FALSE;

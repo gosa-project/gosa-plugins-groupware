@@ -31,8 +31,11 @@ class FolderEditDialog extends plugin
 
         // Prepare folder name and path     
         $smarty->assign('folderName', preg_replace("/\{%cn\}/", "<i>Group name</i>", $this->folderItem['name']));
-        $smarty->assign('folderPath', preg_replace("/\{%cn\}/", "<i>Group name</i>", $this->folderItem['path']));
-        
+        if(isset($this->folderItem['path'])){
+            $smarty->assign('folderPath', preg_replace("/\{%cn\}/", "<i>Group name</i>", $this->folderItem['path']));
+        }else{
+            $smarty->assign('folderPath', '');
+        }
  
         $smarty->assign('folderItem', $this->folderItem);
         $smarty->assign('permissions', $this->permissions);

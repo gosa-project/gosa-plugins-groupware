@@ -110,20 +110,47 @@ class GroupwareSharedFolder extends plugin
         if($this->cn == "" || $this->dn == "new"){
             $is_account = FALSE;
         }else{
-            // DETECT ACCOUNT STATE
+
+            // Load folders for the given folderPrefix           
+            $this->folderPrefix = "shared/{$this->cn}";
+            $folders = $rpc->gwFolderList($this->folderPrefix);
+            if(!$rpc->success()){
+                $this->rpcError = TRUE;
+                $this->rpcErrorMessage = $rpc->get_error();
+                $message = sprintf(_("Failed to folder list! Error was: '%s'."), 
+                        $rpc->get_error());
+                msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                return;
+            }
+
+            // We've avalid account, if we've received at least one matching folder.
+            $is_account = count($folders) != 0;
+
+            // Prepare folders to be used in the folderWidget
+            if($is_account){
+                $folderList = array();
+                foreach($folders as $path){
+                    $name = preg_replace("/^.*\//","",$path);
+                    $entry = array();
+                    $entry['name'] = $name;
+                    $entry['status'] = '';
+                    $entry['acls'] = array();
+                    $folderList[$path] = $entry;
+                }
+            }
         }
 
-
-        // Load list of folder, or in case of a new account set an initial folder list
-        if($is_account){
-            
-            // Check if account exists
-            $this->folderPrefix = "shared/{$this->cn}";
-            $this->folderList = $this->getFolderList();
-        }else{
+        // We do not have a valid account, use an initial set of folders 
+        //  to be able to use the folderWidget.
+        // {%cn} will be replaced by the groups cn when save() is called.
+        if(!$is_account){
             $this->folderPrefix = "shared/{%cn}";
             $intialFolderEntry = array('name' => '{%cn}', 'status' => '', 'acls' => array());
+            $folderList = array();
+            $folderList[$this->folderPrefix] = $intialFolderEntry;
         }
+
+        print_a(array("--------" => $folderList));
 
         // Store values as current and initial values (saved_attributes) 
         //  to be able to keep track och changes.

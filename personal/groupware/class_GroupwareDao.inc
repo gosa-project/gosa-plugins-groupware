@@ -173,7 +173,7 @@ class GroupwareDao{
         if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
     		$FWaddresses = $this->get("forwardingAddresses", array($uid));		
             if($FWaddresses) {
-                $resultArr["forwardingAddresses"] = key($FWaddresses);
+                $resultArr["forwardingAddresses"] = array(key($FWaddresses));
             }
         }
 

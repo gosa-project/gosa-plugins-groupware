@@ -225,7 +225,6 @@ class Groupware extends plugin
         $this->vacationStop= date('d.m.Y', $this->vacationStop);
     }
 
-
     /*! \brief  Generates the HTML user interface for the groupware plugin
      *           and take of several ui actions like adding or removing 
      *           forward addresses, filters and the account itself.
@@ -786,8 +785,10 @@ class Groupware extends plugin
 		}
 		// Save forwardingAddresses
 		if($this->isFeatureEnabled("forwardingAddresses") && $this->hasFeaturebeenChanged("forwardingAddresses")){
-			if(!empty($this->forwardingAddresses) 
-					&& isset($this->forwardingAddresses) 
+			if(empty($this->forwardingAddresses)){
+				$this->groupwareDao->save("forwardingAddresses", $this->uid, array(array()));
+			}
+			if(		isset($this->forwardingAddresses) 
 					&& is_array($this->forwardingAddresses)){
 					
 					// Only the first Address will be set as forward Address.
@@ -795,6 +796,7 @@ class Groupware extends plugin
 					$fw[$this->forwardingAddresses[0]] = true;
 					$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
 			}
+			
 		}
 		//Save quota
 		if( ($this->isFeatureEnabled("mailBoxWarnLimit") ||
@@ -843,7 +845,6 @@ class Groupware extends plugin
         if(!tests::is_email ($this->mailAddress)){
             $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@exdom.intranet.gonicus.de knibbel");
         }
-
         if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
             foreach($this->forwardingAddresses as $fAddress){
                 if(!tests::is_email ($fAddress)){

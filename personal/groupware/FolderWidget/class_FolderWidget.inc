@@ -118,7 +118,7 @@ class FolderWidget extends plugin
         $this->buildRecursiveList($arr, $this->pathSeparator);
 
         // Ensure that we've at least the base folder set
-        if(!isset($this->folderList[$this->accountPrefix])){
+        if(!isset($this->folderList['linear'][$this->accountPrefix])){
             $this->addPath($this->accountPrefix, preg_replace("/^.*\//","", $this->accountPrefix));
 
             trigger_error(sprintf("You reuquire at least a folder named '%s'! This time it was added automatically.", 

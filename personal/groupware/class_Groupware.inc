@@ -303,7 +303,12 @@ class Groupware extends plugin
             }
         }
         if(isset($_POST['configureFolder'])){
-            $this->FolderWidget = new FolderWidget($this->config,$this->mailFolder, $this->folderPrefix);
+            $folders = $this->mailFolder;
+            if(!isset($folders[$this->folderPrefix])){
+                $folders[$this->folderPrefix] = array('name' => $this->uid,'status' => 'added','acls' => array());
+            }
+
+            $this->FolderWidget = new FolderWidget($this->config,$folders, $this->folderPrefix);
             $this->FolderWidget->setPermissions(GroupwareDefinitions::getPermissions());
             $this->FolderWidget->acl_base = $this->acl_base;
             $this->FolderWidget->acl_category = $this->acl_category;

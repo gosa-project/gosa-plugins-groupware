@@ -114,15 +114,15 @@ class GroupwareSharedFolder extends plugin
                     $entry['name'] = $name;
                     $entry['status'] = '';
                     $acls = array();        
-#                   $acls = $rpc->gwFolderGetMembers($path);
-#                   if(!$rpc->success()){
-#                       $this->rpcError = TRUE;
-#                       $this->rpcErrorMessage = $rpc->get_error();
-#                       $message = sprintf(_("Failed to load permissions for folder '%s'! Error was: '%s'."), 
-#                               $path,$rpc->get_error());
-#                       msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
-#                       return;
-#                   }
+                    $acls = $rpc->gwFolderGetMembers($path);
+                    if(!$rpc->success()){
+                        $this->rpcError = TRUE;
+                        $this->rpcErrorMessage = $rpc->get_error();
+                        $message = sprintf(_("Failed to load permissions for folder '%s'! Error was: '%s'."), 
+                                $path,$rpc->get_error());
+                        msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                        return;
+                    }
                     $entry['acls'] = $acls;
                     $folderList[$path] = $entry;
                 }

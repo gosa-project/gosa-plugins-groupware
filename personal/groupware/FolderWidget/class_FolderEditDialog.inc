@@ -59,6 +59,7 @@ class FolderEditDialog extends plugin
 
             // Name or ACL modified?
             if(isset($_POST["permission_{$id}_name"])) {
+                $name = get_post("permission_{$id}_name");
                 $this->folderItem['acls'][$id]['name'] = get_post("permission_{$id}_name");
             }
             if(isset($_POST["permission_{$id}_acl"])) {
@@ -75,16 +76,42 @@ class FolderEditDialog extends plugin
         if(isset($_POST['permission_add'])){
             $this->folderItem['acls'][] = array('name' => '', 'acl' => 0, 'type' => 'user');
         }
+
         $this->folderItem['acls'] = array_values($this->folderItem['acls']);
     }
 
+    
     function isNew()
     {
         return($this->isNew);
     }
 
+
+    function check()
+    {
+        $message = array();
+
+        // Check if we've duplicate ACL definitions for a user 
+        $aclNames = array();
+        foreach($this->folderItem['acls'] as $entry){
+            if(!isset($aclNames[$entry['name']])){
+                $aclNames[$entry['name']] = TRUE;
+            }else{
+                $message[] = sprintf(_("Duplicate permission setting for user '%s'."), $entry['name']);
+            }
+        }
+
+        return($message);
+    }
+
+
     function save()
     {
+        // Remove empty ACL defintions
+        foreach($this->folderItem['acls'] as $id => $entry){
+            if(empty($entry['name'])) unset($this->folderItem['acls'][$id]);
+        }
+
         return($this->folderItem);
     }
 }

@@ -9,6 +9,9 @@ class FolderWidgetListing extends management
     private $rootBase = '';
     private $parent;
 
+    public $pathTitle = "Folder editor";
+    public $plHeadline = "Folder editor";
+
     function __construct($config,$ui, $rootBase, $parent)
     {
         $this->config = $config;

@@ -32,7 +32,8 @@
  */
 class FolderWidget extends plugin
 {
-    public $pathTitle = "Folder";
+    public $pathTitle = "Folder editor";
+    public $plHeadline = "Folder editor";
 
     private $pathSeparator = "/";
     private $rootName = "/";

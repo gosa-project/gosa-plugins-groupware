@@ -96,7 +96,7 @@ class FolderEditDialog extends plugin
         foreach($this->folderItem['acls'] as $entry){
             if(!isset($aclNames[$entry['name']])){
                 $aclNames[$entry['name']] = TRUE;
-            }else{
+            }elseif(!empty($entry['name'])){
                 $message[] = sprintf(_("Duplicate permission setting for user '%s'."), $entry['name']);
             }
         }

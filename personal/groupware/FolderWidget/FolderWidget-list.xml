@@ -8,7 +8,7 @@
     <multiSelect>true</multiSelect>
     <template>../plugins/personal/groupware/FolderWidget/FolderWidget-list.tpl</template>
     <module>users</module>
-    <label>List of mail folders</label>
+    <label>List of groupware folders</label>
     <defaultSortColumn>1</defaultSortColumn>
 
     <objectType>
@@ -25,7 +25,7 @@
   </definition>
 
   <table>
-    <layout>|20px;c|||170px;r|</layout>
+    <layout>|20px;c||170px;r|</layout>
 
     <column>
       <value>%{filter:objectType(dn,objectClass)}</value>
@@ -35,10 +35,11 @@
       <label>Name</label>
       <sortAttribute>cn</sortAttribute>
       <sortType>string</sortType>
-      <value>%{filter:link(row,dn,"%s",cn)}</value>
+      <value>%{filter:link(row,cn,"%s",cn)}</value>
       <export>true</export>
     </column>
 
+<!--
     <column>
       <label>Type</label>
       <sortAttribute>folderType</sortAttribute>
@@ -46,7 +47,7 @@
       <value>%{filter:link(row,dn,"%s",folderType)}</value>
       <export>true</export>
     </column>
-
+-->
     <column>
       <label>Actions</label>
       <value>%{filter:actions(dn,row,objectClass)}</value>
@@ -85,37 +86,15 @@
       <type>exporter</type>
     </action>
 
-    <action>
-      <type>separator</type>
-    </action>
-
-    <action>
-      <type>copypaste</type>
-    </action>
-
-    <action>
-      <type>snapshot</type>
-    </action>
-
   </actionmenu>
 
-  <actiontriggers snapshot="true" copypaste="true">
-
-    <action>
-      <name>cp</name>
-      <type>copypaste</type>
-    </action>
+  <actiontriggers snapshot="false" copypaste="false">
 
     <action>
       <name>editEntry</name>
       <type>entry</type>
       <image>images/lists/edit.png</image>
       <label>Edit Sudo role</label>
-    </action>
-
-    <action>
-      <name>snapshot</name>
-      <type>snapshot</type>
     </action>
 
     <action>

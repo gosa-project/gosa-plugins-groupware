@@ -156,9 +156,9 @@ class Groupware extends plugin
         $featureReq = array(
                 "primaryMail" 				=> array(
                     'acctGetPrimaryMailAddress'),
-                "quotaUsage"                => array(
+                "quotaUsage"                => array("_off",
                     'acctGetQuota'),
-                "quotaSize"                 => array(
+                "quotaSize"                 => array("_off",
                     'acctSetQuota','acctGetQuota'),
                 "mailLocations"				=> array(
                     'getMailboxLocations'),
@@ -172,11 +172,11 @@ class Groupware extends plugin
                     'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
                 "vacationMessage"           => array("_off",
                     'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
-                "mailBoxWarnLimit"          => array(
+                "mailBoxWarnLimit"          => array("_off",
                     'acctSetQuota','acctGetQuota'),
-                "mailBoxSendSizelimit"      => array(
+                "mailBoxSendSizelimit"      => array("_off",
                         'acctSetQuota','acctGetQuota'),
-                "mailBoxHardSizelimit"      => array(
+                "mailBoxHardSizelimit"      => array("_off",
                         'acctSetQuota','acctGetQuota'),
                 "mailBoxAutomaticRemoval"   => array("_off",
                         'acctSetQuota','acctGetQuota'),
@@ -624,7 +624,7 @@ class Groupware extends plugin
      */ 
     function delForwarder($addresses)
     {
-		print_a(array("Del forwarder"));
+		
         if($this->acl_is_writeable("forwardingAddresses")){
             $this->forwardingAddresses= array_remove_entries ($addresses, $this->forwardingAddresses);
             $this->is_modified= TRUE;

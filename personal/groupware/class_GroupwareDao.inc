@@ -266,9 +266,7 @@ class GroupwareDao{
             // Usage is a Mapi function which is not yet 
             
             // TODO: Remove the following dummy and enable the qota fetch from groupware
-             
-            //echo "Quota function not yet implemented on server side!!";
-            //$quota = $this->get("quotaSize", array($uid));
+            $quota = $this->get("quotaSize", array($uid));
             $quota = array(	"warn_limit" => 1008,
                     "send_limit" => 108,
                     "hard_limit" => 1108,
@@ -297,6 +295,7 @@ class GroupwareDao{
                 $resultArr["mailBoxHardSizelimitEnabled"] = FALSE;
                 $resultArr["mailBoxHardSizelimitValue"] = 0;
             }
+			
         }
 
         //this function seems to be broken on the server.
@@ -340,7 +339,6 @@ class GroupwareDao{
 						$this->delete("mailFolder", $id, $key);
 						break;
 				}
-				print_a($val);
 			}
 			$this->save("private_folderACLS", $id, $val["acls"]);
 			//otherwise nothing happened with the entry - no action should be performed.

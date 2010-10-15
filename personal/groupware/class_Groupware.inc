@@ -27,8 +27,9 @@ class Groupware extends plugin
     // Folder related attributes, will be moved into a speperate widget late on
     var $currentSelectedFolder = "";     
 
-    var $plHeadline     = "Mail";
-    var $plDescription  = "GOsa mail extension.";
+    var $plHeadline     = "Groupware";
+    var $plDescription  = "GOsa groupware extension.";
+    var $pathTitle = "GOsa groupware extension.";
     var $view_logged = FALSE;
 
     var $FolderWidget = NULL;
@@ -340,9 +341,11 @@ class Groupware extends plugin
             }
             if ($this->parent !== NULL){
                 if ($this->is_account){ 
-                    $display= $this->show_disable_header(msgPool::removeFeaturesButton(_("Mail")),msgPool::featuresEnabled(_("Mail")));
+                    $display= $this->show_disable_header(msgPool::removeFeaturesButton(_("Groupware")),
+                            msgPool::featuresEnabled(_("Groupware")));
                 } else {
-                    $display= $this->show_enable_header(msgPool::addFeaturesButton(_("Mail")),msgPool::featuresDisabled(_("Mail")));
+                    $display= $this->show_enable_header(msgPool::addFeaturesButton(_("Groupware")),
+                            msgPool::featuresDisabled(_("Groupware")));
                     return ($display);
                 }
             }

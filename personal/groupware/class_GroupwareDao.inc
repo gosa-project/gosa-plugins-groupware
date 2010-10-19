@@ -188,7 +188,7 @@ class GroupwareDao{
 		
 			//Folder Id from the User ...
 			//user/$id/
-			//$resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
+			$resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
 			//print_a($resultArr["mailFolder"]);
 			/*
 			"RIGHTS_NONE", 0);
@@ -198,6 +198,7 @@ class GroupwareDao{
 			"RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
             ""
              */
+			 /*
             $resultArr["mailFolder"] = array(
                     'user/wiwu/Aufgaben' => array( 
                         "name" =>"Aufgaben",
@@ -246,7 +247,9 @@ class GroupwareDao{
                                     "name" => "wiwu",
                                     "acl" => GROUPWARE_RIGHTS_ALL, 
                                     "type"=>"user"))), 
-                    );
+									);
+					*/
+            
 			
 			//need a status for the array - setting them now for the example data.
             foreach($resultArr["mailFolder"] as $id => $folder){
@@ -265,13 +268,16 @@ class GroupwareDao{
 
             // Usage is a Mapi function which is not yet 
             
-            // TODO: Remove the following dummy and enable the qota fetch from groupware
-            $quota = $this->get("quotaSize", array($uid));
-            $quota = array(	"warn_limit" => 1008,
+            // example Array for Quota
+			/*
+			$quota = array(	"warn_limit" => 1008,
                     "send_limit" => 108,
                     "hard_limit" => 1108,
                     "hold" => 508,
                     "usage" => 1108);
+			*/
+            $quota = $this->get("quotaSize", array($uid));
+            
             $resultArr["quotaSize"] = $quota["usage"];
             $resultArr["quotaSize"] = $quota["hold"];
             if($quota["warn_limit"] > 0){

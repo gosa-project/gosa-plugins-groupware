@@ -172,13 +172,13 @@ class Groupware extends plugin
                     'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
                 "vacationMessage"           => array("_off",
                     'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
-                "mailBoxWarnLimit"          => array("_off",
+                "mailBoxWarnLimit"          => array(
                     'acctSetQuota','acctGetQuota'),
-                "mailBoxSendSizelimit"      => array("_off",
+                "mailBoxSendSizelimit"      => array(
                         'acctSetQuota','acctGetQuota'),
-                "mailBoxHardSizelimit"      => array("_off",
+                "mailBoxHardSizelimit"      => array(
                         'acctSetQuota','acctGetQuota'),
-                "mailBoxAutomaticRemoval"   => array("_off",
+                "mailBoxAutomaticRemoval"   => array(
                         'acctSetQuota','acctGetQuota'),
                 "localDeliveryOnly"         => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),

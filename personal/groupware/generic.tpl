@@ -19,6 +19,7 @@
                         {/render}
                     </td>
                 </tr>
+				{if $mailLocations_isActive}
                 <tr>
                     <td><label for="mailLocation">{t}Account location{/t}</label></td>
                     <td>
@@ -31,6 +32,7 @@
                         {/render}
                     </td>
                 </tr>
+				{/if}
                 {if $mailFolder_isActive}
                 <tr>
                     <td><label for="mailFolder">{t}Mail folder{/t}</label></td>

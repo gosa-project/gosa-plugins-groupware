@@ -104,8 +104,7 @@ class GroupwareDao{
      * 		which are the available features.
      */
     public function get($feature, $valueArray)
-    {
-        // TODO: Check if feture available ? get and return the result.
+    {		
         $function = GroupwareDao::$gwFeatures[$feature]["get"];
         if(is_array($valueArray)){
             $valueArray = array_merge(array($function), $valueArray);
@@ -125,7 +124,6 @@ class GroupwareDao{
      */
     public function del($feature, $valueArray)
     {
-        // TODO: check if feture available del and return the result.
         
         echo "deletion of values is not implemented yet";
         /*
@@ -209,8 +207,6 @@ class GroupwareDao{
                 $this->groupwarePluginRef->isFeatureEnabled("mailBoxWarnLimit") || 
                 $this->groupwarePluginRef->isFeatureEnabled("mailBoxSendSizelimit") || 
                 $this->groupwarePluginRef->isFeatureEnabled("mailBoxHardSizelimit")){
-
-            // Usage is a Mapi function which is not yet 
             
             // example Array for Quota
             $quota = $this->get("quotaSize", array($uid));
@@ -251,43 +247,5 @@ class GroupwareDao{
         }   
         return $resultArr;
     }
-	
-	//TODO: move this function into the groupwareplugin.
-	//This is a feature with many datasets inside which should be cut in slices and saved separately.
-	//Since the knowledge about the feature is only known in the plugin this has got to be moved.
-	
-	function saveFoldersAndAcls($id, $mailFolder)
-    {
-		/*
-		 'user/wiwu/Aufgaben' => array( 
-                        "name" =>"Aufgaben",
-                        "acls"=> array( 	
-                            array(
-                                "name" => "wiwu",
-                                "acl"  => RIGHTS_ALL, 
-                                "type"=>"user"),
-                            array(
-                                "name" => "2a",
-                                "acl" => RIGHTS_ALL, 
-                                "type"=>"user"))), 
-		*/
-		foreach($mailFolder as $key => $val)
-		{
-			if(!empty($val["status"])){
-				switch($val["status"]){
-					case "add":
-						$this->save("mailFolder", $id, $key);
-						break;
-					case "del":
-						$this->delete("mailFolder", $id, $key);
-						break;
-				}
-			}
-			$this->save("private_folderACLS", $id, $val["acls"]);
-			//otherwise nothing happened with the entry - no action should be performed.
-			//TODO: Save the acls: $this->save("folderSetMembers", id, array);
-		}
-	
-	}
 }
 ?>

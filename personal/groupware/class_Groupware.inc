@@ -127,7 +127,6 @@ class Groupware extends plugin
         return($res);
     }
 
-
     /*! \brief    Checks if feature is availavle on the server (a call to getCapabilities achieves this.)
      */
     public function isFeatureEnabled($featureName)
@@ -156,9 +155,9 @@ class Groupware extends plugin
         $featureReq = array(
                 "primaryMail" 				=> array(
                     'acctGetPrimaryMailAddress'),
-                "quotaUsage"                => array("_off",
+                "quotaUsage"                => array(
                     'acctGetQuota'),
-                "quotaSize"                 => array("_off",
+                "quotaSize"                 => array(
                     'acctSetQuota','acctGetQuota'),
                 "mailLocations"				=> array(
                     'getMailboxLocations'),
@@ -170,13 +169,14 @@ class Groupware extends plugin
                 "forwardingAddresses"       => array(
                     'acctAddMailForwardAddress','acctDelMailForwardAddress',
                     'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
-                "vacationMessage"           => array("_off",
+                "vacationMessage"           => array(
                     'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "mailBoxWarnLimit"          => array(
                     'acctSetQuota','acctGetQuota'),
                 "mailBoxSendSizelimit"      => array(
                         'acctSetQuota','acctGetQuota'),
-                "mailBoxHardSizelimit"      => array(
+				//This is the same as qotaSize - should stay turned off
+                "mailBoxHardSizelimit"      => array( "_off",
                         'acctSetQuota','acctGetQuota'),
                 "mailBoxAutomaticRemoval"   => array(
                         'acctSetQuota','acctGetQuota'),
@@ -804,15 +804,15 @@ class Groupware extends plugin
 		//Save quota
 		if( ($this->isFeatureEnabled("mailBoxWarnLimit") ||
 			$this->isFeatureEnabled("mailBoxSendSizelimit") ||
-			$this->isFeatureEnabled("mailBoxHardSizelimit") ||
+			$this->isFeatureEnabled("quotaSize") ||
 			$this->isFeatureEnabled("mailBoxAutomaticRemoval"))
 		&& ($this->hasFeaturebeenChanged("mailBoxWarnLimit") ||
 			$this->hasFeaturebeenChanged("mailBoxSendSizelimit") ||
-			$this->hasFeaturebeenChanged("mailBoxHardSizelimit") ||
+			$this->hasFeaturebeenChanged("quotaSize") ||
 			$this->hasFeaturebeenChanged("mailBoxAutomaticRemoval") )){
 			$quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
 					"send_limit" => $this->mailBoxSendSizelimitValue,
-					"hard_limit" => $this->mailBoxHardSizelimitValue,
+					"hard_limit" => $this->quotaSize,
 					"hold" => $this->quotaSize);
 
 			$this->groupwareDao->save("quotaSize", $this->uid, $quota);
@@ -825,11 +825,8 @@ class Groupware extends plugin
      */
     function check()
     {
-		//add some checks
+		//checked only if features are enabled.
         $messages = plugin::check();
-
-        //Check the dates        
-        // TODO: check only if features are enabled.
         
         //required vacationEnabled
         if($this->vacationEnabled){

@@ -1,7 +1,7 @@
 <?php
 
  
-/*! \brief Data Access Object for groupwares 
+/*! \brief Data Access Object for groupware
  */
 class GroupwareDao{
 
@@ -68,8 +68,6 @@ class GroupwareDao{
     function __construct(&$pluginRef)
     {
         $this->groupwarePluginRef = &$pluginRef;
-        
-        // TODO: Remove all echos 
 
         $this->init();
     }
@@ -82,8 +80,6 @@ class GroupwareDao{
     public function init()
     {
         $this->availableMethods = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
-        //$this->availableProperties = $this->groupwarePluginRef->rpcExec('gwGetSupportedProperties');
-        //$this->debug("availableProperties on init:", $this->availableProperties);
     }
 
 
@@ -189,7 +185,7 @@ class GroupwareDao{
 			//Folder Id from the User ...
 			//user/$id/
 			$resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
-			//print_a($resultArr["mailFolder"]);
+			print_a($resultArr["mailFolder"]);
 			/*
 			"RIGHTS_NONE", 0);
 			"RIGHTS_READ",  LOOKUP | READ | STATUS);
@@ -198,58 +194,6 @@ class GroupwareDao{
 			"RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
             ""
              */
-			 /*
-            $resultArr["mailFolder"] = array(
-                    'user/wiwu/Aufgaben' => array( 
-                        "name" =>"Aufgaben",
-                        "acls"=> array( 	
-                            array(
-                                "name" => "wiwu",
-                                "acl"  => GROUPWARE_RIGHTS_ALL, 
-                                "type"=>"user"),
-                            array(
-                                "name" => "2a",
-                                "acl" => GROUPWARE_RIGHTS_ALL, 
-                                "type"=>"user"))), 
-
-                    'user/wiwu/Entw\xc3\xbcrfe' =>array(
-                        "name" => "Entw\xc3\xbcrfe", 
-                        "acls" => array(	
-                            array(
-                                "name" => "wiwu",
-                                "acl" => GROUPWARE_RIGHTS_ALL, 
-                                "type"=>"user"))), 
-                    'user/wiwu/Gel\xc3\xb6schte Objekte' => array( 
-                        "name" => "Gel\xc3\xb6schte Objekte", 
-                        "acls" => array(	
-                            array(
-                                "name" => "wiwu",
-                                "acl" => GROUPWARE_RIGHTS_ALL, 
-                                "type"=>"user"))), 
-                    'user/wiwu/Synchronisierungsprobleme/Lokale Fehler'  => array( 
-                            "name" => "Lokale Fehler", 
-                            "acls" => array(	
-                                array(
-                                    "name" => "wiwu",
-                                    "acl" => GROUPWARE_RIGHTS_ALL, 
-                                    "type"=>"user"))), 
-                    'user/wiwu/Synchronisierungsprobleme/Serverfehler'  => array( 
-                            "name" => "Serverfehler", 
-                            "acls" => array(	
-                                array(
-                                    "name" => "wiwu",
-                                    "acl" => GROUPWARE_RIGHTS_ALL, 
-                                    "type"=>"user"))), 
-                    'shared/publicFolder'  => array( 
-                            "name" => "publicFolder", 
-                            "acls" => array(	
-                                array(
-                                    "name" => "wiwu",
-                                    "acl" => GROUPWARE_RIGHTS_ALL, 
-                                    "type"=>"user"))), 
-									);
-					*/
-            
 			
 			//need a status for the array - setting them now for the example data.
             foreach($resultArr["mailFolder"] as $id => $folder){
@@ -269,13 +213,6 @@ class GroupwareDao{
             // Usage is a Mapi function which is not yet 
             
             // example Array for Quota
-			/*
-			$quota = array(	"warn_limit" => 1008,
-                    "send_limit" => 108,
-                    "hard_limit" => 1108,
-                    "hold" => 508,
-                    "usage" => 1108);
-			*/
             $quota = $this->get("quotaSize", array($uid));
             
             $resultArr["quotaSize"] = $quota["usage"];
@@ -315,7 +252,7 @@ class GroupwareDao{
         return $resultArr;
     }
 	
-	//TODO: move this function into the groupwareplugin. #
+	//TODO: move this function into the groupwareplugin.
 	//This is a feature with many datasets inside which should be cut in slices and saved separately.
 	//Since the knowledge about the feature is only known in the plugin this has got to be moved.
 	

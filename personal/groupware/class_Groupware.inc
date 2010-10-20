@@ -983,7 +983,7 @@ class Groupware extends plugin
                 "mailAddress" => "primaryMail",
                 "mailLocation" => "mailLocation",
                 "quotaUsage" => "quotaUsage",
-                "quotaSize" => "quotaSize",
+                "quotaSize" => "mailBoxHardSizelimitValue",
                 "alternateAddresses" => "alternateAddresses",
                 "forwardingAddresses" => "forwardingAddresses",
                 "vacationEnabled" => "vacationEnabled",

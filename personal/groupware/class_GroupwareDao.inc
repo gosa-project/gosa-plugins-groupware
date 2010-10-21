@@ -57,7 +57,9 @@ class GroupwareDao{
                     "delete"=>"gwFolderDel"),
 			"private_folderACLS" => array("get"=>"gwFolderGetMembers",
                     "save"=>"gwFolderSetMembers",
-                    "delete"=>"gwFolderDelMember")
+                    "delete"=>"gwFolderDelMember"),
+			"mailLimit" => array("get"=>"gwAcctGetMailLimit",
+                    "save"=>"gwAcctSetMailLimit")
                 );
 			
 
@@ -236,7 +238,25 @@ class GroupwareDao{
             }
 			
         }
-
+		//get the current MailLimits ... if this feature is enabled.
+		if($this->groupwarePluginRef->isFeatureEnabled("mailLimit")){
+			$mailLimits = $this->get("mailLimit", array($uid));
+			
+			if($mailLimits["receive"] > 0){
+                $resultArr["mailLimitReceiveEnabled"] = true;
+                $resultArr["mailLimitReceiveValue"] = $mailLimits["receive"];
+            }else{
+                $resultArr["mailLimitReceiveEnabled"] = false;
+                $resultArr["mailLimitReceiveValue"] = 0;
+            }
+            if($mailLimits["send"] > 0){
+                $resultArr["mailLimitSendEnabled"] = true;
+                $resultArr["mailLimitSendValue"] = $mailLimits["send"];
+            }else{
+                $resultArr["mailLimitSendEnabled"] = false;
+                $resultArr["mailLimitSendValue"] = 0; 	
+            }
+		}		
         //this function seems to be broken on the server.
         //addding dummy
 

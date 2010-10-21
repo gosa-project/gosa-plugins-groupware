@@ -78,7 +78,6 @@
                 </tr>
                 {/if}
             </table>
-
         </td>
         
         {if !$alternateAddresses_isActive}
@@ -308,6 +307,26 @@
         </td>
     </tr>
     {/if}
+	{if $mailLimit_isActive}
+    <tr>
+        <td>
+			 <input id='mailLimitReceiveEnabled' value='1' name="mailLimitReceiveEnabled" value="1" 
+                    {if $mailLimitReceiveEnabled} checked {/if} class="center" type='checkbox'>
+            <label for="mailLimit">{t}Mailbox size limits receiving mails{/t}</label>
+			<input id="mailLimitReceiveValue" name="mailLimitReceiveValue" 
+                    size="6" align="middle" type='text' value="{$mailLimitReceiveValue}"  class="center"> {t}kbyte{/t}
+		 </td>
+    </tr>
+	<tr>
+        <td>
+			<input id='mailLimitSendEnabled' value='1' name="mailLimitSendEnabled" value="1" 
+                    {if $mailLimitSendEnabled} checked {/if} class="center" type='checkbox'>
+			<label for="mailLimit">{t}Mailbox size limits sending mails{/t}</label>
+			<input id="mailLimitSendValue" name="mailLimitSendValue" 
+                    size="6" align="middle" type='text' value="{$mailLimitSendValue}"  class="center"> {t}kbyte{/t}
+        </td>
+    </tr>
+	{/if}
     {if $localDeliveryOnly_isActive}
     <tr>
         <td>

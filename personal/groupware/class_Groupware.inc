@@ -27,8 +27,8 @@ class Groupware extends plugin
     // Folder related attributes, will be moved into a speperate widget late on
     var $currentSelectedFolder = "";     
 
-    var $plHeadline     = "Groupware";
-    var $plDescription  = "GOsa groupware extension.";
+    var $plHeadline = "Groupware";
+    var $plDescription = "GOsa groupware extension.";
     var $pathTitle = "GOsa groupware extension.";
     var $view_logged = FALSE;
 
@@ -44,13 +44,14 @@ class Groupware extends plugin
             "vacationMessage", "mailBoxWarnLimitEnabled", "mailBoxWarnLimitValue",
             "mailBoxSendSizelimitEnabled", "mailBoxSendSizelimitValue", "mailBoxHardSizelimitEnabled",
             "mailBoxHardSizelimitValue", "mailBoxAutomaticRemovalEnabled", "mailBoxAutomaticRemovalValue",
-            "localDeliveryOnly", "dropOwnMails", "mailFolder");
-
+            "localDeliveryOnly", "dropOwnMails", "mailFolder", "mailLimitReceiveValue", "mailLimitSendValue",
+			"mailLimitReceiveEnabled", "mailLimitSendEnabled");
 
     var $enabledFeatures = array();
 
     var $flagAttributes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
-            "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails");
+            "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails", 
+			"mailLimitReceiveEnabled", "mailLimitSendEnabled");
 
     var $mailAddressSelectDialog = NULL;
     var $filterManager = NULL;
@@ -82,6 +83,12 @@ class Groupware extends plugin
     var $mailBoxAutomaticRemovalValue = 100;
     var $localDeliveryOnly = FALSE;
     var $dropOwnMails = FALSE;
+	var $mailLimitReceiveEnabled = FALSE;
+	var $mailLimitReceiveValue = 0;
+	var $mailLimitSendEnabled = FALSE;
+	var $mailLimitSendValue = 0;
+	
+	
     var $groupwareDao = null;
 
     // Used in the folder editor as the starting folder, usually user/username
@@ -169,7 +176,7 @@ class Groupware extends plugin
                 "forwardingAddresses"       => array(
                     'acctAddMailForwardAddress','acctDelMailForwardAddress',
                     'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
-                "vacationMessage"           => array("_off",
+                "vacationMessage"           => array(
                     'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "mailBoxWarnLimit"          => array(
                     'acctSetQuota','acctGetQuota'),
@@ -185,7 +192,9 @@ class Groupware extends plugin
                 "dropOwnMails"              => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
 				"mailFolder"				=> array(
-						'folderList','folderDel','folderAdd')
+						'folderList','folderDel','folderAdd'),
+				"mailLimit"			=> array(
+						'acctGetMailLimit', 'acctSetMailLimit')
 				);
 
         // Check if all required methods can be called! 
@@ -287,8 +296,13 @@ class Groupware extends plugin
             $this->dialog = TRUE;
             return($this->filterManager->execute());
         }
+		/****************
+			MailLimits
+		****************/
+		
 
-
+		
+		
         /****************
           Folder editor
          ****************/
@@ -321,7 +335,6 @@ class Groupware extends plugin
             $this->dialog = TRUE;
             return($this->FolderWidget->execute());
         }
-   
 
         /****************
           Account status
@@ -364,7 +377,6 @@ class Groupware extends plugin
             $this->dialog= TRUE;
         }
 		
-
         // Close dialogs, action was canceled 
         if (isset($_POST['mailAddressSelect_cancel'])){
             $this->mailAddressSelectDialog= FALSE;
@@ -477,6 +489,7 @@ class Groupware extends plugin
 
         $smarty = get_smarty();
         foreach($this->attributes as $attr){
+			print
             $smarty->assign($attr, $this->$attr);
         }
 
@@ -542,7 +555,7 @@ class Groupware extends plugin
 
             // Detect checkbox states 
             $checkAttrs = array("mailBoxWarnLimit","mailBoxSendSizelimit",
-                    "mailBoxHardSizelimit","mailBoxAutomaticRemoval");
+                    "mailBoxHardSizelimit","mailBoxAutomaticRemoval", "mailLimitReceive", "mailLimitSend");
             foreach($checkAttrs as $boxname){
                 if($this->acl_is_writeable($boxname)){
                     $v = $boxname."Value"; 
@@ -800,7 +813,6 @@ class Groupware extends plugin
 					$fw[$this->forwardingAddresses[0]] = true;
 					$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
 			}
-			
 		}
 		//Save quota - it consists of four values... 
 		if( ($this->isFeatureEnabled("mailBoxWarnLimit") ||
@@ -838,6 +850,12 @@ class Groupware extends plugin
 		
 		//checks for feature "dropOwnMails"              
 		if($this->isFeatureEnabled("dropOwnMails") && $this->hasFeaturebeenChanged("dropOwnMails")){}
+		
+		
+		//checks for feature "mailLimit"              
+		if($this->isFeatureEnabled("mailLimit") && $this->hasFeaturebeenChanged("mailLimit")){
+			$this->groupwareDao->save("mailLimit", $this->uid, array("receive"=>$this->mailLimitReceiveValue, "send"=>$this->mailLimitSendValue,));
+		}
 		
 		//checks for feature "quotaUsage"                
 		//not to be saved
@@ -908,6 +926,9 @@ class Groupware extends plugin
 				}
 			}        
 		}
+		//checks for feature "mailLimit"
+		if ($this->isFeatureEnabled("mailLimit")){}
+		
 		//checks for feature "mailBoxWarnLimit"          
 		if ($this->isFeatureEnabled("mailBoxWarnLimit")){}
 		
@@ -965,7 +986,9 @@ class Groupware extends plugin
                         "mailBoxHardSizelimit"          => _("Hard sizelimit"),
                         "mailBoxAutomaticRemoval"       => _("Automatic mail removal"),
                         "localDeliveryOnly"             => _("Local delivery only"),
-                        "dropOwnMails"                  => _("Drop own mails")
+                        "dropOwnMails"                  => _("Drop own mails"),
+						"mailLimitSend"                 => _("mail Limit send"),
+						"mailLimitReceive"              => _("mail Limit receive")
                         )
                         ));
     }
@@ -999,7 +1022,12 @@ class Groupware extends plugin
                 "mailBoxAutomaticRemovalEnabled" => "mailBoxAutomaticRemovalEnabled",
                 "mailBoxAutomaticRemovalValue" => "mailBoxAutomaticRemovalValue",
                 "localDeliveryOnly" => "localDeliveryOnly",
-                "dropOwnMails" => "dropOwnMails");
+                "dropOwnMails" => "dropOwnMails",
+				"mailLimitReceiveValue" => "mailLimitReceiveValue",
+				"mailLimitSendValue" => "mailLimitSendValue",
+				"mailLimitReceiveEnabled" => "mailLimitReceiveEnabled",
+				"mailLimitSendEnabled" => "mailLimitSendEnabled"
+				);
 
         // Map values from source array to class members
         foreach($map as $target => $source){

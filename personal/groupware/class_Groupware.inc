@@ -878,9 +878,6 @@ class Groupware extends plugin
 		//checks for feature "quotaUsage"                
 		if ($this->isFeatureEnabled("quotaUsage")){}
 		
-		//checks for feature "quotaSize"                 
-		if ($this->isFeatureEnabled("quotaSize")){}
-		
 		//checks for feature "mailLocations"				
 		if ($this->isFeatureEnabled("mailLocations")){}
 		
@@ -926,18 +923,38 @@ class Groupware extends plugin
 				}
 			}        
 		}
-		//checks for feature "mailLimit"
-		if ($this->isFeatureEnabled("mailLimit")){}
+		//checks for feature "mailLimit" - integer 
+		if ($this->isFeatureEnabled("mailLimit")){
+			if (!is_numeric($this->mailLimitReceiveValue)){
+				$messages[] = msgPool::invalid(_("Value for mailbox size receive limit"),$this->mailLimitReceiveValue , "", "1024 = 1MB");
+			}
+			if (!is_numeric($this->mailLimitSendValue)){
+				$messages[] = msgPool::invalid(_("Value for mailbox size send limit"),$this->mailLimitSendValue , "", "1024 = 1MB");
+			}
+		}
 		
 		//checks for feature "mailBoxWarnLimit"          
-		if ($this->isFeatureEnabled("mailBoxWarnLimit")){}
-		
+		if ($this->isFeatureEnabled("quotaSize")){
+		//Todo: wrong test
+			if (!is_numeric($this->quotaSize)){
+				$messages[] = msgPool::invalid(_("Value for Quota size"),$this->quotaSize , "", "1024 = 1GB");
+			}
+		}
 		
 		//checks for feature "mailBoxSendSizelimit"      
-		if ($this->isFeatureEnabled("mailBoxSendSizelimit")){}
-		
+		if ($this->isFeatureEnabled("mailBoxSendSizelimit")){
+		//Todo: wrong test
+			if (!is_numeric($this->mailBoxSendSizelimitValue)){
+				$messages[] = msgPool::invalid(_("Value refuse incoming mails limit"),$this->mailBoxSendSizelimitValue , "", "1024 = 1GB");
+			}
+		}
 		//checks for feature "mailBoxHardSizelimit"
-		if ($this->isFeatureEnabled("mailBoxHardSizelimit")){}
+		if ($this->isFeatureEnabled("mailBoxWarnLimit")){
+		//Todo: wrong test
+			if (!is_numeric($this->mailBoxWarnLimitValue)){
+				$messages[] = msgPool::invalid(_("Value warn about full mailbox"),$this->mailBoxWarnLimitValue , "", "1024 = 1GB");
+			}
+		}
 
 		//checks for feature "mailBoxAutomaticRemoval"   
 		if ($this->isFeatureEnabled("mailBoxAutomaticRemoval")){}

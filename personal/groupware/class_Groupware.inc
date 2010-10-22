@@ -40,8 +40,8 @@ class Groupware extends plugin
 
     var $attributes = array(
             "mailAddress", "mailLocation", "quotaUsage", "quotaSize", "alternateAddresses",
-            "forwardingAddresses", "vacationEnabled", "vacationStart", "vacationStop",
-            "vacationMessage", "mailBoxWarnLimitEnabled", "mailBoxWarnLimitValue",
+            "forwardingAddresses", "vacationEnabled", "vacationMessage", 
+            "mailBoxWarnLimitEnabled", "mailBoxWarnLimitValue",
             "mailBoxSendSizelimitEnabled", "mailBoxSendSizelimitValue", "mailBoxHardSizelimitEnabled",
             "mailBoxHardSizelimitValue", "mailBoxAutomaticRemovalEnabled", "mailBoxAutomaticRemovalValue",
             "localDeliveryOnly", "dropOwnMails", "mailFolder", "mailLimitReceiveValue", "mailLimitSendValue",
@@ -70,8 +70,6 @@ class Groupware extends plugin
     var $alternateAddresses = array();
     var $forwardingAddresses = array();
     var $vacationEnabled = FALSE;
-    var $vacationStart = 0;
-    var $vacationStop = 0;
     var $vacationMessage = "";
     var $mailBoxWarnLimitEnabled = FALSE;
     var $mailBoxWarnLimitValue = 100;
@@ -177,7 +175,7 @@ class Groupware extends plugin
                     'acctAddMailForwardAddress','acctDelMailForwardAddress',
                     'acctGetMailForwardAddresses','acctSetMailForwardAddresses'),
                 "vacationMessage"           => array(
-                    'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
+                    'acctSetOutOfOfficeReply', 'acctGetOutOfOfficeReply'),
                 "mailBoxWarnLimit"          => array(
                     'acctSetQuota','acctGetQuota'),
                 "mailBoxSendSizelimit"      => array(
@@ -545,8 +543,7 @@ class Groupware extends plugin
 
             // Get ui modifications and store them in the class.
             $testAttrs = array("mailAddress","mailLocation","quotaUsage","quotaSize",
-                    "alternateAddresses","forwardingAddresses","vacationEnabled","vacationStart",
-                    "vacationStop","vacationMessage");
+                    "alternateAddresses","forwardingAddresses","vacationEnabled","vacationMessage");
             foreach($testAttrs as $attr){
                 if(isset($_POST[$attr]) && $this->acl_is_writeable($attr)){
                     $this->$attr = get_post($attr);
@@ -580,7 +577,7 @@ class Groupware extends plugin
      *	Used to fill vacation dropdown box.
      *	@return Array   All useable vacation templates.
      */ 
-    function get_vacation_templates()
+    function get_vacation_templates_usedSomewhere()
     {
         $vct = array();
         if ($this->config->get_cfg_value("core","vacationTemplateDirectory") != ""){
@@ -701,7 +698,7 @@ class Groupware extends plugin
      * @param  string  Vacation string
      * @return string  Completed vacation string
      */
-    private function prepare_vacation_template($contents)
+    private function prepare_vacation_template_usedSomewhere($contents)
     {
         /* Replace attributes */
         $attrs = array();
@@ -856,7 +853,11 @@ class Groupware extends plugin
 		if($this->isFeatureEnabled("mailLimit") && $this->hasFeaturebeenChanged("mailLimit")){
 			$this->groupwareDao->save("mailLimit", $this->uid, array("receive"=>$this->mailLimitReceiveValue, "send"=>$this->mailLimitSendValue,));
 		}
-		
+		if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
+			if($this->vacationEnabled){
+				$this->groupwareDao->save("vacationMessage", $this->uid, $this->vacationMessage);
+			}
+		}
 		//checks for feature "quotaUsage"                
 		//not to be saved
     }
@@ -910,17 +911,7 @@ class Groupware extends plugin
 		//checks for feature "vacationMessage"   
 		if ($this->isFeatureEnabled("vacationMessage")){		
 			if($this->vacationEnabled){
-				if(!tests::is_date($this->vacationStart)){
-					$messages[] = msgPool::invalid(_("Vacation start date"),$this->vacationStart , "", "01.03.2010");
-				}
-				if(!tests::is_date($this->vacationStop)){
-					$messages[] = msgPool::invalid(_("Vacation stop date"),$this->vacationStop , "", "01.03.2010");
-				}
-				$diff = tests::compareDate($this->vacationStart, $this->vacationStop);
-
-				if($diff>=0){
-					$messages[] = msgPool::invalid(_("Vacation dates"));
-				}
+				
 			}        
 		}
 		//checks for feature "mailLimit" - integer 

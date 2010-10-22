@@ -126,56 +126,11 @@
                                 id="vacationEnabled" 
                                 title="{t}Select to automatically response with the vacation message defined below{/t}" 
                                 class="center" 
-                                onclick="changeState('vacationStart'); changeState('vacationStop'); changeState('vacationMessage');">
+                                onclick="changeState('vacationMessage');">
                             {/render}
                         </td>
                         <td colspan="4">
                             {t}Activate vacation message{/t}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td style='width:30px;'>{t}from{/t}</td>
-                        <td>
-                            {render acl=$vacationStartACL}
-                                <input type="text" id="vacationStart" name="vacationStart" class="date" 
-                                    style='width:100px' value="{$vacationStart}"
-                                    {if !$vacationEnabled} disabled {/if}
-                                    >
-                            {/render}
-                            {if $vacationStartACL|regex_replace:"/[cdmr]/":"" == "w"}
-                                <script type="text/javascript">
-                                    {literal}
-                                        var datepicker  = new DatePicker({ 
-                                            relative : 'vacationStart', 
-                                            language : '{/literal}{$lang}{literal}', 
-                                            keepFieldEmpty : true, 
-                                            enableCloseEffect : false, 
-                                            enableShowEffect : false });
-                                    {/literal}
-                                </script>
-                            {/if}
-                        </td>
-                        <td style='width:30px;'>{t}till{/t}</td>
-                        <td>
-                            {render acl=$vacationStartACL}
-                                <input type="text" id="vacationStop" name="vacationStop" class="date" 
-                                    style='width:100px' value="{$vacationStop}"i
-                                    {if !$vacationEnabled} disabled {/if}
-                                    >
-                            {/render}
-                            {if $vacationStopACL|regex_replace:"/[cdmr]/":"" == "w"}
-                                <script type="text/javascript">
-                                    {literal}
-                                        var datepicker2  = new DatePicker({ 
-                                            relative : 'vacationStop', 
-                                            language : '{/literal}{$lang}{literal}', 
-                                            keepFieldEmpty : true, 
-                                            enableCloseEffect : false,  
-                                            enableShowEffect : false });
-                                    {/literal}
-                                </script>
-                            {/if}
                         </td>
                     </tr>
                     <tr>

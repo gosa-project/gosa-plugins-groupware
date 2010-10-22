@@ -236,7 +236,6 @@ class GroupwareDao{
                 $resultArr["mailBoxHardSizelimitEnabled"] = FALSE;
                 $resultArr["mailBoxHardSizelimitValue"] = 0;
             }
-			
         }
 		//get the current MailLimits ... if this feature is enabled.
 		if($this->groupwarePluginRef->isFeatureEnabled("mailLimit")){

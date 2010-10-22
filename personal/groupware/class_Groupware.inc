@@ -241,6 +241,7 @@ class Groupware extends plugin
      */
     function execute()
     {
+		print_a($_POST);
         // Register plugin execution 
         $display = plugin::execute();
 
@@ -543,7 +544,7 @@ class Groupware extends plugin
 
             // Get ui modifications and store them in the class.
             $testAttrs = array("mailAddress","mailLocation","quotaUsage","quotaSize",
-                    "alternateAddresses","forwardingAddresses","vacationEnabled","vacationMessage");
+                    "alternateAddresses","forwardingAddresses","vacationMessage");
             foreach($testAttrs as $attr){
                 if(isset($_POST[$attr]) && $this->acl_is_writeable($attr)){
                     $this->$attr = get_post($attr);
@@ -564,6 +565,9 @@ class Groupware extends plugin
                 }
             }
 			
+			if($this->acl_is_writeable('vacationMessage')){
+				$this->vacationEnabled = isset($_POST['vacationEnabled']);
+			}
             // Get posted flag changes 
             $flagAttrs = array("localDeliveryOnly","dropOwnMails");
             foreach($flagAttrs as $attr){
@@ -836,9 +840,6 @@ class Groupware extends plugin
 		//checks for feature "mailFilter"                 
 		if($this->isFeatureEnabled("mailFilter") && $this->hasFeaturebeenChanged("mailFilter")){}
 		
-		//checks for feature "vacationMessage"             
-		if($this->isFeatureEnabled("vacationMessage") && $this->hasFeaturebeenChanged("vacationMessage")){}
-		
 		//checks for feature "mailBoxAutomaticRemoval"   
 		if($this->isFeatureEnabled("mailBoxAutomaticRemoval") && $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval")){}
 		
@@ -855,7 +856,12 @@ class Groupware extends plugin
 		}
 		if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
 			if($this->vacationEnabled){
+				//setting an message means that the OOOReply is switched off.
 				$this->groupwareDao->save("vacationMessage", $this->uid, $this->vacationMessage);
+			}
+			else{
+				//setting no message means that the OOOReply is switched off.
+				$this->groupwareDao->save("vacationMessage", $this->uid);
 			}
 		}
 		//checks for feature "quotaUsage"                
@@ -909,11 +915,7 @@ class Groupware extends plugin
 		}			
 
 		//checks for feature "vacationMessage"   
-		if ($this->isFeatureEnabled("vacationMessage")){		
-			if($this->vacationEnabled){
-				
-			}        
-		}
+		if ($this->isFeatureEnabled("vacationMessage")){}
 		//checks for feature "mailLimit" - integer 
 		if ($this->isFeatureEnabled("mailLimit")){
 			if (!is_numeric($this->mailLimitReceiveValue)){
@@ -986,8 +988,6 @@ class Groupware extends plugin
                         "alternateAddresses"            => _("Alternate mail addresses"),
                         "forwardingAddresses"           => _("Forwarding mail addresses"),
                         "vacationEnabled"               => _("Vaction switch"),
-                        "vacationStart"                 => _("Vacation start time"),
-                        "vacationStop"                  => _("Vacation stop time"),
                         "vacationMessage"               => _("Vacation message"),
                         "mailBoxWarnLimit"              => _("Warn sizelimit"),
                         "mailBoxSendSizelimit"          => _("Send sizelimit"),
@@ -1018,8 +1018,6 @@ class Groupware extends plugin
                 "alternateAddresses" => "alternateAddresses",
                 "forwardingAddresses" => "forwardingAddresses",
                 "vacationEnabled" => "vacationEnabled",
-                "vacationStart" => "vacationStart",
-                "vacationStop" => "vacationStop",
                 "vacationMessage" => "vacationMessage",
                 "mailBoxWarnLimitEnabled" => "mailBoxWarnLimitEnabled",
                 "mailBoxWarnLimitValue" => "mailBoxWarnLimitValue",

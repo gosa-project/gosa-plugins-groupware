@@ -260,8 +260,12 @@ class GroupwareDao{
         //addding dummy
 
         if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
-
-            $vacMessage = $this->get("vacationMessage", array($uid));
+			$vacArray = $this->get("vacationMessage", array($uid));
+			
+            $resultArr["vacationMessage"] = $vacArray["message"];
+			if(!empty($resultArr["vacationMessage"])){
+				$resultArr["vacationEnabled"] = true;
+			}
             //$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
         }   
         return $resultArr;

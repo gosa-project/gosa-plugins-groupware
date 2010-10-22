@@ -241,7 +241,6 @@ class Groupware extends plugin
      */
     function execute()
     {
-		print_a($_POST);
         // Register plugin execution 
         $display = plugin::execute();
 
@@ -861,7 +860,7 @@ class Groupware extends plugin
 			}
 			else{
 				//setting no message means that the OOOReply is switched off.
-				$this->groupwareDao->save("vacationMessage", $this->uid);
+				$this->groupwareDao->save("vacationMessage", $this->uid, null);
 			}
 		}
 		//checks for feature "quotaUsage"                

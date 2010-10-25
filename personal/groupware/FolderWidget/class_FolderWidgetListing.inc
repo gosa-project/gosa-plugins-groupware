@@ -36,7 +36,7 @@ class FolderWidgetListing extends management
 
         // Create folderSelector using dummy entries, those will be replaced 
         //  once setFolderList is called.
-        $this->folderSelector = new ItemSelector(array($this->rootBase => '/'),$this->rootBase,$this->rootBase);
+        $this->folderSelector = new releaseSelector(array($this->rootBase => '/'),$this->rootBase,$this->rootBase);
         parent::__construct($config, $ui, "Folder", $headpage);
 
         // Register default actions

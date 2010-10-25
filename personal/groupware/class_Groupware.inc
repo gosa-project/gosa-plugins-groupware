@@ -241,6 +241,9 @@ class Groupware extends plugin
      */
     function execute()
     {
+		echo "execute <pre>";
+		print_r($_POST);
+		echo "</pre>";
         // Register plugin execution 
         $display = plugin::execute();
 
@@ -294,12 +297,6 @@ class Groupware extends plugin
             $this->dialog = TRUE;
             return($this->filterManager->execute());
         }
-		/****************
-			MailLimits
-		****************/
-		
-
-		
 		
         /****************
           Folder editor
@@ -532,6 +529,7 @@ class Groupware extends plugin
      */    
     function save_object()
     {
+		echo "save Object";
         if(isset($_POST['groupwarePluginPosted'])){
 
             // We ran into a communication error with the backend. 
@@ -851,7 +849,13 @@ class Groupware extends plugin
 		
 		//checks for feature "mailLimit"              
 		if($this->isFeatureEnabled("mailLimit") && $this->hasFeaturebeenChanged("mailLimit")){
-			$this->groupwareDao->save("mailLimit", $this->uid, array("receive"=>$this->mailLimitReceiveValue, "send"=>$this->mailLimitSendValue,));
+			if(!$this->mailLimitReceiveEnabled){
+				$this->mailLimitReceiveValue = 0;
+			}
+			if(!$this->mailLimitSendEnabled){
+				$this->mailLimitSendValue = 0;
+			}
+			$this->groupwareDao->save("mailLimit", $this->uid, array( "send"=>$this->mailLimitSendValue, "receive"=>$this->mailLimitReceiveValue));
 		}
 		if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
 			if($this->vacationEnabled){

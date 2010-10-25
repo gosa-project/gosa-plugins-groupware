@@ -206,13 +206,13 @@
     <tr>
         <td>
             {render acl=$mailBoxWarnLimitACL}
-                <input id='mailBoxWarnLimitEnabled' value='1' name="mailBoxWarnLimitEnabled" value="1" 
+                <input id='mailBoxWarnLimitEnabled' value='1' name="mailBoxWarnLimitEnabled" onclick="changeState('mailBoxWarnLimitValue');" value="1" 
                     {if $mailBoxWarnLimitEnabled} checked {/if} class="center" type='checkbox'>
             {/render}
             <label for="mailBoxWarnLimitValue">{t}Warn user about a full mailbox when it reaches{/t}</label>
             {render acl=$mailBoxWarnLimitACL}
                 <input id="mailBoxWarnLimitValue" name="mailBoxWarnLimitValue" 
-                    size="6" align="middle" type='text' value="{$mailBoxWarnLimitValue}"  class="center"> {t}MB{/t}
+                    size="6" align="middle" type='text' value="{$mailBoxWarnLimitValue}" {if !$mailBoxWarnLimitEnabled} disabled {/if} class="center"> {t}MB{/t}
             {/render}
         </td>
     </tr>
@@ -221,13 +221,13 @@
     <tr>
         <td>
             {render acl=$mailBoxSendSizelimitACL}
-                <input id='mailBoxSendSizelimitEnabled' value='1' name="mailBoxSendSizelimitEnabled" value="1" 
+                <input id='mailBoxSendSizelimitEnabled' value='1' name="mailBoxSendSizelimitEnabled" onclick="changeState('mailBoxSendSizelimitValue');" value="1" 
                     {if $mailBoxSendSizelimitEnabled} checked {/if} class="center" type='checkbox'>
             {/render}
             <label for="mailBoxSendSizelimitValue">{t}Refuse incoming mails when mailbox size reaches{/t}</label>
             {render acl=$mailBoxSendSizelimitACL}
                 <input id="mailBoxSendSizelimitValue" name="mailBoxSendSizelimitValue" 
-                    size="6" align="middle" type='text' value="{$mailBoxSendSizelimitValue}"  class="center"> {t}MB{/t}
+                    size="6" align="middle" type='text' value="{$mailBoxSendSizelimitValue}" {if !$mailBoxSendSizelimitEnabled} disabled {/if}  class="center"> {t}MB{/t}
             {/render}
         </td>
     </tr>
@@ -236,13 +236,13 @@
     <tr>
         <td>
             {render acl=$mailBoxHardSizelimitACL}
-                <input id='mailBoxHardSizelimitEnabled' value='1' name="mailBoxHardSizelimitEnabled" value="1" 
+                <input id='mailBoxHardSizelimitEnabled' value='1' name="mailBoxHardSizelimitEnabled" onclick="changeState('mailBoxHardSizelimitValue');" value="1" 
                     {if $mailBoxHardSizelimitEnabled} checked {/if} class="center" type='checkbox'>
             {/render}
             <label for="mailBoxHardSizelimitValue">{t}Refuse to send and receive mails when mailbox size reaches{/t}</label>
             {render acl=$mailBoxHardSizelimitACL}
                 <input id="mailBoxHardSizelimitValue" name="mailBoxHardSizelimitValue" 
-                    size="6" align="middle" type='text' value="{$mailBoxHardSizelimitValue}"  class="center"> {t}MB{/t}
+                    size="6" align="middle" type='text' value="{$mailBoxHardSizelimitValue}"  {if !$mailBoxHardSizelimitEnabled} disabled {/if} class="center"> {t}MB{/t}
             {/render}
         </td>
     </tr>
@@ -251,13 +251,13 @@
     <tr>
         <td>
             {render acl=$mailBoxAutomaticRemovalACL}
-                <input id='mailBoxAutomaticRemovalEnabled' value='1' name="mailBoxAutomaticRemovalEnabled" value="1" 
+                <input id='mailBoxAutomaticRemovalEnabled' value='1' name="mailBoxAutomaticRemovalEnabled" onclick="changeState('mailBoxAutomaticRemovalValue');" value="1" 
                     {if $mailBoxAutomaticRemovalEnabled} checked {/if} class="center" type='checkbox'>
             {/render}
             <label for="mailBoxAutomaticRemovalValue">{t}Remove mails older than {/t}</label>
             {render acl=$mailBoxAutomaticRemovalACL}
                 <input id="mailBoxAutomaticRemovalValue" name="mailBoxAutomaticRemovalValue" 
-                    size="6" align="middle" type='text' value="{$mailBoxAutomaticRemovalValue}"  class="center"> {t}days{/t}
+                    size="6" align="middle" type='text' value="{$mailBoxAutomaticRemovalValue}" {if !$mailBoxAutomaticRemovalEnabled} disabled {/if}  class="center"> {t}days{/t}
             {/render}
         </td>
     </tr>
@@ -265,20 +265,20 @@
 	{if $mailLimit_isActive}
     <tr>
         <td>
-			 <input id='mailLimitReceiveEnabled' value='1' name="mailLimitReceiveEnabled" value="1" 
+			 <input id='mailLimitReceiveEnabled' value='1' name="mailLimitReceiveEnabled" value="1" onclick="changeState('mailLimitReceiveValue');"
                     {if $mailLimitReceiveEnabled} checked {/if} class="center" type='checkbox'>
             <label for="mailLimit">{t}Mailbox size limits receiving mails{/t}</label>
 			<input id="mailLimitReceiveValue" name="mailLimitReceiveValue" 
-                    size="6" align="middle" type='text' value="{$mailLimitReceiveValue}"  class="center"> {t}kbyte{/t}
+                    size="6" align="middle" type='text' value="{$mailLimitReceiveValue}" {if !$mailLimitReceiveEnabled} disabled {/if} class="center"> {t}kbyte{/t}
 		 </td>
     </tr>
 	<tr>
         <td>
-			<input id='mailLimitSendEnabled' value='1' name="mailLimitSendEnabled" value="1" 
+			<input id='mailLimitSendEnabled' value='1' name="mailLimitSendEnabled" value="1" onclick="changeState('mailLimitSendValue');"
                     {if $mailLimitSendEnabled} checked {/if} class="center" type='checkbox'>
 			<label for="mailLimit">{t}Mailbox size limits sending mails{/t}</label>
 			<input id="mailLimitSendValue" name="mailLimitSendValue" 
-                    size="6" align="middle" type='text' value="{$mailLimitSendValue}"  class="center"> {t}kbyte{/t}
+                    size="6" align="middle" type='text' value="{$mailLimitSendValue}" {if !$mailLimitSendEnabled} disabled {/if} class="center"> {t}kbyte{/t}
         </td>
     </tr>
 	{/if}

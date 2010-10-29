@@ -241,9 +241,6 @@ class Groupware extends plugin
      */
     function execute()
     {
-		echo "execute <pre>";
-		print_r($_POST);
-		echo "</pre>";
         // Register plugin execution 
         $display = plugin::execute();
 
@@ -318,7 +315,6 @@ class Groupware extends plugin
             if(!isset($folders[$this->folderPrefix])){
                 $folders[$this->folderPrefix] = array('name' => $this->uid,'status' => 'added','acls' => array());
             }
-
             $this->FolderWidget = new FolderWidget($this->config,$folders, $this->folderPrefix);
             $this->FolderWidget->setPermissions(GroupwareDefinitions::getPermissions());
             $this->FolderWidget->acl_base = $this->acl_base;
@@ -529,7 +525,6 @@ class Groupware extends plugin
      */    
     function save_object()
     {
-		echo "save Object";
         if(isset($_POST['groupwarePluginPosted'])){
 
             // We ran into a communication error with the backend. 
@@ -855,7 +850,7 @@ class Groupware extends plugin
 			if(!$this->mailLimitSendEnabled){
 				$this->mailLimitSendValue = 0;
 			}
-			$this->groupwareDao->save("mailLimit", $this->uid, array( "send"=>$this->mailLimitSendValue, "receive"=>$this->mailLimitReceiveValue));
+			$this->groupwareDao->save("mailLimit", $this->uid, array( $this->mailLimitSendValue, $this->mailLimitReceiveValue));
 		}
 		if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
 			if($this->vacationEnabled){

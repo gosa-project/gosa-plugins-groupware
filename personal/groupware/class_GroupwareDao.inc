@@ -61,7 +61,6 @@ class GroupwareDao{
 			"mailLimit" => array("get"=>"gwAcctGetMailLimit",
                     "save"=>"gwAcctSetMailLimit")
                 );
-			
 
 
     /*! \brief Constructor sets the connection to the rpc service 
@@ -185,7 +184,38 @@ class GroupwareDao{
 			//Folder Id from the User ...
 			//user/$id/
 			$resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
-			print_a($resultArr["mailFolder"]);
+			
+			foreach($resultArr["mailFolder"] as $val){
+				$s = strpos($val, "user/");
+				if($s == 0){
+				
+					$resultArr["mailFolder"][$val]["name"] = substr($val, strpos($val, "/", 5));
+					
+					$curAcl = $this->get("private_folderACLS", array("user/wiwu/Posteingang"));
+					if(is_array($curAcl)){
+						foreach($curAcl as $aclkey => $aclval){
+							
+							if (empty($aclkey)){
+								$resultArr["mailFolder"][$val]["acls"][] = array( 
+	 	                                "name" => $aclkey, 
+	 	                                "acl"  => aclval,  
+	 	                                "type"=>"user");
+							}
+							else{
+								$resultArr["mailFolder"][$val]["acls"][] = array( 
+	 	                                "name" => $aclkey, 
+	 	                                "acl"  => GROUPWARE_RIGHTS_NONE,  
+	 	                                "type"=>"user");
+							}
+						}
+					}
+				}
+				else{
+					// this case should never happen - unsetting the array anyway.
+					unset($resultArr["mailFolder"][$val]);
+				}
+			}
+			
 			/*
 			"RIGHTS_NONE", 0);
 			"RIGHTS_READ",  LOOKUP | READ | STATUS);

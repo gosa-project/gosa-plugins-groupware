@@ -1083,12 +1083,6 @@ class Groupware extends plugin
                     break;
                 }
             }
-
-            #FIXME: HAPE:
-            # What the hell is this?
-            # You call save() from save() from save() aso...  
-            # Got seqfaults in apache client ...
-            # - $this->save("private_folderACLS", $id, $val["acls"]);
         }
     }
 }

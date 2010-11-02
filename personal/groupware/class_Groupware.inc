@@ -1122,20 +1122,23 @@ class Groupware extends plugin
     function saveFoldersAndAcls($id, $mailFolder)
     {
         // In the tests with the exchange server groupware setting acls is very
-        // slow. So this function has got to be checked for modifications.
+        // slow. So this function has got o be checked for modifications.
+        $res = TRUE;
         foreach($mailFolder as $key => $val)
         {
             if(!empty($val["status"])){
                 switch($val["status"]){
                     case "add":
-                        $this->groupwareDao->save("mailFolder", $id, $key);
+                        $res = $this->groupwareDao->save("mailFolder", $id, $key);
                     break;
                     case "del":
-                        $this->groupwareDao->delete("mailFolder", $id, $key);
+                        $res = $this->groupwareDao->delete("mailFolder", $id, $key);
                     break;
                 }
             }
+            if($res === NULL) return($res);
         }
+        return($res);
     }
 }
 

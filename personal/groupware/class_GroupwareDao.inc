@@ -181,55 +181,67 @@ class GroupwareDao{
         //getThefolderList from the user
         if($this->groupwarePluginRef->isFeatureEnabled("mailFolder")){
 
-            //Folder Id from the User ...
-            //user/$id/
-            $resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
+            // #FIXME: HAPE(1):    We already have such a folder identificator in our base plugin 
+            //                   see Groupware->folderPrefix.
+            //                  Do not hard code such values in several places.
+            // //Folder Id from the User ...
+            // //user/$id/
+            // $resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
 
+
+
+            // Get groupware folders for the current user.
+            $prefix = $this->groupwarePluginRef->folderPrefix;
+            $resultArr["mailFolder"] = $this->get("mailFolder", array($prefix));
+
+            // Walk through results an fill in missing values, like name, status and acls.
             foreach($resultArr["mailFolder"] as $val){
-                $s = strpos($val, "user/");
-                if($s == 0){
 
-                    $resultArr["mailFolder"][$val]["name"] = substr($val, strpos($val, "/", 5));
 
-                    $curAcl = $this->get("private_folderACLS", array("user/wiwu/Posteingang"));
-                    if(is_array($curAcl)){
-                        foreach($curAcl as $aclkey => $aclval){
+                // #FIXME: HAPE(2): This makes no sense, it contains a hard coded prefix value 'user/' 
+                //                if we switch to another prefix later, things will no longer work.
+                // $s = strpos($val, "user/");
+                // if($s == 0){
 
-                            if (empty($aclkey)){
-                                $resultArr["mailFolder"][$val]["acls"][] = array( 
-                                        "name" => $aclkey, 
-                                        "acl"  => aclval,  
-                                        "type"=>"user");
-                            }
-                            else{
-                                $resultArr["mailFolder"][$val]["acls"][] = array( 
-                                        "name" => $aclkey, 
-                                        "acl"  => GROUPWARE_RIGHTS_NONE,  
-                                        "type"=>"user");
-                            }
-                        }
+            
+                // #FIXME: HAPE(3): Do not use hard coded position here (5), this will not work for subfolders 
+                //                   nor for changed folder prefixes. 
+                //                  If we use "users/" instead of "user/" your folder name will be wrong.
+                //                  Same for subfolders "user/Aufgaben/2005" will result in ['name'] = "Aufgaben/2005"
+                //                   instead of 2005.
+                // $resultArr["mailFolder"][$val]["name"] = substr($val, strpos($val, "/", 5));
+
+                // Get the folder name, all characters behind the last '/'.
+                $resultArr["mailFolder"][$val]["name"] = preg_replace("/^.*\//","",$val);
+
+                // #FIXME: HAPE(4): Do not use hard coded values! Or leave a fixme, comment or something else.
+                // $curAcl = $this->get("private_folderACLS", array("user/wiwu/Posteingang"));
+
+                // Query the folder ACLs using RPC to the backend.
+                $curAcl = $this->get("private_folderACLS", array($val));
+                if(is_array($curAcl)){
+                    foreach($curAcl as $aclkey => $aclval){
+
+                        if(empty($aclval)) $aclval = GROUPWARE_RIGHTS_NONE;
+                        $resultArr["mailFolder"][$val]["acls"][] = array( 
+                                "name" => $aclkey, 
+                                "acl"  => $aclval,  
+                                "type"=>"user");
                     }
                 }
-                else{
-                    // this case should never happen - unsetting the array anyway.
-                    unset($resultArr["mailFolder"][$val]);
-                }
+
+                // #FIXME: HAPE: See fixme HAPE(2)
+                //  }
+                //  else{
+                //      // this case should never happen - unsetting the array anyway.
+                //      unset($resultArr["mailFolder"][$val]);
+                //  }
             }
 
-            /*
-               "RIGHTS_NONE", 0);
-               "RIGHTS_READ",  LOOKUP | READ | STATUS);
-               "RIGHTS_POST", RIGHTS_READ | POST);
-               "RIGHTS_APPEND", RIGHTS_POST | INSERT);
-               "RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
-               ""
-             */
-
-            //need a status for the array - setting them now for the example data.
+            // Add the required status field for each folder.
             foreach($resultArr["mailFolder"] as $id => $folder){
                 $resultArr["mailFolder"][$id]['status'] = '';
             }
-
         }
 
         //TODO: getLocation muss ebenfalls geholt werden 

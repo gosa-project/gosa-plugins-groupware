@@ -225,6 +225,7 @@ class Groupware extends plugin
                 $this->initially_was_account = $this->is_account = $status;
                 if($this->is_account){
                     $response = $this->groupwareDao->getComprehensiverUser($this->uid);
+                    $this->saved_attributes = $response;
                     $this->mapComprehensiveUserData($response);
                 }
                 $this->accountInitialized = TRUE;
@@ -886,18 +887,31 @@ class Groupware extends plugin
             if(!tests::is_email ($this->mailAddress)){
                 $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@exdom.intranet.gonicus.de knibbel");
             }
+                
+            // Ensure that the mailAddress isn't used yet.
+            if(!count($messages) && ( 
+                    !$this->initially_was_account || 
+                    $this->mailAddress != $this->saved_attributes['primaryMail'])){
+                $exists = $this->rpcExec("gwMailAddressExists", $this->mailAddress);
+                if($this->rpcError){
+                    $messages[] = sprintf(_("Failed to validate mail address '%s'."), $this->mailAddress);
+                }elseif($exists){
+                    $messages[] = msgPool::duplicated(_("Mail address"));
+                }
+            }
         }
-        //checks for feature "quotaUsage"                
-        if ($this->isFeatureEnabled("quotaUsage")){}
 
-        //checks for feature "mailLocations"				
-        if ($this->isFeatureEnabled("mailLocations")){}
-
-        //checks for feature "mailFilter"                
-        if ($this->isFeatureEnabled("mailFilter")){}
-
-        //checks for feature "alternateAddresses"        
-        if ($this->isFeatureEnabled("alternateAddresses")){}
+#       //checks for feature "quotaUsage"                
+#       if ($this->isFeatureEnabled("quotaUsage")){}
+#
+#       //checks for feature "mailLocations"				
+#       if ($this->isFeatureEnabled("mailLocations")){}
+#
+#       //checks for feature "mailFilter"                
+#       if ($this->isFeatureEnabled("mailFilter")){}
+#
+#       //checks for feature "alternateAddresses"        
+#       if ($this->isFeatureEnabled("alternateAddresses")){}
 
         //checks for feature "forwardingAddresses" 
         if ($this->isFeatureEnabled("forwardingAddresses")){		
@@ -954,17 +968,17 @@ class Groupware extends plugin
             }
         }
 
-        //checks for feature "mailBoxAutomaticRemoval"   
-        if ($this->isFeatureEnabled("mailBoxAutomaticRemoval")){}
-
-        //checks for feature "localDeliveryOnly"  
-        if ($this->isFeatureEnabled("localDeliveryOnly")){}	
-
-        //checks for feature "dropOwnMails"
-        if ($this->isFeatureEnabled("dropOwnMails")){}
-
-        //checks for feature "mailFolder"	
-        if ($this->isFeatureEnabled("mailFolder")){}
+#       //checks for feature "mailBoxAutomaticRemoval"   
+#       if ($this->isFeatureEnabled("mailBoxAutomaticRemoval")){}
+#
+#       //checks for feature "localDeliveryOnly"  
+#       if ($this->isFeatureEnabled("localDeliveryOnly")){}	
+#
+#       //checks for feature "dropOwnMails"
+#       if ($this->isFeatureEnabled("dropOwnMails")){}
+#
+#       //checks for feature "mailFolder"	
+#       if ($this->isFeatureEnabled("mailFolder")){}
 
         return($messages);
     }
@@ -1069,7 +1083,12 @@ class Groupware extends plugin
                     break;
                 }
             }
-            $this->save("private_folderACLS", $id, $val["acls"]);
+
+            #FIXME: HAPE:
+            # What the hell is this?
+            # You call save() from save() from save() aso...  
+            # Got seqfaults in apache client ...
+            # - $this->save("private_folderACLS", $id, $val["acls"]);
         }
     }
 }

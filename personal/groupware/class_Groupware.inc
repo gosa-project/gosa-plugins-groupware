@@ -45,20 +45,20 @@ class Groupware extends plugin
             "mailBoxSendSizelimitEnabled", "mailBoxSendSizelimitValue", "mailBoxHardSizelimitEnabled",
             "mailBoxHardSizelimitValue", "mailBoxAutomaticRemovalEnabled", "mailBoxAutomaticRemovalValue",
             "localDeliveryOnly", "dropOwnMails", "mailFolder", "mailLimitReceiveValue", "mailLimitSendValue",
-			"mailLimitReceiveEnabled", "mailLimitSendEnabled");
+            "mailLimitReceiveEnabled", "mailLimitSendEnabled");
 
     var $enabledFeatures = array();
 
     var $flagAttributes = array("vacationEnabled","mailBoxWarnLimitEnabled","mailBoxSendSizelimitEnabled",
             "mailBoxHardSizelimitEnabled","mailBoxAutomaticRemovalEnabled","localDeliveryOnly","dropOwnMails", 
-			"mailLimitReceiveEnabled", "mailLimitSendEnabled");
+            "mailLimitReceiveEnabled", "mailLimitSendEnabled");
 
     var $mailAddressSelectDialog = NULL;
     var $filterManager = NULL;
     var $filterRules = array();
     var $vacationTemplates = array(); 
 
-	
+
     //the dropdown
     var $mailLocations = array();
 
@@ -81,16 +81,17 @@ class Groupware extends plugin
     var $mailBoxAutomaticRemovalValue = 100;
     var $localDeliveryOnly = FALSE;
     var $dropOwnMails = FALSE;
-	var $mailLimitReceiveEnabled = FALSE;
-	var $mailLimitReceiveValue = 0;
-	var $mailLimitSendEnabled = FALSE;
-	var $mailLimitSendValue = 0;
-	
-	
+    var $mailLimitReceiveEnabled = FALSE;
+    var $mailLimitReceiveValue = 0;
+    var $mailLimitSendEnabled = FALSE;
+    var $mailLimitSendValue = 0;
+
+
     var $groupwareDao = null;
 
     // Used in the folder editor as the starting folder, usually user/username
     var $folderPrefix = "";
+
 
     /*! \brief      
      */
@@ -132,19 +133,23 @@ class Groupware extends plugin
         return($res);
     }
 
+
     /*! \brief    Checks if feature is availavle on the server (a call to getCapabilities achieves this.)
      */
     public function isFeatureEnabled($featureName)
     {
         return(isset($this->enabledFeatures[$featureName]) && $this->enabledFeatures[$featureName]);
     }
-	/*! \brief     Checking if the feature has been changed since loading it from server (initial state)
+
+
+    /*! \brief     Checking if the feature has been changed since loading it from server (initial state)
      */
     public function hasFeaturebeenChanged($featureName)
     {
-		//TODO: must be implemented.
+        //TODO: must be implemented.
         return true;
     }
+
 
     /*! \brief  Try initialize the groupware account.
      *          This method fetches all required information to manage the
@@ -180,7 +185,7 @@ class Groupware extends plugin
                     'acctSetQuota','acctGetQuota'),
                 "mailBoxSendSizelimit"      => array(
                         'acctSetQuota','acctGetQuota'),
-				//This is the same as qotaSize - should stay turned off
+                //This is the same as qotaSize - should stay turned off
                 "mailBoxHardSizelimit"      => array( "_off",
                         'acctSetQuota','acctGetQuota'),
                 "mailBoxAutomaticRemoval"   => array(
@@ -189,26 +194,26 @@ class Groupware extends plugin
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
                 "dropOwnMails"              => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
-				"mailFolder"				=> array(
-						'folderList','folderDel','folderAdd'),
-				"mailLimit"			=> array(
-						'acctGetMailLimit', 'acctSetMailLimit')
-				);
+                "mailFolder"				=> array(
+                        'folderList','folderDel','folderAdd'),
+                "mailLimit"			=> array(
+                        'acctGetMailLimit', 'acctSetMailLimit')
+                    );
 
         // Check if all required methods can be called! 
-		foreach($featureReq as $name => $requires){
-			$active = TRUE;
-			foreach($requires as $methodName){
-				$active &= $this->groupwareDao->gwFeatureAvailable($methodName);
-			}
-			$this->enabledFeatures[$name] = $active;
-		}
+        foreach($featureReq as $name => $requires){
+            $active = TRUE;
+            foreach($requires as $methodName){
+                $active &= $this->groupwareDao->gwFeatureAvailable($methodName);
+            }
+            $this->enabledFeatures[$name] = $active;
+        }
 
         // If this is a new user, then do not try to check account status 
         //  the account cannot exists.			
-		if ($this->isFeatureEnabled("mailLocations")){
-			$this->mailLocations = $this->groupwareDao->get('mailLocations', array());
-		}
+        if ($this->isFeatureEnabled("mailLocations")){
+            $this->mailLocations = $this->groupwareDao->get('mailLocations', array());
+        }
         if($this->dn == "new"){
             $this->initially_was_account = $this->is_account = FALSE;
             $this->accountInitialized = TRUE;
@@ -234,6 +239,7 @@ class Groupware extends plugin
         $this->vacationStart= date('d.m.Y', $this->vacationStart);
         $this->vacationStop= date('d.m.Y', $this->vacationStop);
     }
+
 
     /*! \brief  Generates the HTML user interface for the groupware plugin
      *           and take of several ui actions like adding or removing 
@@ -294,7 +300,7 @@ class Groupware extends plugin
             $this->dialog = TRUE;
             return($this->filterManager->execute());
         }
-		
+
         /****************
           Folder editor
          ****************/
@@ -364,10 +370,10 @@ class Groupware extends plugin
         // Display dialog to select a local fowarder 
         if (isset($_POST['addLocalForwardingAddress'])){
             $this->mailAddressSelectDialog=  new mailAddressSelect($this->config, get_userinfo());
-			
+
             $this->dialog= TRUE;
         }
-		
+
         // Close dialogs, action was canceled 
         if (isset($_POST['mailAddressSelect_cancel'])){
             $this->mailAddressSelectDialog= FALSE;
@@ -480,8 +486,8 @@ class Groupware extends plugin
 
         $smarty = get_smarty();
         foreach($this->attributes as $attr){
-			print
-            $smarty->assign($attr, $this->$attr);
+            print
+                $smarty->assign($attr, $this->$attr);
         }
 
         $plInfo = $this->plInfo();
@@ -491,13 +497,13 @@ class Groupware extends plugin
         foreach($this->enabledFeatures as $feature => $state){
             $smarty->assign($feature."_isActive", $state);
         }
-        
+
         $smarty->assign("currentSelectedFolder", $this->currentSelectedFolder);
         $folderEntries = array();
         if(isset($this->mailFolder[$this->currentSelectedFolder])) {
             $folderEntries = $this->mailFolder[$this->currentSelectedFolder];
         }
-		$smarty->assign("folderEntries", $folderEntries);
+        $smarty->assign("folderEntries", $folderEntries);
 
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
@@ -556,10 +562,10 @@ class Groupware extends plugin
                     }
                 }
             }
-			
-			if($this->acl_is_writeable('vacationMessage')){
-				$this->vacationEnabled = isset($_POST['vacationEnabled']);
-			}
+
+            if($this->acl_is_writeable('vacationMessage')){
+                $this->vacationEnabled = isset($_POST['vacationEnabled']);
+            }
             // Get posted flag changes 
             $flagAttrs = array("localDeliveryOnly","dropOwnMails");
             foreach($flagAttrs as $attr){
@@ -567,6 +573,7 @@ class Groupware extends plugin
             }
         }
     }
+
 
     /*! \brief  Parse vacation templates and build up an array
      *	containing 'filename' => 'description'. 
@@ -609,19 +616,19 @@ class Groupware extends plugin
     {
         if(empty($address)) return;
         if($this->acl_is_writeable("forwardingAddresses")){		
-			//Check if the address is a valid address on the Groupwareserver
-			
-			$isMailAvailabel = $this->rpcExec("gwMailAddressExists", $address);
-			if(empty($isMailAvailabel)){
-				msg_dialog::display(_("Permission error"), _("This email address is not available as forwarding recipient in your groupware."), ERROR_DIALOG);
-			}
-			else{
-				$this->forwardingAddresses[]= $address;
-				$this->forwardingAddresses= array_unique ($this->forwardingAddresses);
-				sort ($this->forwardingAddresses);
-				reset ($this->forwardingAddresses);
-				$this->is_modified= TRUE;
-			}
+            //Check if the address is a valid address on the Groupwareserver
+
+            $isMailAvailabel = $this->rpcExec("gwMailAddressExists", $address);
+            if(empty($isMailAvailabel)){
+                msg_dialog::display(_("Permission error"), _("This email address is not available as forwarding recipient in your groupware."), ERROR_DIALOG);
+            }
+            else{
+                $this->forwardingAddresses[]= $address;
+                $this->forwardingAddresses= array_unique ($this->forwardingAddresses);
+                sort ($this->forwardingAddresses);
+                reset ($this->forwardingAddresses);
+                $this->is_modified= TRUE;
+            }
         }else{
             msg_dialog::display(_("Permission error"), _("You have no permission to modify these addresses!"), ERROR_DIALOG);
         }
@@ -632,7 +639,7 @@ class Groupware extends plugin
      */ 
     function delForwarder($addresses)
     {
-		
+
         if($this->acl_is_writeable("forwardingAddresses")){
             $this->forwardingAddresses= array_remove_entries ($addresses, $this->forwardingAddresses);
             $this->is_modified= TRUE;
@@ -766,7 +773,7 @@ class Groupware extends plugin
      */
     function save()
     {
-         // Get rpc handle to create or update the account
+        // Get rpc handle to create or update the account
         if(!$this->initially_was_account){
             $this->rpcExec('gwAcctAdd', $this->uid, $this->mailAddress);
             if($this->rpcError){
@@ -774,96 +781,96 @@ class Groupware extends plugin
                 return;
             }
         }
-		if($this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
-			$this->saveFoldersAndAcls($this->uid, $this->mailFolder);
-		}
+        if($this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
+            $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
+        }
 
         // Save the primary Email Address.
-		if($this->isFeatureEnabled("primaryMail")&& $this->hasFeaturebeenChanged("primaryMail")){
-			if(!empty($this->mailAddress )){
-				$this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
-			}
-		}
+        if($this->isFeatureEnabled("primaryMail")&& $this->hasFeaturebeenChanged("primaryMail")){
+            if(!empty($this->mailAddress )){
+                $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
+            }
+        }
 
         // Save alternateAddresses 
-		if($this->isFeatureEnabled("alternateAddresses")&& $this->hasFeaturebeenChanged("alternateAddresses")){
-			if(!empty($this->alternateAddresses) 
-					&& isset($this->alternateAddresses) 
-					&& is_array($this->alternateAddresses)){
-				$this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
+        if($this->isFeatureEnabled("alternateAddresses")&& $this->hasFeaturebeenChanged("alternateAddresses")){
+            if(!empty($this->alternateAddresses) 
+                    && isset($this->alternateAddresses) 
+                    && is_array($this->alternateAddresses)){
+                $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
 
-			}
-		}
-		// Save forwardingAddresses
-		if($this->isFeatureEnabled("forwardingAddresses") && $this->hasFeaturebeenChanged("forwardingAddresses")){
-			if(empty($this->forwardingAddresses)){
-				$this->groupwareDao->save("forwardingAddresses", $this->uid, array(array()));
-			}
-			if(is_array($this->forwardingAddresses) && isset($this->forwardingAddresses[0])){
-					
-					// Only the first Address will be set as forward Address.
-					$fw = array();
-					$fw[$this->forwardingAddresses[0]] = true;
-					$this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
-			}
-		}
-		//Save quota - it consists of four values... 
-		if( ($this->isFeatureEnabled("mailBoxWarnLimit") ||
-			$this->isFeatureEnabled("mailBoxSendSizelimit") ||
-			$this->isFeatureEnabled("quotaSize") ||
-			$this->isFeatureEnabled("mailBoxAutomaticRemoval"))
-		&& ($this->hasFeaturebeenChanged("mailBoxWarnLimit") ||
-			$this->hasFeaturebeenChanged("mailBoxSendSizelimit") ||
-			$this->hasFeaturebeenChanged("quotaSize") ||
-			$this->hasFeaturebeenChanged("mailBoxAutomaticRemoval") )){
-			$quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
-					"send_limit" => $this->mailBoxSendSizelimitValue,
-					"hard_limit" => $this->quotaSize,
-					"hold" => $this->quotaSize);
+            }
+        }
+        // Save forwardingAddresses
+        if($this->isFeatureEnabled("forwardingAddresses") && $this->hasFeaturebeenChanged("forwardingAddresses")){
+            if(empty($this->forwardingAddresses)){
+                $this->groupwareDao->save("forwardingAddresses", $this->uid, array(array()));
+            }
+            if(is_array($this->forwardingAddresses) && isset($this->forwardingAddresses[0])){
 
-			$this->groupwareDao->save("quotaSize", $this->uid, $quota);
-		}
+                // Only the first Address will be set as forward Address.
+                $fw = array();
+                $fw[$this->forwardingAddresses[0]] = true;
+                $this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
+            }
+        }
+        //Save quota - it consists of four values... 
+        if( ($this->isFeatureEnabled("mailBoxWarnLimit") ||
+                    $this->isFeatureEnabled("mailBoxSendSizelimit") ||
+                    $this->isFeatureEnabled("quotaSize") ||
+                    $this->isFeatureEnabled("mailBoxAutomaticRemoval"))
+                && ($this->hasFeaturebeenChanged("mailBoxWarnLimit") ||
+                    $this->hasFeaturebeenChanged("mailBoxSendSizelimit") ||
+                    $this->hasFeaturebeenChanged("quotaSize") ||
+                    $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval") )){
+            $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
+                    "send_limit" => $this->mailBoxSendSizelimitValue,
+                    "hard_limit" => $this->quotaSize,
+                    "hold" => $this->quotaSize);
 
-		// Todo: checks for feature "mailLocations"				
-		if($this->isFeatureEnabled("mailLocations") && $this->hasFeaturebeenChanged("mailLocations")){
-			//$this->groupwareDao->save("mailLocations", $this->uid, $this->mailLocations);
-		}
-		
-		//checks for feature "mailFilter"                 
-		if($this->isFeatureEnabled("mailFilter") && $this->hasFeaturebeenChanged("mailFilter")){}
-		
-		//checks for feature "mailBoxAutomaticRemoval"   
-		if($this->isFeatureEnabled("mailBoxAutomaticRemoval") && $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval")){}
-		
-		//checks for feature "localDeliveryOnly"         
-		if($this->isFeatureEnabled("localDeliveryOnly") && $this->hasFeaturebeenChanged("localDeliveryOnly")){}
-		
-		//checks for feature "dropOwnMails"              
-		if($this->isFeatureEnabled("dropOwnMails") && $this->hasFeaturebeenChanged("dropOwnMails")){}
-		
-		
-		//checks for feature "mailLimit"              
-		if($this->isFeatureEnabled("mailLimit") && $this->hasFeaturebeenChanged("mailLimit")){
-			if(!$this->mailLimitReceiveEnabled){
-				$this->mailLimitReceiveValue = 0;
-			}
-			if(!$this->mailLimitSendEnabled){
-				$this->mailLimitSendValue = 0;
-			}
-			$this->groupwareDao->save("mailLimit", $this->uid, array( $this->mailLimitSendValue, $this->mailLimitReceiveValue));
-		}
-		if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
-			if($this->vacationEnabled){
-				//setting an message means that the OOOReply is switched off.
-				$this->groupwareDao->save("vacationMessage", $this->uid, $this->vacationMessage);
-			}
-			else{
-				//setting no message means that the OOOReply is switched off.
-				$this->groupwareDao->save("vacationMessage", $this->uid, null);
-			}
-		}
-		//checks for feature "quotaUsage"                
-		//not to be saved
+            $this->groupwareDao->save("quotaSize", $this->uid, $quota);
+        }
+
+        // Todo: checks for feature "mailLocations"				
+        if($this->isFeatureEnabled("mailLocations") && $this->hasFeaturebeenChanged("mailLocations")){
+            //$this->groupwareDao->save("mailLocations", $this->uid, $this->mailLocations);
+        }
+
+        //checks for feature "mailFilter"                 
+        if($this->isFeatureEnabled("mailFilter") && $this->hasFeaturebeenChanged("mailFilter")){}
+
+        //checks for feature "mailBoxAutomaticRemoval"   
+        if($this->isFeatureEnabled("mailBoxAutomaticRemoval") && $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval")){}
+
+        //checks for feature "localDeliveryOnly"         
+        if($this->isFeatureEnabled("localDeliveryOnly") && $this->hasFeaturebeenChanged("localDeliveryOnly")){}
+
+        //checks for feature "dropOwnMails"              
+        if($this->isFeatureEnabled("dropOwnMails") && $this->hasFeaturebeenChanged("dropOwnMails")){}
+
+
+        //checks for feature "mailLimit"              
+        if($this->isFeatureEnabled("mailLimit") && $this->hasFeaturebeenChanged("mailLimit")){
+            if(!$this->mailLimitReceiveEnabled){
+                $this->mailLimitReceiveValue = 0;
+            }
+            if(!$this->mailLimitSendEnabled){
+                $this->mailLimitSendValue = 0;
+            }
+            $this->groupwareDao->save("mailLimit", $this->uid, array( $this->mailLimitSendValue, $this->mailLimitReceiveValue));
+        }
+        if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
+            if($this->vacationEnabled){
+                //setting an message means that the OOOReply is switched off.
+                $this->groupwareDao->save("vacationMessage", $this->uid, $this->vacationMessage);
+            }
+            else{
+                //setting no message means that the OOOReply is switched off.
+                $this->groupwareDao->save("vacationMessage", $this->uid, null);
+            }
+        }
+        //checks for feature "quotaUsage"                
+        //not to be saved
     }
 
 
@@ -871,94 +878,94 @@ class Groupware extends plugin
      */
     function check()
     {
-		//checke features only if they are enabled.
+        //checke features only if they are enabled.
         $messages = plugin::check();
-     
-		//checks for feature "primaryMail" 
-		if ($this->isFeatureEnabled("mailBoxWarnLimit")){		
-			if(!tests::is_email ($this->mailAddress)){
-				$messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@exdom.intranet.gonicus.de knibbel");
-			}
-		}
-		//checks for feature "quotaUsage"                
-		if ($this->isFeatureEnabled("quotaUsage")){}
-		
-		//checks for feature "mailLocations"				
-		if ($this->isFeatureEnabled("mailLocations")){}
-		
-		//checks for feature "mailFilter"                
-		if ($this->isFeatureEnabled("mailFilter")){}
-		
-		//checks for feature "alternateAddresses"        
-		if ($this->isFeatureEnabled("alternateAddresses")){}
-		
-		//checks for feature "forwardingAddresses" 
-		if ($this->isFeatureEnabled("forwardingAddresses")){		
-			if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
-				foreach($this->forwardingAddresses as $fAddress){
-					if(!tests::is_email ($fAddress)){
-						$messages[] = msgPool::invalid(_("Forwarding address"),$fAddress, "", 
-								"user@exdom.intranet.gonicus.de");
-					}
-					//Check if the address is a valid address on the Groupwareserver
-					$isMailAvailabel = $this->rpcExec("gwMailAddressExists", $fAddress);
-					if(empty($isMailAvailabel)){
-						$messages[] = _("This email address is not available as forwarding recipient in your groupware.");
-					}
-					if($fAddress == $this->mailAddress){
-						$messages[] = _("The primary address cannot be used as forwarding address!");
-					}
-				}
-			}	
-		}			
 
-		//checks for feature "vacationMessage"   
-		if ($this->isFeatureEnabled("vacationMessage")){}
-		//checks for feature "mailLimit" - integer 
-		if ($this->isFeatureEnabled("mailLimit")){
-			if (!is_numeric($this->mailLimitReceiveValue)){
-				$messages[] = msgPool::invalid(_("Value for mailbox size receive limit"),$this->mailLimitReceiveValue , "", "1024 = 1MB");
-			}
-			if (!is_numeric($this->mailLimitSendValue)){
-				$messages[] = msgPool::invalid(_("Value for mailbox size send limit"),$this->mailLimitSendValue , "", "1024 = 1MB");
-			}
-		}
-		
-		//checks for feature "mailBoxWarnLimit"          
-		if ($this->isFeatureEnabled("quotaSize")){
-		//Todo: wrong test
-			if (!is_numeric($this->quotaSize)){
-				$messages[] = msgPool::invalid(_("Value for Quota size"),$this->quotaSize , "", "1024 = 1GB");
-			}
-		}
-		
-		//checks for feature "mailBoxSendSizelimit"      
-		if ($this->isFeatureEnabled("mailBoxSendSizelimit")){
-		//Todo: wrong test
-			if (!is_numeric($this->mailBoxSendSizelimitValue)){
-				$messages[] = msgPool::invalid(_("Value refuse incoming mails limit"),$this->mailBoxSendSizelimitValue , "", "1024 = 1GB");
-			}
-		}
-		//checks for feature "mailBoxHardSizelimit"
-		if ($this->isFeatureEnabled("mailBoxWarnLimit")){
-		//Todo: wrong test
-			if (!is_numeric($this->mailBoxWarnLimitValue)){
-				$messages[] = msgPool::invalid(_("Value warn about full mailbox"),$this->mailBoxWarnLimitValue , "", "1024 = 1GB");
-			}
-		}
+        //checks for feature "primaryMail" 
+        if ($this->isFeatureEnabled("mailBoxWarnLimit")){		
+            if(!tests::is_email ($this->mailAddress)){
+                $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@exdom.intranet.gonicus.de knibbel");
+            }
+        }
+        //checks for feature "quotaUsage"                
+        if ($this->isFeatureEnabled("quotaUsage")){}
 
-		//checks for feature "mailBoxAutomaticRemoval"   
-		if ($this->isFeatureEnabled("mailBoxAutomaticRemoval")){}
+        //checks for feature "mailLocations"				
+        if ($this->isFeatureEnabled("mailLocations")){}
 
-		//checks for feature "localDeliveryOnly"  
-		if ($this->isFeatureEnabled("localDeliveryOnly")){}	
+        //checks for feature "mailFilter"                
+        if ($this->isFeatureEnabled("mailFilter")){}
 
-		//checks for feature "dropOwnMails"
-		if ($this->isFeatureEnabled("dropOwnMails")){}
+        //checks for feature "alternateAddresses"        
+        if ($this->isFeatureEnabled("alternateAddresses")){}
 
-		//checks for feature "mailFolder"	
-		if ($this->isFeatureEnabled("mailFolder")){}
-       
+        //checks for feature "forwardingAddresses" 
+        if ($this->isFeatureEnabled("forwardingAddresses")){		
+            if(isset($this->forwardingAddresses) && is_array($this->forwardingAddresses)){
+                foreach($this->forwardingAddresses as $fAddress){
+                    if(!tests::is_email ($fAddress)){
+                        $messages[] = msgPool::invalid(_("Forwarding address"),$fAddress, "", 
+                                "user@exdom.intranet.gonicus.de");
+                    }
+                    //Check if the address is a valid address on the Groupwareserver
+                    $isMailAvailabel = $this->rpcExec("gwMailAddressExists", $fAddress);
+                    if(empty($isMailAvailabel)){
+                        $messages[] = _("This email address is not available as forwarding recipient in your groupware.");
+                    }
+                    if($fAddress == $this->mailAddress){
+                        $messages[] = _("The primary address cannot be used as forwarding address!");
+                    }
+                }
+            }	
+        }			
+
+        //checks for feature "vacationMessage"   
+        if ($this->isFeatureEnabled("vacationMessage")){}
+        //checks for feature "mailLimit" - integer 
+        if ($this->isFeatureEnabled("mailLimit")){
+            if (!is_numeric($this->mailLimitReceiveValue)){
+                $messages[] = msgPool::invalid(_("Value for mailbox size receive limit"),$this->mailLimitReceiveValue , "", "1024 = 1MB");
+            }
+            if (!is_numeric($this->mailLimitSendValue)){
+                $messages[] = msgPool::invalid(_("Value for mailbox size send limit"),$this->mailLimitSendValue , "", "1024 = 1MB");
+            }
+        }
+
+        //checks for feature "mailBoxWarnLimit"          
+        if ($this->isFeatureEnabled("quotaSize")){
+            //Todo: wrong test
+            if (!is_numeric($this->quotaSize)){
+                $messages[] = msgPool::invalid(_("Value for Quota size"),$this->quotaSize , "", "1024 = 1GB");
+            }
+        }
+
+        //checks for feature "mailBoxSendSizelimit"      
+        if ($this->isFeatureEnabled("mailBoxSendSizelimit")){
+            //Todo: wrong test
+            if (!is_numeric($this->mailBoxSendSizelimitValue)){
+                $messages[] = msgPool::invalid(_("Value refuse incoming mails limit"),$this->mailBoxSendSizelimitValue , "", "1024 = 1GB");
+            }
+        }
+        //checks for feature "mailBoxHardSizelimit"
+        if ($this->isFeatureEnabled("mailBoxWarnLimit")){
+            //Todo: wrong test
+            if (!is_numeric($this->mailBoxWarnLimitValue)){
+                $messages[] = msgPool::invalid(_("Value warn about full mailbox"),$this->mailBoxWarnLimitValue , "", "1024 = 1GB");
+            }
+        }
+
+        //checks for feature "mailBoxAutomaticRemoval"   
+        if ($this->isFeatureEnabled("mailBoxAutomaticRemoval")){}
+
+        //checks for feature "localDeliveryOnly"  
+        if ($this->isFeatureEnabled("localDeliveryOnly")){}	
+
+        //checks for feature "dropOwnMails"
+        if ($this->isFeatureEnabled("dropOwnMails")){}
+
+        //checks for feature "mailFolder"	
+        if ($this->isFeatureEnabled("mailFolder")){}
+
         return($messages);
     }
 
@@ -993,8 +1000,8 @@ class Groupware extends plugin
                         "mailBoxAutomaticRemoval"       => _("Automatic mail removal"),
                         "localDeliveryOnly"             => _("Local delivery only"),
                         "dropOwnMails"                  => _("Drop own mails"),
-						"mailLimitSend"                 => _("mail Limit send"),
-						"mailLimitReceive"              => _("mail Limit receive")
+                        "mailLimitSend"                 => _("mail Limit send"),
+                        "mailLimitReceive"              => _("mail Limit receive")
                         )
                         ));
     }
@@ -1027,11 +1034,11 @@ class Groupware extends plugin
                 "mailBoxAutomaticRemovalValue" => "mailBoxAutomaticRemovalValue",
                 "localDeliveryOnly" => "localDeliveryOnly",
                 "dropOwnMails" => "dropOwnMails",
-				"mailLimitReceiveValue" => "mailLimitReceiveValue",
-				"mailLimitSendValue" => "mailLimitSendValue",
-				"mailLimitReceiveEnabled" => "mailLimitReceiveEnabled",
-				"mailLimitSendEnabled" => "mailLimitSendEnabled"
-				);
+                "mailLimitReceiveValue" => "mailLimitReceiveValue",
+                "mailLimitSendValue" => "mailLimitSendValue",
+                "mailLimitReceiveEnabled" => "mailLimitReceiveEnabled",
+                "mailLimitSendEnabled" => "mailLimitSendEnabled"
+                    );
 
         // Map values from source array to class members
         foreach($map as $target => $source){
@@ -1040,31 +1047,31 @@ class Groupware extends plugin
             }
         }
     }
-	
-	
-	/*! \brief  This is a feature with many datasets inside which should be 
-	 *			cut in slices and saved separately.
+
+
+    /*! \brief  This is a feature with many datasets inside which should be 
+     *			cut in slices and saved separately.
      */
-	//
-	function saveFoldersAndAcls($id, $mailFolder)
+    //
+    function saveFoldersAndAcls($id, $mailFolder)
     {
-		// In the tests with the exchange server groupware setting acls is very
-		// slow. So this function has got to be checked for modifications.
-		foreach($mailFolder as $key => $val)
-		{
-			if(!empty($val["status"])){
-				switch($val["status"]){
-					case "add":
-						$this->groupwareDao->save("mailFolder", $id, $key);
-						break;
-					case "del":
-						$this->groupwareDao->delete("mailFolder", $id, $key);
-						break;
-				}
-			}
-			$this->save("private_folderACLS", $id, $val["acls"]);
-		}
-	}
+        // In the tests with the exchange server groupware setting acls is very
+        // slow. So this function has got to be checked for modifications.
+        foreach($mailFolder as $key => $val)
+        {
+            if(!empty($val["status"])){
+                switch($val["status"]){
+                    case "add":
+                        $this->groupwareDao->save("mailFolder", $id, $key);
+                    break;
+                    case "del":
+                        $this->groupwareDao->delete("mailFolder", $id, $key);
+                    break;
+                }
+            }
+            $this->save("private_folderACLS", $id, $val["acls"]);
+        }
+    }
 }
 
 

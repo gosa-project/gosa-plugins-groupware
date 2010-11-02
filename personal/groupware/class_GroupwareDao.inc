@@ -1,6 +1,6 @@
 <?php
 
- 
+
 /*! \brief Data Access Object for groupware
  */
 class GroupwareDao{
@@ -51,14 +51,14 @@ class GroupwareDao{
             "accountProperties" => array("get"=>"gwAcctGetProperties",
                     "save"=>"gwAcctSetProperties",
                     "delete"=>"gwAcctDelProperties"),
-			//mailFolder is a composite feature - 
-			"mailFolder" => array( "get"=>"gwFolderList",
-					"save"=>"gwFolderAdd",
+            //mailFolder is a composite feature - 
+            "mailFolder" => array( "get"=>"gwFolderList",
+                    "save"=>"gwFolderAdd",
                     "delete"=>"gwFolderDel"),
-			"private_folderACLS" => array("get"=>"gwFolderGetMembers",
+            "private_folderACLS" => array("get"=>"gwFolderGetMembers",
                     "save"=>"gwFolderSetMembers",
                     "delete"=>"gwFolderDelMember"),
-			"mailLimit" => array("get"=>"gwAcctGetMailLimit",
+            "mailLimit" => array("get"=>"gwAcctGetMailLimit",
                     "save"=>"gwAcctSetMailLimit")
                 );
 
@@ -95,7 +95,7 @@ class GroupwareDao{
         }else{
             $valueArray = array($function, $uid, $valueArray);
         }
-        
+
         $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
         return $result;
     }
@@ -125,7 +125,7 @@ class GroupwareDao{
      */
     public function del($feature, $valueArray)
     {
-        
+
         echo "deletion of values is not implemented yet";
         /*
            $function = GroupwareDao::$gwFeatures[$feature]["delete"];
@@ -166,7 +166,7 @@ class GroupwareDao{
         }
 
         if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
-    		$FWaddresses = $this->get("forwardingAddresses", array($uid));		
+            $FWaddresses = $this->get("forwardingAddresses", array($uid));		
             if($FWaddresses) {
                 $resultArr["forwardingAddresses"] = array(key($FWaddresses));
             }
@@ -178,54 +178,54 @@ class GroupwareDao{
             $resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec('gwAcctGetLocation',$uid);
         }
 
-		//getThefolderList from the user
-		if($this->groupwarePluginRef->isFeatureEnabled("mailFolder")){
-		
-			//Folder Id from the User ...
-			//user/$id/
-			$resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
-			
-			foreach($resultArr["mailFolder"] as $val){
-				$s = strpos($val, "user/");
-				if($s == 0){
-				
-					$resultArr["mailFolder"][$val]["name"] = substr($val, strpos($val, "/", 5));
-					
-					$curAcl = $this->get("private_folderACLS", array("user/wiwu/Posteingang"));
-					if(is_array($curAcl)){
-						foreach($curAcl as $aclkey => $aclval){
-							
-							if (empty($aclkey)){
-								$resultArr["mailFolder"][$val]["acls"][] = array( 
-	 	                                "name" => $aclkey, 
-	 	                                "acl"  => aclval,  
-	 	                                "type"=>"user");
-							}
-							else{
-								$resultArr["mailFolder"][$val]["acls"][] = array( 
-	 	                                "name" => $aclkey, 
-	 	                                "acl"  => GROUPWARE_RIGHTS_NONE,  
-	 	                                "type"=>"user");
-							}
-						}
-					}
-				}
-				else{
-					// this case should never happen - unsetting the array anyway.
-					unset($resultArr["mailFolder"][$val]);
-				}
-			}
-			
-			/*
-			"RIGHTS_NONE", 0);
-			"RIGHTS_READ",  LOOKUP | READ | STATUS);
-			"RIGHTS_POST", RIGHTS_READ | POST);
-			"RIGHTS_APPEND", RIGHTS_POST | INSERT);
-			"RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
-            ""
+        //getThefolderList from the user
+        if($this->groupwarePluginRef->isFeatureEnabled("mailFolder")){
+
+            //Folder Id from the User ...
+            //user/$id/
+            $resultArr["mailFolder"] = $this->get("mailFolder", array("user/".$uid."/"));
+
+            foreach($resultArr["mailFolder"] as $val){
+                $s = strpos($val, "user/");
+                if($s == 0){
+
+                    $resultArr["mailFolder"][$val]["name"] = substr($val, strpos($val, "/", 5));
+
+                    $curAcl = $this->get("private_folderACLS", array("user/wiwu/Posteingang"));
+                    if(is_array($curAcl)){
+                        foreach($curAcl as $aclkey => $aclval){
+
+                            if (empty($aclkey)){
+                                $resultArr["mailFolder"][$val]["acls"][] = array( 
+                                        "name" => $aclkey, 
+                                        "acl"  => aclval,  
+                                        "type"=>"user");
+                            }
+                            else{
+                                $resultArr["mailFolder"][$val]["acls"][] = array( 
+                                        "name" => $aclkey, 
+                                        "acl"  => GROUPWARE_RIGHTS_NONE,  
+                                        "type"=>"user");
+                            }
+                        }
+                    }
+                }
+                else{
+                    // this case should never happen - unsetting the array anyway.
+                    unset($resultArr["mailFolder"][$val]);
+                }
+            }
+
+            /*
+               "RIGHTS_NONE", 0);
+               "RIGHTS_READ",  LOOKUP | READ | STATUS);
+               "RIGHTS_POST", RIGHTS_READ | POST);
+               "RIGHTS_APPEND", RIGHTS_POST | INSERT);
+               "RIGHTS_WRITE", RIGHTS_APPEND | WRITE | CREATE | DELETE);
+               ""
              */
-			
-			//need a status for the array - setting them now for the example data.
+
+            //need a status for the array - setting them now for the example data.
             foreach($resultArr["mailFolder"] as $id => $folder){
                 $resultArr["mailFolder"][$id]['status'] = '';
             }
@@ -239,10 +239,10 @@ class GroupwareDao{
                 $this->groupwarePluginRef->isFeatureEnabled("mailBoxWarnLimit") || 
                 $this->groupwarePluginRef->isFeatureEnabled("mailBoxSendSizelimit") || 
                 $this->groupwarePluginRef->isFeatureEnabled("mailBoxHardSizelimit")){
-            
+
             // example Array for Quota
             $quota = $this->get("quotaSize", array($uid));
-            
+
             $resultArr["quotaSize"] = $quota["usage"];
             $resultArr["quotaSize"] = $quota["hold"];
             if($quota["warn_limit"] > 0){
@@ -267,11 +267,11 @@ class GroupwareDao{
                 $resultArr["mailBoxHardSizelimitValue"] = 0;
             }
         }
-		//get the current MailLimits ... if this feature is enabled.
-		if($this->groupwarePluginRef->isFeatureEnabled("mailLimit")){
-			$mailLimits = $this->get("mailLimit", array($uid));
-			
-			if($mailLimits["receive"] > 0){
+        //get the current MailLimits ... if this feature is enabled.
+        if($this->groupwarePluginRef->isFeatureEnabled("mailLimit")){
+            $mailLimits = $this->get("mailLimit", array($uid));
+
+            if($mailLimits["receive"] > 0){
                 $resultArr["mailLimitReceiveEnabled"] = true;
                 $resultArr["mailLimitReceiveValue"] = $mailLimits["receive"];
             }else{
@@ -285,17 +285,17 @@ class GroupwareDao{
                 $resultArr["mailLimitSendEnabled"] = false;
                 $resultArr["mailLimitSendValue"] = 0; 	
             }
-		}		
+        }		
         //this function seems to be broken on the server.
         //addding dummy
 
         if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
-			$vacArray = $this->get("vacationMessage", array($uid));
-			
+            $vacArray = $this->get("vacationMessage", array($uid));
+
             $resultArr["vacationMessage"] = $vacArray["message"];
-			if(!empty($resultArr["vacationMessage"])){
-				$resultArr["vacationEnabled"] = true;
-			}
+            if(!empty($resultArr["vacationMessage"])){
+                $resultArr["vacationEnabled"] = true;
+            }
             //$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
         }   
         return $resultArr;

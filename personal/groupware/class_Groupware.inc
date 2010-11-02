@@ -785,8 +785,8 @@ class Groupware extends plugin
     {
         // Get rpc handle to create or update the account
         if(!$this->initially_was_account){
-            $this->rpcExec('gwAcctdAdd', $this->uid, $this->mailAddress);
-            if($this->rpcError){
+            $res = $this->rpcExec('gwAcctdAdd', $this->uid, $this->mailAddress);
+            if($res === NULL){
                 $message = _("Groupware account creation failed!");
                 msg_dialog::display(_("Error"), 
                     $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -797,9 +797,8 @@ class Groupware extends plugin
 
         // Save the primary Email Address.
         if($this->isFeatureEnabled("primaryMail")&& $this->hasFeaturebeenChanged("primaryMail")){
-            $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
-
-            if($this->rpcError){
+            $res = $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
+            if($res === NULL){
                 $message = _("Setting account mail address failed!");
                 msg_dialog::display(_("Error"), 
                         $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -812,8 +811,8 @@ class Groupware extends plugin
             if(!empty($this->alternateAddresses) 
                     && isset($this->alternateAddresses) 
                     && is_array($this->alternateAddresses)){
-                $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
-                if($this->rpcError){
+                $res = $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
+                if($res === NULL){
                     $message = _("Saving alternate addresses failed!");
                     msg_dialog::display(_("Error"), 
                             $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -829,8 +828,8 @@ class Groupware extends plugin
             $addresses = array();
             foreach($this->forwardingAddresses as $address) $addresses[$address] = TRUE;
 
-            $this->groupwareDao->save("forwardingAddresses", $this->uid, array($addresses));
-            if($this->rpcError){
+            $res = $this->groupwareDao->save("forwardingAddresses", $this->uid, array($addresses));
+            if($res === NULL){
                 $message = _("Saving forward addresses failed!");
                 msg_dialog::display(_("Error"), 
                         $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -852,8 +851,8 @@ class Groupware extends plugin
                     "hard_limit" => $this->quotaSize,
                     "hold" => $this->quotaSize);
 
-            $this->groupwareDao->save("quotaSize", $this->uid, $quota);
-            if($this->rpcError){
+            $res = $this->groupwareDao->save("quotaSize", $this->uid, $quota);
+            if($res === NULL){
                 $message = _("Saving quota failed!");
                 msg_dialog::display(_("Error"), 
                         $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -863,8 +862,8 @@ class Groupware extends plugin
 
         // Save account folders
         if($this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
-            $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
-            if($this->rpcError){
+            $res = $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
+            if($res === NULL){
                 $message = _("Saving mail folder failed!");
                 msg_dialog::display(_("Error"), 
                         $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -873,8 +872,8 @@ class Groupware extends plugin
         }
 
         if($this->isFeatureEnabled("mailLocation") && $this->hasFeaturebeenChanged("mailLocation")){
-            $this->groupwareDao->save("mailLocation", $this->uid, $this->mailLocation);
-            if($this->rpcError){
+            $res = $this->groupwareDao->save("mailLocation", $this->uid, $this->mailLocation);
+            if($res === NULL){
                 $message = _("Saving mail location failed!");
                 msg_dialog::display(_("Error"), 
                         $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -890,8 +889,8 @@ class Groupware extends plugin
             if(!$this->mailLimitSendEnabled){
                 $this->mailLimitSendValue = 0;
             }
-            $this->groupwareDao->save("mailLimit", $this->uid, array( $this->mailLimitSendValue, $this->mailLimitReceiveValue));
-            if($this->rpcError){
+            $res = $this->groupwareDao->save("mailLimit", $this->uid, array( $this->mailLimitSendValue, $this->mailLimitReceiveValue));
+            if($res === NULL){
                 $message = _("Saving mail limitations failed!");
                 msg_dialog::display(_("Error"), 
                         $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
@@ -903,12 +902,12 @@ class Groupware extends plugin
         if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
             if($this->vacationEnabled){
                 //setting an message means that the OOOReply is switched off.
-                $this->groupwareDao->save("vacationMessage", $this->uid, $this->vacationMessage);
+                $res = $this->groupwareDao->save("vacationMessage", $this->uid, $this->vacationMessage);
             }else{
                 //setting no message means that the OOOReply is switched off.
-                $this->groupwareDao->save("vacationMessage", $this->uid, null);
+                $res = $this->groupwareDao->save("vacationMessage", $this->uid, null);
             }
-            if($this->rpcError){
+            if($res === NULL){
                 $message = _("Saving vacation message failed!");
                 msg_dialog::display(_("Error"), 
                         $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),

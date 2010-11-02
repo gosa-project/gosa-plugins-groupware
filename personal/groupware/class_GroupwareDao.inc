@@ -9,7 +9,7 @@ class GroupwareDao{
     private $availableProperties;
     private $accountLocations;
 
-    private $groupwarePluginRef = False;
+    private $groupwarePluginRef = FALSE;
 
     private static $gwFeatures  = array(
             "primaryMail" => array(	"get"=>"gwAcctGetPrimaryMailAddress", 
@@ -153,7 +153,6 @@ class GroupwareDao{
      */
     public function getComprehensiverUser( $uid)
     {
-        //$hi = $this->groupwarePluginRef->rpcExec('gwGetCapabilities');
         $resultArr = array();
 
         if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
@@ -165,10 +164,7 @@ class GroupwareDao{
         }
 
         if($this->groupwarePluginRef->isFeatureEnabled("forwardingAddresses")){
-            $FWaddresses = $this->get("forwardingAddresses", array($uid));		
-            if($FWaddresses) {
-                $resultArr["forwardingAddresses"] = array(key($FWaddresses));
-            }
+            $resultArr["forwardingAddresses"] = $this->get("forwardingAddresses", array($uid));		
         }
 
         // Location dropdownlist - only readable
@@ -177,7 +173,7 @@ class GroupwareDao{
             $resultArr["mailLocation"] = $this->groupwarePluginRef->rpcExec('gwAcctGetLocation',$uid);
         }
 
-        //getThefolderList from the user
+        // Load account folders.
         if($this->groupwarePluginRef->isFeatureEnabled("mailFolder")){
 
             // Get groupware folders for the current user.
@@ -210,7 +206,6 @@ class GroupwareDao{
             }
         }
 
-        //TODO: getLocation muss ebenfalls geholt werden 
         // Quota quotaUsage, quotaSize
         if($this->groupwarePluginRef->isFeatureEnabled("quotaSize") || 
                 $this->groupwarePluginRef->isFeatureEnabled("quotaUsage") || 
@@ -224,57 +219,48 @@ class GroupwareDao{
             $resultArr["quotaSize"] = $quota["usage"];
             $resultArr["quotaSize"] = $quota["hold"];
             if($quota["warn_limit"] > 0){
-                $resultArr["mailBoxWarnLimitEnabled"] = true;
+                $resultArr["mailBoxWarnLimitEnabled"] = TRUE;
                 $resultArr["mailBoxWarnLimitValue"] = $quota["warn_limit"];
             }else{
-                $resultArr["mailBoxWarnLimitEnabled"] = false;
-                $resultArr["mailBoxWarnLimitValue"] = 0;
+                $resultArr["mailBoxWarnLimitEnabled"] = FALSE;
             }
             if($quota["send_limit"] > 0){
-                $resultArr["mailBoxSendSizelimitEnabled"] = True;
+                $resultArr["mailBoxSendSizelimitEnabled"] = TRUE;
                 $resultArr["mailBoxSendSizelimitValue"] = $quota["send_limit"];
             }else{
                 $resultArr["mailBoxSendSizelimitEnabled"] = FALSE;
-                $resultArr["mailBoxSendSizelimitValue"] = 0; 	
             }
             if($quota["hard_limit"] > 0){
-                $resultArr["mailBoxHardSizelimitEnabled"] = True;
+                $resultArr["mailBoxHardSizelimitEnabled"] = TRUE;
                 $resultArr["mailBoxHardSizelimitValue"] = $quota["hard_limit"];	
             }else{
                 $resultArr["mailBoxHardSizelimitEnabled"] = FALSE;
-                $resultArr["mailBoxHardSizelimitValue"] = 0;
             }
         }
-        //get the current MailLimits ... if this feature is enabled.
+
+        // Load account limitations 
         if($this->groupwarePluginRef->isFeatureEnabled("mailLimit")){
             $mailLimits = $this->get("mailLimit", array($uid));
 
             if($mailLimits["receive"] > 0){
-                $resultArr["mailLimitReceiveEnabled"] = true;
+                $resultArr["mailLimitReceiveEnabled"] = TRUE;
                 $resultArr["mailLimitReceiveValue"] = $mailLimits["receive"];
             }else{
-                $resultArr["mailLimitReceiveEnabled"] = false;
-                $resultArr["mailLimitReceiveValue"] = 0;
+                $resultArr["mailLimitReceiveEnabled"] = FALSE;
             }
             if($mailLimits["send"] > 0){
-                $resultArr["mailLimitSendEnabled"] = true;
+                $resultArr["mailLimitSendEnabled"] = TRUE;
                 $resultArr["mailLimitSendValue"] = $mailLimits["send"];
             }else{
-                $resultArr["mailLimitSendEnabled"] = false;
-                $resultArr["mailLimitSendValue"] = 0; 	
+                $resultArr["mailLimitSendEnabled"] = FALSE;
             }
         }		
-        //this function seems to be broken on the server.
-        //addding dummy
 
+        #FIXME Validate the vacation message handling, seems to be broken on the server side.
         if($this->groupwarePluginRef->isFeatureEnabled("vacationMessage")){
             $vacArray = $this->get("vacationMessage", array($uid));
-
             $resultArr["vacationMessage"] = $vacArray["message"];
-            if(!empty($resultArr["vacationMessage"])){
-                $resultArr["vacationEnabled"] = true;
-            }
-            //$resultArr["vacationMessage"] = "dummy Vacation message - (getOutOfOfficeReply currently throws errors )";
+            $resultArr["vacationEnabled"] = !empty($resultArr["vacationMessage"]);    
         }   
         return $resultArr;
     }

@@ -859,7 +859,7 @@ class Groupware extends plugin
             }
         }
 
-        if($this->isFeatureEnabled("mailLocation") && $this->hasFeaturebeenChanged("mailLocation")){
+        if($this->isFeatureEnabled("mailLocations") && $this->hasFeaturebeenChanged("mailLocation")){
             $res = $this->groupwareDao->save("mailLocation", $this->uid, $this->mailLocation);
             if($res === NULL){
                 $message = _("Saving mail location failed!");

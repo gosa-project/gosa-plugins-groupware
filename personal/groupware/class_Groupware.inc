@@ -24,9 +24,6 @@ new GroupwareDefinitions();
 
 class Groupware extends plugin
 {
-    // Folder related attributes, will be moved into a speperate widget late on
-    var $currentSelectedFolder = "";     
-
     var $plHeadline = "Groupware";
     var $plDescription = "GOsa groupware extension.";
     var $pathTitle = "GOsa groupware extension.";
@@ -499,13 +496,6 @@ class Groupware extends plugin
             $smarty->assign($feature."_isActive", $state);
         }
 
-        $smarty->assign("currentSelectedFolder", $this->currentSelectedFolder);
-        $folderEntries = array();
-        if(isset($this->mailFolder[$this->currentSelectedFolder])) {
-            $folderEntries = $this->mailFolder[$this->currentSelectedFolder];
-        }
-        $smarty->assign("folderEntries", $folderEntries);
-
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
             $smarty->assign("displayTemplateSelector", "true");
@@ -758,12 +748,12 @@ class Groupware extends plugin
      */
     function remove_from_parent()
     {
-        // Get rpc handle to remove the account
-        if($this->initially_was_account){
-            if($this->rpcExec('gwAcctDel', $this->uid) === NULL){
-                msg_dialog::display(_("Error"), _("Groupware account removal failed!"), ERROR_DIALOG);
-            }
-        }
+#       // Get rpc handle to remove the account
+#       if($this->initially_was_account){
+#           if($this->rpcExec('gwAcctDel', $this->uid) === NULL){
+#               msg_dialog::display(_("Error"), _("Groupware account removal failed!"), ERROR_DIALOG);
+#           }
+#       }
     }
 
 
@@ -882,16 +872,26 @@ class Groupware extends plugin
         //checke features only if they are enabled.
         $messages = plugin::check();
 
-        //checks for feature "primaryMail" 
-        if ($this->isFeatureEnabled("mailBoxWarnLimit")){		
+        // For newly created users!
+        // We can input every 'uid' we want for new users, so we've to check if uids weren't used yet.
+        if(!$this->initially_was_account){
+            $exists = $this->rpcExec('gwAcctExists', $this->uid);
+            if($this->rpcError){
+                $messages[] = sprintf(_("Failed to validate groupware account."), $this->uid);
+            }elseif($exists){
+                $messages[] = sprintf(_("Account id, already used '%s'!"), $this->uid);
+            }
+        } 
+    
+        // Check for valid mailAddresses
+        if ($this->isFeatureEnabled("primaryMail")){		
+
             if(!tests::is_email ($this->mailAddress)){
                 $messages[] = msgPool::invalid(_("Mail address"),$this->mailAddress , "", "user@exdom.intranet.gonicus.de knibbel");
             }
                 
             // Ensure that the mailAddress isn't used yet.
-            if(!count($messages) && ( 
-                    !$this->initially_was_account || 
-                    $this->mailAddress != $this->saved_attributes['primaryMail'])){
+            if(!$this->initially_was_account || $this->mailAddress != $this->saved_attributes['primaryMail']){
                 $exists = $this->rpcExec("gwMailAddressExists", $this->mailAddress);
                 if($this->rpcError){
                     $messages[] = sprintf(_("Failed to validate mail address '%s'."), $this->mailAddress);
@@ -900,18 +900,6 @@ class Groupware extends plugin
                 }
             }
         }
-
-#       //checks for feature "quotaUsage"                
-#       if ($this->isFeatureEnabled("quotaUsage")){}
-#
-#       //checks for feature "mailLocations"				
-#       if ($this->isFeatureEnabled("mailLocations")){}
-#
-#       //checks for feature "mailFilter"                
-#       if ($this->isFeatureEnabled("mailFilter")){}
-#
-#       //checks for feature "alternateAddresses"        
-#       if ($this->isFeatureEnabled("alternateAddresses")){}
 
         //checks for feature "forwardingAddresses" 
         if ($this->isFeatureEnabled("forwardingAddresses")){		
@@ -933,8 +921,6 @@ class Groupware extends plugin
             }	
         }			
 
-        //checks for feature "vacationMessage"   
-        if ($this->isFeatureEnabled("vacationMessage")){}
         //checks for feature "mailLimit" - integer 
         if ($this->isFeatureEnabled("mailLimit")){
             if (!is_numeric($this->mailLimitReceiveValue)){
@@ -968,6 +954,9 @@ class Groupware extends plugin
             }
         }
 
+#       //checks for feature "vacationMessage"   
+#       if ($this->isFeatureEnabled("vacationMessage")){}
+#
 #       //checks for feature "mailBoxAutomaticRemoval"   
 #       if ($this->isFeatureEnabled("mailBoxAutomaticRemoval")){}
 #
@@ -979,6 +968,19 @@ class Groupware extends plugin
 #
 #       //checks for feature "mailFolder"	
 #       if ($this->isFeatureEnabled("mailFolder")){}
+#
+#       //checks for feature "quotaUsage"                
+#       if ($this->isFeatureEnabled("quotaUsage")){}
+#
+#       //checks for feature "mailLocations"				
+#       if ($this->isFeatureEnabled("mailLocations")){}
+#
+#       //checks for feature "mailFilter"                
+#       if ($this->isFeatureEnabled("mailFilter")){}
+#
+#       //checks for feature "alternateAddresses"        
+#       if ($this->isFeatureEnabled("alternateAddresses")){}
+
 
         return($messages);
     }

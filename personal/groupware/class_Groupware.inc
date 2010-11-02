@@ -767,12 +767,12 @@ class Groupware extends plugin
      */
     function remove_from_parent()
     {
-#       // Get rpc handle to remove the account
-#       if($this->initially_was_account){
-#           if($this->rpcExec('gwAcctDel', $this->uid) === NULL){
-#               msg_dialog::display(_("Error"), _("Groupware account removal failed!"), ERROR_DIALOG);
-#           }
-#       }
+        // Get rpc handle to remove the account
+        if($this->initially_was_account){
+            if($this->rpcExec('gwAcctDel', $this->uid) === NULL){
+                msg_dialog::display(_("Error"), _("Groupware account removal failed!"), ERROR_DIALOG);
+            }
+        }
     }
 
 
@@ -785,20 +785,25 @@ class Groupware extends plugin
     {
         // Get rpc handle to create or update the account
         if(!$this->initially_was_account){
-            $this->rpcExec('gwAcctAdd', $this->uid, $this->mailAddress);
+            $this->rpcExec('gwAcctdAdd', $this->uid, $this->mailAddress);
             if($this->rpcError){
-                msg_dialog::display(_("Error"), _("Groupware account creation failed!"), ERROR_DIALOG);
+                $message = _("Groupware account creation failed!");
+                msg_dialog::display(_("Error"), 
+                    $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                    ERROR_DIALOG);
                 return;
             }
-        }
-        if($this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
-            $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
         }
 
         // Save the primary Email Address.
         if($this->isFeatureEnabled("primaryMail")&& $this->hasFeaturebeenChanged("primaryMail")){
-            if(!empty($this->mailAddress )){
-                $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
+            $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
+
+            if($this->rpcError){
+                $message = _("Setting account mail address failed!");
+                msg_dialog::display(_("Error"), 
+                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                        ERROR_DIALOG);
             }
         }
 
@@ -808,22 +813,31 @@ class Groupware extends plugin
                     && isset($this->alternateAddresses) 
                     && is_array($this->alternateAddresses)){
                 $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
-
+                if($this->rpcError){
+                    $message = _("Saving alternate addresses failed!");
+                    msg_dialog::display(_("Error"), 
+                            $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                            ERROR_DIALOG);
+                }
             }
         }
+
         // Save forwardingAddresses
         if($this->isFeatureEnabled("forwardingAddresses") && $this->hasFeaturebeenChanged("forwardingAddresses")){
-            if(empty($this->forwardingAddresses)){
-                $this->groupwareDao->save("forwardingAddresses", $this->uid, array(array()));
-            }
-            if(is_array($this->forwardingAddresses) && isset($this->forwardingAddresses[0])){
 
-                // Only the first Address will be set as forward Address.
-                $fw = array();
-                $fw[$this->forwardingAddresses[0]] = true;
-                $this->groupwareDao->save("forwardingAddresses", $this->uid, array($fw));
+            // Transform simple address array into,  $addresses[address] = ForwardFlag;
+            $addresses = array();
+            foreach($this->forwardingAddresses as $address) $addresses[$address] = TRUE;
+
+            $this->groupwareDao->save("forwardingAddresses", $this->uid, array($addresses));
+            if($this->rpcError){
+                $message = _("Saving forward addresses failed!");
+                msg_dialog::display(_("Error"), 
+                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                        ERROR_DIALOG);
             }
         }
+
         //Save quota - it consists of four values... 
         if( ($this->isFeatureEnabled("mailBoxWarnLimit") ||
                     $this->isFeatureEnabled("mailBoxSendSizelimit") ||
@@ -839,25 +853,34 @@ class Groupware extends plugin
                     "hold" => $this->quotaSize);
 
             $this->groupwareDao->save("quotaSize", $this->uid, $quota);
+            if($this->rpcError){
+                $message = _("Saving quota failed!");
+                msg_dialog::display(_("Error"), 
+                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                        ERROR_DIALOG);
+            }
         }
 
-        // Todo: checks for feature "mailLocations"				
-        if($this->isFeatureEnabled("mailLocations") && $this->hasFeaturebeenChanged("mailLocations")){
-            //$this->groupwareDao->save("mailLocations", $this->uid, $this->mailLocations);
+        // Save account folders
+        if($this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
+            $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
+            if($this->rpcError){
+                $message = _("Saving mail folder failed!");
+                msg_dialog::display(_("Error"), 
+                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                        ERROR_DIALOG);
+            }
         }
 
-        //checks for feature "mailFilter"                 
-        if($this->isFeatureEnabled("mailFilter") && $this->hasFeaturebeenChanged("mailFilter")){}
-
-        //checks for feature "mailBoxAutomaticRemoval"   
-        if($this->isFeatureEnabled("mailBoxAutomaticRemoval") && $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval")){}
-
-        //checks for feature "localDeliveryOnly"         
-        if($this->isFeatureEnabled("localDeliveryOnly") && $this->hasFeaturebeenChanged("localDeliveryOnly")){}
-
-        //checks for feature "dropOwnMails"              
-        if($this->isFeatureEnabled("dropOwnMails") && $this->hasFeaturebeenChanged("dropOwnMails")){}
-
+        if($this->isFeatureEnabled("mailLocation") && $this->hasFeaturebeenChanged("mailLocation")){
+            $this->groupwareDao->save("mailLocation", $this->uid, $this->mailLocation);
+            if($this->rpcError){
+                $message = _("Saving mail location failed!");
+                msg_dialog::display(_("Error"), 
+                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                        ERROR_DIALOG);
+            }
+        }
 
         //checks for feature "mailLimit"              
         if($this->isFeatureEnabled("mailLimit") && $this->hasFeaturebeenChanged("mailLimit")){
@@ -868,19 +891,46 @@ class Groupware extends plugin
                 $this->mailLimitSendValue = 0;
             }
             $this->groupwareDao->save("mailLimit", $this->uid, array( $this->mailLimitSendValue, $this->mailLimitReceiveValue));
+            if($this->rpcError){
+                $message = _("Saving mail limitations failed!");
+                msg_dialog::display(_("Error"), 
+                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                        ERROR_DIALOG);
+            }
         }
+
+
         if($this->isFeatureEnabled("vacationMessage")&& $this->hasFeaturebeenChanged("vacationMessage")){
             if($this->vacationEnabled){
                 //setting an message means that the OOOReply is switched off.
                 $this->groupwareDao->save("vacationMessage", $this->uid, $this->vacationMessage);
-            }
-            else{
+            }else{
                 //setting no message means that the OOOReply is switched off.
                 $this->groupwareDao->save("vacationMessage", $this->uid, null);
             }
+            if($this->rpcError){
+                $message = _("Saving vacation message failed!");
+                msg_dialog::display(_("Error"), 
+                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
+                        ERROR_DIALOG);
+            }
         }
+
+
         //checks for feature "quotaUsage"                
         //not to be saved
+
+#       //checks for feature "mailFilter"                 
+#       if($this->isFeatureEnabled("mailFilter") && $this->hasFeaturebeenChanged("mailFilter")){}
+#
+#       //checks for feature "mailBoxAutomaticRemoval"   
+#       if($this->isFeatureEnabled("mailBoxAutomaticRemoval") && $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval")){}
+#
+#       //checks for feature "localDeliveryOnly"         
+#       if($this->isFeatureEnabled("localDeliveryOnly") && $this->hasFeaturebeenChanged("localDeliveryOnly")){}
+#
+#       //checks for feature "dropOwnMails"              
+#       if($this->isFeatureEnabled("dropOwnMails") && $this->hasFeaturebeenChanged("dropOwnMails")){}
     }
 
 

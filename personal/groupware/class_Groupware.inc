@@ -135,6 +135,9 @@ class Groupware extends plugin
      */
     public function isFeatureEnabled($featureName)
     {
+        if(!isset($this->enabledFeatures[$featureName])){
+            trigger_error("No such feature '{$featureName}'!");
+        }
         return(isset($this->enabledFeatures[$featureName]) && $this->enabledFeatures[$featureName]);
     }
 
@@ -206,11 +209,13 @@ class Groupware extends plugin
             $this->enabledFeatures[$name] = $active;
         }
 
-        // If this is a new user, then do not try to check account status 
-        //  the account cannot exists.			
+        // Load mail locations.
         if ($this->isFeatureEnabled("mailLocations")){
             $this->mailLocations = $this->groupwareDao->get('mailLocations', array());
         }
+
+        // If this is a new user, then do not try to check the account status,
+        //  the account cannot exists.			
         if($this->dn == "new"){
             $this->initially_was_account = $this->is_account = FALSE;
             $this->accountInitialized = TRUE;
@@ -531,20 +536,30 @@ class Groupware extends plugin
                 $this->rpcExec('gwGetCapabilities');
             }
 
+            // Get posted mail address modifications
+            if(isset($_POST['mailAddress']) && $this->acl_is_writeable('mailAddress') && $this->isFeatureEnabled('primaryMail')){
+                $this->mailAddress = get_post('mailAddress');
+            }
+
             // Get ui modifications and store them in the class.
-            $testAttrs = array("mailAddress","mailLocation","quotaUsage","quotaSize",
+            $testAttrs = array("mailLocation","quotaUsage","quotaSize",
                     "alternateAddresses","forwardingAddresses","vacationMessage");
             foreach($testAttrs as $attr){
-                if(isset($_POST[$attr]) && $this->acl_is_writeable($attr)){
+                if(isset($_POST[$attr]) && $this->acl_is_writeable($attr) && $this->isFeatureEnabled($attr)){
                     $this->$attr = get_post($attr);
                 }
             }
 
             // Detect checkbox states 
-            $checkAttrs = array("mailBoxWarnLimit","mailBoxSendSizelimit",
-                    "mailBoxHardSizelimit","mailBoxAutomaticRemoval", "mailLimitReceive", "mailLimitSend");
-            foreach($checkAttrs as $boxname){
-                if($this->acl_is_writeable($boxname)){
+            $checkAttrs = array(
+                    "mailBoxWarnLimit" => "mailBoxWarnLimit",
+                    "mailBoxSendSizelimit" => "mailBoxSendSizelimit",
+                    "mailBoxHardSizelimit" => "mailBoxHardSizelimit",
+                    "mailBoxAutomaticRemoval" => "mailBoxAutomaticRemoval", 
+                    "mailLimitReceive" => "mailLimit", 
+                    "mailLimitSend" => "mailLimit");
+            foreach($checkAttrs as $boxname => $feature){
+                if($this->acl_is_writeable($boxname) && $this->isFeatureEnabled($feature)){
                     $v = $boxname."Value"; 
                     $e = $boxname."Enabled"; 
                     $this->$e = isset($_POST[$e]);
@@ -554,13 +569,17 @@ class Groupware extends plugin
                 }
             }
 
-            if($this->acl_is_writeable('vacationMessage')){
+            // Check for a changed vacation status
+            if($this->acl_is_writeable('vacationMessage') && $this->isFeatureEnabled('vacationMessage')){
                 $this->vacationEnabled = isset($_POST['vacationEnabled']);
             }
+
             // Get posted flag changes 
             $flagAttrs = array("localDeliveryOnly","dropOwnMails");
             foreach($flagAttrs as $attr){
-                $this->$attr = isset($_POST[$attr]);
+                if($this->acl_is_writeable($attr) && $this->isFeatureEnabled($attr)){
+                    $this->$attr = isset($_POST[$attr]);
+                }
             }
         }
     }

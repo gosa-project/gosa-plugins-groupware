@@ -788,9 +788,7 @@ class Groupware extends plugin
             $res = $this->rpcExec('gwAcctdAdd', $this->uid, $this->mailAddress);
             if($res === NULL){
                 $message = _("Groupware account creation failed!");
-                msg_dialog::display(_("Error"), 
-                    $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                    ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
                 return;
             }
         }
@@ -800,9 +798,7 @@ class Groupware extends plugin
             $res = $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
             if($res === NULL){
                 $message = _("Setting account mail address failed!");
-                msg_dialog::display(_("Error"), 
-                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                        ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
 
@@ -814,9 +810,7 @@ class Groupware extends plugin
                 $res = $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
                 if($res === NULL){
                     $message = _("Saving alternate addresses failed!");
-                    msg_dialog::display(_("Error"), 
-                            $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                            ERROR_DIALOG);
+                    msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
                 }
             }
         }
@@ -831,9 +825,7 @@ class Groupware extends plugin
             $res = $this->groupwareDao->save("forwardingAddresses", $this->uid, array($addresses));
             if($res === NULL){
                 $message = _("Saving forward addresses failed!");
-                msg_dialog::display(_("Error"), 
-                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                        ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
 
@@ -854,9 +846,7 @@ class Groupware extends plugin
             $res = $this->groupwareDao->save("quotaSize", $this->uid, $quota);
             if($res === NULL){
                 $message = _("Saving quota failed!");
-                msg_dialog::display(_("Error"), 
-                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                        ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
 
@@ -865,9 +855,7 @@ class Groupware extends plugin
             $res = $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
             if($res === NULL){
                 $message = _("Saving mail folder failed!");
-                msg_dialog::display(_("Error"), 
-                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                        ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
 
@@ -875,9 +863,7 @@ class Groupware extends plugin
             $res = $this->groupwareDao->save("mailLocation", $this->uid, $this->mailLocation);
             if($res === NULL){
                 $message = _("Saving mail location failed!");
-                msg_dialog::display(_("Error"), 
-                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                        ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
 
@@ -892,9 +878,7 @@ class Groupware extends plugin
             $res = $this->groupwareDao->save("mailLimit", $this->uid, array( $this->mailLimitSendValue, $this->mailLimitReceiveValue));
             if($res === NULL){
                 $message = _("Saving mail limitations failed!");
-                msg_dialog::display(_("Error"), 
-                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                        ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
 
@@ -909,9 +893,7 @@ class Groupware extends plugin
             }
             if($res === NULL){
                 $message = _("Saving vacation message failed!");
-                msg_dialog::display(_("Error"), 
-                        $message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),
-                        ERROR_DIALOG);
+                msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
 

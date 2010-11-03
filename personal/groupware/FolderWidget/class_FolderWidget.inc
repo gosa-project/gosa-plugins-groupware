@@ -47,6 +47,8 @@ class FolderWidget extends plugin
     private $baseEntryMap = array();
     private $permissions = array();
 
+    protected $displayButtons = TRUE;
+
     
     /*! \brief  Constructs the widget and initializes all required sub-widgets.
      */
@@ -71,6 +73,12 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing->setFolderRoot($this->rootBase);
     }
 
+
+    function showButtons($bool = TRUE)
+    {
+        $this->displayButtons = $bool;
+    }
+    
 
     /*! \brief  Updates the list of all selectable ACLs
      *  @param  Array   The list of acls to use 
@@ -253,6 +261,12 @@ class FolderWidget extends plugin
     }
 
 
+    function dialogOpened()
+    {
+        return($this->dialog != FALSE);
+    }
+
+
     /*! \brief  Removes a given folder, internally it is just marked with status => 'removed';
      */
     function removeByBase($base)
@@ -341,6 +355,9 @@ class FolderWidget extends plugin
         // Generate the listing output 
         session::set('FolderWidgetListing::folderList', $this->folderList);
         $this->FolderWidgetListing->setFolderList($this->folderList);
+
+        $smarty = get_smarty();
+        $smarty->assign("SHOW_BUTTONS", $this->displayButtons);
         $str = $this->FolderWidgetListing->execute();
 
         if($this->dialog){

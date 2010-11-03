@@ -18,8 +18,11 @@
 </div>
 
 <div class="clear"></div>
+
+{if $SHOW_BUTTONS}
 <hr>
 <div class='plugin-actions'>
     <button name='FolderWidget_ok'>{msgPool type=okButton}</button>
     <button name='FolderWidget_cancel'>{msgPool type=cancelButton}</button>
 </div>
+{/if}

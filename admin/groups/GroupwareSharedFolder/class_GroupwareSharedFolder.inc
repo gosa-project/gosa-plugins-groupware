@@ -113,6 +113,7 @@ class GroupwareSharedFolder extends plugin
                     $entry = array();
                     $entry['name'] = $name;
                     $entry['status'] = '';
+                    $entry['acls'] = array();
                     $acls = array();        
                     $acls = $rpc->gwFolderGetMembers($path);
                     if(!$rpc->success()){
@@ -123,7 +124,9 @@ class GroupwareSharedFolder extends plugin
                         msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
                         return;
                     }
-                    $entry['acls'] = $acls;
+                    foreach($acls as $name => $acl){
+                        $entry['acls'][] = array('type' => 'user', 'acl' => $acl, 'name' => $name);
+                    }
                     $folderList[$path] = $entry;
                 }
             }
@@ -152,7 +155,6 @@ class GroupwareSharedFolder extends plugin
     function execute()
     {
         plugin::execute();
-
 
         // Initialization failed - Display a stripped template which allows 
         //  to retry initialization
@@ -264,6 +266,8 @@ class GroupwareSharedFolder extends plugin
      */  
     function save()
     {
+        $rpc = $this->config->getRpcHandle();
+
         // Walk through folders and perform requested actions
         foreach($this->folderList as $path => $folder){
 
@@ -271,25 +275,57 @@ class GroupwareSharedFolder extends plugin
             $path = preg_replace("/\{%cn\}/", $this->cn, $path);
             $folder['name'] = preg_replace("/\{%cn\}/", $this->cn, $folder['name']);
 
-            // Call requested backend methods, for added/removed
+            // Remove shared folder.
             if($folder['status'] == 'removed'){
-                echo "<br>Remove folder {$path}";
-                continue;
-            }
-            if($folder['status'] == 'added'){
-                echo "<br>Add folder {$path}";
-                continue;
-            }
-            
-            // Set members 
-            echo "<br>Set members for {$path} ";
-            $members   = array();
-            foreach($folder['acls'] as $id => $data) $members[] = $data['name'];
-            print_a($members);
+                $rpc->gwFolderDel($path);
+                if(!$rpc->success()){
+                    $message = sprintf(_("Failed to remove shared folder '%s'! Error was: '%s'."),
+                            $path, $rpc->get_error());
+                    msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                }
 
-            // Set permissions
-            foreach($folder['acls'] as $id => $data){
-                echo "<br>Set acls for {$data['name']} : {$data['acl']}";
+                echo "<br>Removed {$path}";
+                continue;
+            }
+
+            // Add newly created folders 
+            if($folder['status'] == 'added'){
+                $rpc->gwFolderAdd($path);
+                if(!$rpc->success()){
+                    $message = sprintf(_("Failed to create shared folder '%s'! Error was: '%s'."),
+                            $path, $rpc->get_error());
+                    msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                }
+
+                echo "<br>Added {$path}";
+            }
+          
+            // Collect old and new members and their acls, to be able to compare them later.
+            $oldList = $this->saved_attributes['folderList'];
+            $oldAcls = array();
+            $newAcls = array();
+            $oldMembers = array();
+            $newMembers = array();
+            if(isset($oldList[$path])){
+                foreach($oldList[$path]['acls'] as $entry){
+                    $oldMembers[] = $entry['name'];
+                    $oldAcls[$entry['name']] = $entry['acl'];
+                }
+            }
+            foreach($folder['acls'] as $entry){
+                $newMembers[] = $entry['name'];
+                $newAcls[$entry['name']] = $entry['acl'];
+            }
+
+            // Check if member list has changed.
+            if(array_differs($newMembers,$oldMembers) || array_differs($oldAcls, $newAcls)){
+                $rpc->gwFolderSetMembers($path, $newAcls);
+                if(!$rpc->success()){
+                    $message = sprintf(_("Failed to create shared folder '%s'! Error was: '%s'."),
+                            $path, $rpc->get_error());
+                    msg_dialog::display(_("Error"),msgPool::rpcError($message), ERROR_DIALOG);
+                }
+                echo "<br>Updating members for {$path} ";
             }
         }
     }

@@ -196,30 +196,46 @@ class GroupwareSharedFolder extends plugin
           Folder editor
          ****************/
 
-        if(isset($_POST['FolderWidget_cancel'])) $this->FolderWidget = NULL;
-        if(isset($_POST['FolderWidget_ok'])){
-            $this->FolderWidget->save_object();
-            $msgs = $this->FolderWidget->check();
-            if(count($msgs)){
-                msg_dialog::displayChecks($msgs);
-            }else{
-                $this->folderList = $this->FolderWidget->save();
-                $this->FolderWidget = NULL;
-            }
-        }
-        if(isset($_POST['configureFolder'])){
+
+        if(!$this->FolderWidget){
             $this->FolderWidget = new FolderWidget($this->config,$this->folderList, $this->folderPrefix);
             $this->FolderWidget->setPermissions(GroupwareDefinitions::getPermissions());
             $this->FolderWidget->acl_base = $this->acl_base;
             $this->FolderWidget->acl_category = $this->acl_category;
+            $this->FolderWidget->showButtons(FALSE);
         }
-        $this->dialog = FALSE;
-        if($this->FolderWidget instanceOf FolderWidget){
-            $this->FolderWidget->save_object();
-            $this->dialog = TRUE;
-            return($this->FolderWidget->execute());
-        }
+        $this->dialog = $this->FolderWidget->dialogOpened();       
+        $this->folderList = $this->FolderWidget->save();
+        return($this->FolderWidget->execute());
 
+
+#       ONCE WE HAVE MORE FEATURE THAN JUST THE FOLDER SETTINGS, 
+#       ENABLE THIS AGAIN AN REMOVE THE ABOVE LINES.
+#
+#       if(isset($_POST['FolderWidget_cancel'])) $this->FolderWidget = NULL;
+#       if(isset($_POST['FolderWidget_ok'])){
+#           $this->FolderWidget->save_object();
+#           $msgs = $this->FolderWidget->check();
+#           if(count($msgs)){
+#               msg_dialog::displayChecks($msgs);
+#           }else{
+#               $this->folderList = $this->FolderWidget->save();
+#               $this->FolderWidget = NULL;
+#           }
+#       }
+#       if(isset($_POST['configureFolder'])){
+#           $this->FolderWidget = new FolderWidget($this->config,$this->folderList, $this->folderPrefix);
+#           $this->FolderWidget->setPermissions(GroupwareDefinitions::getPermissions());
+#           $this->FolderWidget->acl_base = $this->acl_base;
+#           $this->FolderWidget->acl_category = $this->acl_category;
+#       }
+#       $this->dialog = FALSE;
+#       if($this->FolderWidget instanceOf FolderWidget){
+#           $this->FolderWidget->save_object();
+#           $this->dialog = TRUE;
+#           return($this->FolderWidget->execute());
+#       }
+#
 
         /****************
           Generate HTML output
@@ -249,6 +265,7 @@ class GroupwareSharedFolder extends plugin
         if(isset($_POST['GroupwareSharedFolder_posted'])){
             plugin::save_object();
         }
+        $this->FolderWidget->save_object();
     }
 
 
@@ -266,6 +283,7 @@ class GroupwareSharedFolder extends plugin
      */  
     function save()
     {
+        $this->folderList = $this->FolderWidget->save();
         $rpc = $this->config->getRpcHandle();
 
         // Walk through folders and perform requested actions
@@ -346,6 +364,9 @@ class GroupwareSharedFolder extends plugin
                 _("Groups cannot be renamed, while their groupware extension is active, please use the intial name '%s' again!"),
                 $this->orig_cn);
         }
+
+        // Merge Folder messages.
+        $messages = array_merge($messages,$this->FolderWidget->check());
 
         return($messages);
     }

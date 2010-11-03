@@ -204,9 +204,10 @@ class GroupwareSharedFolder extends plugin
             $this->FolderWidget->acl_category = $this->acl_category;
             $this->FolderWidget->showButtons(FALSE);
         }
-        $this->dialog = $this->FolderWidget->dialogOpened();       
         $this->folderList = $this->FolderWidget->save();
-        return($this->FolderWidget->execute());
+        $str = $this->FolderWidget->execute();
+        $this->dialog = $this->FolderWidget->dialogOpened();       
+        return($str);
 
 
 #       ONCE WE HAVE MORE FEATURE THAN JUST THE FOLDER SETTINGS, 

@@ -265,7 +265,7 @@ class GroupwareSharedFolder extends plugin
         if(isset($_POST['GroupwareSharedFolder_posted'])){
             plugin::save_object();
         }
-        $this->FolderWidget->save_object();
+        if($this->FolderWidget) $this->FolderWidget->save_object();
     }
 
 

@@ -273,8 +273,9 @@ class FolderWidget extends plugin
     {
         // Do not allow to remove the root base.
         // This would mean the account itself was removed.
-        if($base = $this->rootBase) return;
-    
+        if($base == $this->rootBase) return;
+   
+ 
         $this->_recursiveRemoveByBase($this->folderList['recursive'], $base);
         $this->_recursiveRemoveByBase($this->folderList['linear'], $base);
         $this->FolderWidgetListing->setFolderList($this->folderList);

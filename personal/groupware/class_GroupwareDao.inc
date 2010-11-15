@@ -10,6 +10,7 @@ class GroupwareDao{
     private $accountLocations;
 
     private $groupwarePluginRef = FALSE;
+	
 
     private static $gwFeatures  = array(
             "primaryMail" => array(	"get"=>"gwAcctGetPrimaryMailAddress", 
@@ -59,7 +60,13 @@ class GroupwareDao{
                     "save"=>"gwFolderSetMembers",
                     "delete"=>"gwFolderDelMember"),
             "mailLimit" => array("get"=>"gwAcctGetMailLimit",
-                    "save"=>"gwAcctSetMailLimit")
+                    "save"=>"gwAcctSetMailLimit"),
+					
+			//function for speedup
+			"folderListWithMembers" => array(
+						"get"=>"gwFolderListWithMembers"),
+			"comprehensiveUser" => array(
+                        "get"=>'gwAcctGetComprehensiveUser')
                 );
 
 
@@ -153,8 +160,58 @@ class GroupwareDao{
      */
     public function getComprehensiverUser( $uid)
     {
-        $resultArr = array();
+		if($this->groupwarePluginRef->isFeatureEnabled("comprehensiveUser")){
+			return $this->getComprehensiverUserCompact($uid);
+		}
+		else{
+			return $this->getComprehensiverUserSeparate($uid);
+		}
+	}
+	private function getComprehensiverUserCompact($uid){
+		
+		$resultArr = array();
+		
+		if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
+            $resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
+         
+        }
+		$comp = $this->get("comprehensiveUser", array($uid));
+		$resultArr["primaryMail"] = $comp["primaryMail"];
+		$resultArr["alternateAddresses"] = $comp["alternateAddresses"];
+        $resultArr["forwardingAddresses"] = $comp["forwardingAddresses"];		
+		$resultArr["mailLocation"] = $comp["mailLocation"];
+		//Quota things.
+		$resultArr["quotaSize"] = $comp["quota"]["usage"];
 
+		$resultArr["mailBoxWarnLimitEnabled"] = TRUE;
+		$resultArr["mailBoxWarnLimitValue"] = $comp["quota"]["usage"];
+
+		$resultArr["mailBoxSendSizelimitEnabled"] = TRUE;
+		$resultArr["mailBoxSendSizelimitValue"] = $comp["quota"]["send_limit"];
+
+		$resultArr["mailBoxHardSizelimitEnabled"] = TRUE;
+		$resultArr["mailBoxHardSizelimitValue"] = $comp["quota"]["hard_limit"];	
+
+		//Mail Limits
+		$resultArr["mailLimitReceiveEnabled"] = TRUE;
+		$resultArr["mailLimitReceiveValue"] = $comp["mailLimits"]["receive"];
+
+		$resultArr["mailLimitSendEnabled"] = TRUE;
+		$resultArr["mailLimitSendValue"] = $comp["mailLimits"]["send"];
+
+		$resultArr["vacationMessage"] = $comp["vacation"]["message"];
+		
+		//Folder Stuff
+        $prefix = $this->groupwarePluginRef->folderPrefix;
+		$compFolders = $this->get("folderListWithMembers", array($prefix));
+		//ausgelagerte Funktion..
+		$resultArr["mailFolder"] = $this->translateGwAclsToGosaAcls($compFolders);
+	
+		return $resultArr;
+		
+	}
+	
+	private function getComprehensiverUserSeparate($uid){
         if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
             $resultArr["primaryMail"] = $this->get("primaryMail", array($uid));
         }
@@ -178,6 +235,16 @@ class GroupwareDao{
 
             // Get groupware folders for the current user.
             $prefix = $this->groupwarePluginRef->folderPrefix;
+			
+			$mFolder = $this->get("mailFolder", array($prefix));
+			
+			$newFolder = array();
+			foreach($mFolder as $key =>$val){
+				$newFolder[$val] = $this->get("private_folderACLS", array($val));
+			}
+			$resultArr["mailFolder"] = $this->translateGwAclsToGosaAcls($newFolder);
+			/*
+			old Stuff
             $resultArr["mailFolder"] = $this->get("mailFolder", array($prefix));
 
             // Walk through results an fill in missing values, like name, status and acls.
@@ -199,6 +266,7 @@ class GroupwareDao{
                     }
                 }
             }
+			*/
 
             // Add the required status field for each folder.
             foreach($resultArr["mailFolder"] as $id => $folder){
@@ -264,5 +332,26 @@ class GroupwareDao{
         }   
         return $resultArr;
     }
+	private function translateGwAclsToGosaAcls($compFolders){
+		$resultArr = array();
+		$folderAclDef = GroupwareDefinitions::getPermissions();
+		foreach ($compFolders as $fName => $fMembers) {
+			$resultArr[$fName]["name"] = preg_replace("/^.*\//","",$fName);
+			foreach($fMembers as $fMember => $fAcl){
+				 $aclLine = array(
+					"name" => $fMember, 
+                    "type"=>"user"
+					);
+				if(empty($fAcl)){
+					$resultArr[$fName]["acls"]["acl"] = GROUPWARE_RIGHTS_NONE;
+				}
+				else{
+					$resultArr[$fName]["acls"]["acl"] = $folderAclDef[$fAcl];
+				}
+				$resultArr[$fName]["acls"][] = $aclLine;
+			}
+		}
+		return $resultArr;
+	}
 }
 ?>

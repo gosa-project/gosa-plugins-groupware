@@ -197,7 +197,12 @@ class Groupware extends plugin
                 "mailFolder"				=> array(
                         'folderList','folderDel','folderAdd'),
                 "mailLimit"			=> array(
-                        'acctGetMailLimit', 'acctSetMailLimit')
+                        'acctGetMailLimit', 'acctSetMailLimit'),
+				//Just for speedup		
+				"folderListWithMembers"			=> array(
+                        'acctGetComprehensiveUser'),
+				"comprehensiveUser"			=> array(
+                        'acctGetComprehensiveUser')
                     );
 
         // Check if all required methods can be called! 
@@ -840,7 +845,7 @@ class Groupware extends plugin
                     $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval") )){
             $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
                     "send_limit" => $this->mailBoxSendSizelimitValue,
-                    "hard_limit" => $this->quotaSize,
+                    "hard_limit" => null,
                     "hold" => $this->quotaSize);
 
             $res = $this->groupwareDao->save("quotaSize", $this->uid, $quota);

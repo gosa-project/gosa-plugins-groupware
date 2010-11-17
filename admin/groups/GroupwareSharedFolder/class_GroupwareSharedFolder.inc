@@ -367,7 +367,9 @@ class GroupwareSharedFolder extends plugin
         }
 
         // Merge Folder messages.
-        $messages = array_merge($messages,$this->FolderWidget->check());
+        if($this->FolderWidget instanceOf FolderWidget){
+            $messages = array_merge($messages,$this->FolderWidget->check());
+        }
 
         return($messages);
     }

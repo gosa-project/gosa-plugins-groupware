@@ -180,21 +180,44 @@ class GroupwareDao{
 		$resultArr["mailLocation"] = $comp["mailLocation"];
 		//Quota things.
 		$resultArr["quotaSize"] = $comp["quota"]["usage"];
-
-		$resultArr["mailBoxWarnLimitEnabled"] = TRUE;
+		if(!empty($comp["quota"]["warn_limit"])){
+			$resultArr["mailBoxWarnLimitEnabled"] = TRUE;
+		}
+		else{
+			$resultArr["mailBoxWarnLimitEnabled"] = FALSE;
+		}
 		$resultArr["mailBoxWarnLimitValue"] = $comp["quota"]["warn_limit"];
 
-		$resultArr["mailBoxSendSizelimitEnabled"] = TRUE;
+		if(!empty($comp["quota"]["send_limit"])){
+			$resultArr["mailBoxSendSizelimitEnabled"] = TRUE;
+		}
+		else{
+			$resultArr["mailBoxSendSizelimitEnabled"] = FALSE;
+		}
+		
 		$resultArr["mailBoxSendSizelimitValue"] = $comp["quota"]["send_limit"];
-
-		$resultArr["mailBoxHardSizelimitEnabled"] = TRUE;
+		if(!empty($comp["quota"]["hard_limit"])){
+			$resultArr["mailBoxHardSizelimitEnabled"] = TRUE;
+		}
+		else{
+			$resultArr["mailBoxHardSizelimitEnabled"] = FALSE;
+		}
 		$resultArr["mailBoxHardSizelimitValue"] = $comp["quota"]["hard_limit"];	
 
 		//Mail Limits
-		$resultArr["mailLimitReceiveEnabled"] = TRUE;
+		if(!empty($comp["mailLimits"]["receive"])){
+			$resultArr["mailLimitReceiveEnabled"] = TRUE;
+		}
+		else{
+			$resultArr["mailLimitReceiveEnabled"] = FALSE;
+		}
 		$resultArr["mailLimitReceiveValue"] = $comp["mailLimits"]["receive"];
-
-		$resultArr["mailLimitSendEnabled"] = TRUE;
+		if(!empty($comp["mailLimits"]["send"])){
+			$resultArr["mailLimitSendEnabled"] = TRUE;
+		}
+		else{
+			$resultArr["mailLimitSendEnabled"] = FALSE;
+		}
 		$resultArr["mailLimitSendValue"] = $comp["mailLimits"]["send"];
 		
 		if(empty($comp["vacation"]["message"])){

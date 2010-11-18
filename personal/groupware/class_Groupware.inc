@@ -855,6 +855,17 @@ class Groupware extends plugin
                     $this->hasFeaturebeenChanged("mailBoxSendSizelimit") ||
                     $this->hasFeaturebeenChanged("quotaSize") ||
                     $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval") )){
+					
+			if(!$this->mailBoxWarnLimitEnabled){
+				$this->mailBoxWarnLimitValue = null;
+			}
+			
+			if(!$this->mailBoxSendSizelimitEnabled){
+				$this->mailBoxSendSizelimitValue = null;
+			}
+			
+			
+			
             $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
                     "send_limit" => $this->mailBoxSendSizelimitValue,
                     "hard_limit" => $this->quotaSize);

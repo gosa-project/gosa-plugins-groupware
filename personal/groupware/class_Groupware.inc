@@ -186,9 +186,9 @@ class Groupware extends plugin
                 "mailBoxSendSizelimit"      => array(
                         'acctSetQuota','acctGetQuota'),
                 //This is the same as qotaSize - should stay turned off
-                "mailBoxHardSizelimit"      => array( "_off",
+                "mailBoxHardSizelimit"      => array("_off",
                         'acctSetQuota','acctGetQuota'),
-                "mailBoxAutomaticRemoval"   => array(
+                "mailBoxAutomaticRemoval"   => array("_off",
                         'acctSetQuota','acctGetQuota'),
                 "localDeliveryOnly"         => array( "_off",
                         'acctDelFilter','acctGetFilters','acctSetFilters','acctSetFilters'),
@@ -857,8 +857,9 @@ class Groupware extends plugin
                     $this->hasFeaturebeenChanged("mailBoxAutomaticRemoval") )){
             $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
                     "send_limit" => $this->mailBoxSendSizelimitValue,
-                    "hard_limit" => null,
-                    "hold" => $this->quotaSize);
+                    "hard_limit" => $this->quotaSize);
+					//hold cannot be saved (in Exchange) right now - should be excluded for now.
+                    //"hold" => $this->mailBoxAutomaticRemovalValue);
 
             $res = $this->groupwareDao->save("quotaSize", $this->uid, $quota);
             if($res === NULL){

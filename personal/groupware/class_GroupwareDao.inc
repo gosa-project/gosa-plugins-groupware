@@ -182,7 +182,7 @@ class GroupwareDao{
 		$resultArr["quotaSize"] = $comp["quota"]["usage"];
 
 		$resultArr["mailBoxWarnLimitEnabled"] = TRUE;
-		$resultArr["mailBoxWarnLimitValue"] = $comp["quota"]["usage"];
+		$resultArr["mailBoxWarnLimitValue"] = $comp["quota"]["warn_limit"];
 
 		$resultArr["mailBoxSendSizelimitEnabled"] = TRUE;
 		$resultArr["mailBoxSendSizelimitValue"] = $comp["quota"]["send_limit"];

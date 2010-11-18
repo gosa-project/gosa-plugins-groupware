@@ -147,7 +147,7 @@ class Groupware extends plugin
     public function hasFeaturebeenChanged($featureName)
     {
         //TODO: must be implemented.
-        return true;
+        return TRUE;
     }
 
 
@@ -520,12 +520,12 @@ class Groupware extends plugin
 
         $smarty->assign("mailLocations", $this->mailLocations);
         if (count($this->vacationTemplates)){
-            $smarty->assign("displayTemplateSelector", "true");
+            $smarty->assign("displayTemplateSelector", "TRUE");
             $smarty->assign("vacationTemplate", set_post($this->vacationTemplate));
             $smarty->assign("vacationTemplates", set_post($this->vacationTemplates));
             $smarty->assign("template", set_post(get_post('vacation_template')));
         } else {
-            $smarty->assign("displayTemplateSelector", "false");
+            $smarty->assign("displayTemplateSelector", "FALSE");
         }
 
         $smarty->assign("uid", $this->uid);

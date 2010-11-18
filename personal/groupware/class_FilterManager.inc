@@ -18,8 +18,8 @@ class filterManager extends plugin{
         $acl = preg_replace("/r/","rw", $acl);
     
         $this->filterListing= new sortableListing();
-        $this->filterListing->setDeleteable(true);
-        $this->filterListing->setEditable(true);
+        $this->filterListing->setDeleteable(TRUE);
+        $this->filterListing->setEditable(TRUE);
         $this->filterListing->setColspecs(array('*'));
         $this->filterListing->setWidth("100%");
         $this->filterListing->setHeight("150px;");

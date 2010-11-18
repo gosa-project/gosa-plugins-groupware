@@ -331,7 +331,10 @@ class Groupware extends plugin
             // Load mail folder entries on demand, this will increase the account 
             //  instantiation a lot.
             if($this->mailFolder === NULL){
-                $this->mailFolder = $this->GroupwareDao->getListOfMailFolders();
+                $this->mailFolder = array();
+                if($this->initially_was_account){
+                    $this->mailFolder = $this->GroupwareDao->getListOfMailFolders();
+                }
             }
 
             $folders = $this->mailFolder;
@@ -799,7 +802,7 @@ class Groupware extends plugin
     {
         // Get rpc handle to create or update the account
         if(!$this->initially_was_account){
-            $res = $this->rpcExec('gwAcctdAdd', $this->uid, $this->mailAddress);
+            $res = $this->rpcExec('gwAcctAdd', $this->uid, $this->mailAddress);
             if($res === NULL){
                 $message = _("Groupware account creation failed!");
                 msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);

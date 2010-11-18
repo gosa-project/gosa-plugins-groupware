@@ -335,6 +335,7 @@ class GroupwareDao{
 		$folderAclDef = GroupwareDefinitions::getPermissions();
 		foreach ($compFolders as $fName => $fMembers) {
 			$resultArr[$fName]["name"] = preg_replace("/^.*\//","",$fName);
+            $resultArr[$fName]["status"] = "";
 			foreach($fMembers as $fMember => $fAcl){
 				 $aclLine = array(
 					"name" => $fMember, 

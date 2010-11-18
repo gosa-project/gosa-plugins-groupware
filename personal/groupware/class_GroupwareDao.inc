@@ -198,16 +198,22 @@ class GroupwareDao{
 		$resultArr["mailLimitSendValue"] = $comp["mailLimits"]["send"];
 
 		$resultArr["vacationMessage"] = $comp["vacation"]["message"];
-		
-		//Folder Stuff
+
+		return $resultArr;
+	}	
+
+
+    /* \brief   Returns a list of mail folders for the current folderPrefix. 
+     *          Acl entries will be returned the GOsa-usable way.
+     * @return  Array   A list of mail folder entries.
+     */   
+    function getListOfMailFolders()
+    { 
         $prefix = $this->groupwarePluginRef->folderPrefix;
 		$compFolders = $this->get("folderListWithMembers", array($prefix));
-		//ausgelagerte Funktion..
-		$resultArr["mailFolder"] = $this->translateGwAclsToGosaAcls($compFolders);
-	
-		return $resultArr;
-		
+		return($this->translateGwAclsToGosaAcls($compFolders));
 	}
+
 	
 	private function getComprehensiverUserSeparate($uid){
         if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){

@@ -61,7 +61,7 @@ class Groupware extends plugin
 
     var $mailAddress = "";
     var $mailLocation = "";
-    var $mailFolder = array();
+    var $mailFolder = NULL;
     var $quotaUsage = 0;
     var $quotaSize = 0;
     var $alternateAddresses = array();
@@ -324,7 +324,16 @@ class Groupware extends plugin
                 $this->FolderWidget = NULL;
             }
         }
+
+        // Act on requests to edit mailFolder entries.
         if(isset($_POST['configureFolder'])){
+
+            // Load mail folder entries on demand, this will increase the account 
+            //  instantiation a lot.
+            if($this->mailFolder === NULL){
+                $this->mailFolder = $this->GroupwareDao->getListOfMailFolders();
+            }
+
             $folders = $this->mailFolder;
             if(!isset($folders[$this->folderPrefix])){
                 $folders[$this->folderPrefix] = array('name' => $this->uid,'status' => 'added','acls' => array());
@@ -856,7 +865,7 @@ class Groupware extends plugin
         }
 
         // Save account folders
-        if($this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
+        if($this->mailFolder !== NULL && $this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
             $res = $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
             if($res === NULL){
                 $message = _("Saving mail folder failed!");

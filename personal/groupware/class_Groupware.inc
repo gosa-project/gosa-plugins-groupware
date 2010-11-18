@@ -333,7 +333,7 @@ class Groupware extends plugin
             if($this->mailFolder === NULL){
                 $this->mailFolder = array();
                 if($this->initially_was_account){
-                    $this->mailFolder = $this->GroupwareDao->getListOfMailFolders();
+                    $this->mailFolder = $this->groupwareDao->getListOfMailFolders();
                 }
             }
 

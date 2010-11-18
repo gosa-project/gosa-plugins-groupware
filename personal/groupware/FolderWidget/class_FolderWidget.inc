@@ -220,7 +220,7 @@ class FolderWidget extends plugin
                     $current[$entryPath]['acls'] = array();
                     $current[$entryPath]['type'] = 'manual';
                     $current[$entryPath]['base'] = $entryBase;
-                    $current[$entryPath]['parentPath'] = $entryPath;
+                    $current[$entryPath]['parentPath'] = $parentPath;
                     $current[$entryPath]['folderType'] = $this->getFolderType($current[$entryPath]);
 
                     $this->folderList['linear'][$entryPath] = &$current[$entryPath];

@@ -26,7 +26,7 @@ class filterFolderWidget {
         $ret = array();
         if(isset($data['linear'][$parent]) && !empty($parent)){
             $item = $data['linear'][$parent];
-            $item['name'] = '.';
+            $item['name'] = '..';
             filterFolderWidget::addEntry($ret, $item, FALSE, $filter);
         }
         foreach($items as $item){

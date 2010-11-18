@@ -196,9 +196,16 @@ class GroupwareDao{
 
 		$resultArr["mailLimitSendEnabled"] = TRUE;
 		$resultArr["mailLimitSendValue"] = $comp["mailLimits"]["send"];
-
-		$resultArr["vacationMessage"] = $comp["vacation"]["message"];
-
+		
+		if(empty($comp["vacation"]["message"])){
+			$resultArr["vacationEnabled"] = FAlSE;
+			$resultArr["vacationMessage"] = "";
+		}
+		else{
+			$resultArr["vacationEnabled"] = TRUE;
+			$resultArr["vacationMessage"] = $comp["vacation"]["message"];
+		}
+		
 		return $resultArr;
 	}	
 

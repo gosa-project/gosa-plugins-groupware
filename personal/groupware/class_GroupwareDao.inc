@@ -152,7 +152,6 @@ class GroupwareDao{
         return(isset($this->availableMethods[$methodName]) && ($this->availableMethods[$methodName]));
     }
 
-
     /*! \brief comprehensive user info will dessolve into one groupware call later
      * 		right now it will get all data of the features that are available in the plugin.
      * @param int $uid
@@ -173,7 +172,6 @@ class GroupwareDao{
 		
 		if($this->groupwarePluginRef->isFeatureEnabled("mailLocations")){
             $resultArr["mailLocations"] = $this->groupwarePluginRef->rpcExec('gwGetMailboxLocations');
-         
         }
 		$comp = $this->get("comprehensiveUser", array($uid));
 		$resultArr["primaryMail"] = $comp["primaryMail"];

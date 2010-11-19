@@ -307,8 +307,13 @@ class FolderWidget extends plugin
                         $this->_recursiveRemoveByBase($this->folderList['recursive'], $child['base']);
                     }
                 }
-
-                $arr[$path]['status'] = 'removed';
+                
+                // Remove the the entry instead of setting its status if it was just added.
+                if($arr[$path]['status'] == "added"){
+                    unset($arr[$path]) ;
+                }else{
+                    $arr[$path]['status'] = 'removed';
+                }
             }elseif(isset($item['children']) && count($item['children'])){
                 $ret = array_merge($ret, $this->_recursiveRemoveByBase($arr[$path]['children'], $base));
             }

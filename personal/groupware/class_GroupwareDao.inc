@@ -11,6 +11,7 @@ class GroupwareDao{
 
     private $groupwarePluginRef = FALSE;
 	
+	
 
     private static $gwFeatures  = array(
             "primaryMail" => array(	"get"=>"gwAcctGetPrimaryMailAddress", 
@@ -66,7 +67,10 @@ class GroupwareDao{
 			"folderListWithMembers" => array(
 						"get"=>"gwFolderListWithMembers"),
 			"comprehensiveUser" => array(
-                        "get"=>'gwAcctGetComprehensiveUser')
+                        "get"=>'gwAcctGetComprehensiveUser'),
+			"folderACLs" 		=> array(
+                        "get"=>'gwFolderGetMember',
+						"save"=>'gwFolderSetMembers')
                 );
 
 
@@ -93,15 +97,15 @@ class GroupwareDao{
     /*! \brief Generic saving method for all features defined in $gwFeatures
      *          which are the available features.
      */
-    public function save($feature, $uid, $valueArray)
+    public function save($feature, $uid, $valueArray = null)
     {
         $function = GroupwareDao::$gwFeatures[$feature]["save"];
         if(is_array($valueArray)){
             $valueArray = array_merge(array($function, $uid), $valueArray);
         }else{
-            $valueArray = array($function, $uid, $valueArray);
+            $valueArray = array($function, $uid);
         }
-
+		
         $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
         return $result;
     }
@@ -129,18 +133,18 @@ class GroupwareDao{
      * 
      * NOT YET IMPLEMENTED
      */
-    public function del($feature, $valueArray)
+    public function del($feature, $uid, $valueArray = null)
     {
-
-        echo "deletion of values is not implemented yet";
-        /*
-           $function = GroupwareDao::$gwFeatures[$feature]["delete"];
-           $valueArray = array_merge(array($function), $valueArray);
-           $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
-           return $result;
-         */
+        $function = GroupwareDao::$gwFeatures[$feature]["delete"];
+        if(is_array($valueArray)){
+            $valueArray = array_merge(array($function, $uid), $valueArray);
+        }else{
+            $valueArray = array($function, $uid);
+        }
+		
+        $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
+        return $result;
     }
-
 
     /*! \brief determine availability of features.
      * 

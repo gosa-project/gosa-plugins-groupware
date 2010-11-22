@@ -33,6 +33,14 @@ class GroupwareDefinitions
         $ret[GROUPWARE_RIGHTS_ALL] = _("All");
         return($ret);
     }
+	
+	public static function getDefaultFolderACLs()
+	{
+		$r["Anonym"] = GROUPWARE_RIGHTS_NONE;
+		$r["Standard"] = GROUPWARE_RIGHTS_NONE;
+		
+		return $r;
+	}
 } 
 
 

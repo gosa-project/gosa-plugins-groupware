@@ -62,6 +62,8 @@ class Groupware extends plugin
     var $mailAddress = "";
     var $mailLocation = "";
     var $mailFolder = NULL;
+	var $mailFolderChanged = NULL;
+	
     var $quotaUsage = 0;
     var $quotaSize = 0;
     var $alternateAddresses = array();
@@ -199,8 +201,10 @@ class Groupware extends plugin
                 "mailLimit"			=> array(
                         'acctGetMailLimit', 'acctSetMailLimit'),
 				//Just for speedup		
-				"folderListWithMembers"			=> array(
+				"folderListWithMembers"		=> array(
                         'acctGetComprehensiveUser'),
+				"folderACLs" 				=> array(
+						'folderGetMembers', 'folderSetMembers'),
 				"comprehensiveUser"			=> array(
                         'acctGetComprehensiveUser')
                     );
@@ -320,8 +324,17 @@ class Groupware extends plugin
             if(count($msgs)){
                 msg_dialog::displayChecks($msgs);
             }else{
-                $this->mailFolder = $this->FolderWidget->save();
+				
+				if(!empty($this->mailFolderChanges)){
+					$this->mailFolderChanges = array_merge($this->mailFolderChanges, $this->FolderWidget->save());
+				}
+				else{
+					$this->mailFolderChanges = $this->FolderWidget->save();
+				}
+				$this->folderSaverLaterObsolete();
+				
                 $this->FolderWidget = NULL;
+				
             }
         }
 
@@ -864,8 +877,6 @@ class Groupware extends plugin
 				$this->mailBoxSendSizelimitValue = null;
 			}
 			
-			
-			
             $quota = array(	"warn_limit" => $this->mailBoxWarnLimitValue,
                     "send_limit" => $this->mailBoxSendSizelimitValue,
                     "hard_limit" => $this->quotaSize);
@@ -926,7 +937,9 @@ class Groupware extends plugin
             }
         }
 
-
+		$this->folderSaverLaterObsolete($this->uid);
+			
+	}
         //checks for feature "quotaUsage"                
         //not to be saved
 
@@ -941,9 +954,60 @@ class Groupware extends plugin
 #
 #       //checks for feature "dropOwnMails"              
 #       if($this->isFeatureEnabled("dropOwnMails") && $this->hasFeaturebeenChanged("dropOwnMails")){}
-    }
-
-
+    
+	
+	/*! \brief  TODO remove this function later
+     */
+	function folderSaverLaterObsolete($id){
+		if($this->isFeatureEnabled("mailFolder")&& $this->hasFeaturebeenChanged("mailFolder")){
+			//is sorting necessary? 
+			//Find folders to add
+			if(empty($this->mailFolderChanges)){
+				return;
+			}
+			
+			//Remove the root folder - the widget adds it as new 
+			echo "Removing: user/".$this->uid;
+			unset($this->mailFolderChanges["user/".$this->uid]);
+			
+			foreach($this->mailFolderChanges as $folder => $memberlist){
+			echo "Status".$this->mailFolderChanges[$folder]["status"]."<br>";
+				if($this->mailFolderChanges[$folder]["status"] == "added"){
+					$this->groupwareDao->save("mailFolder", $folder);
+				}
+				if($this->mailFolderChanges[$folder]["status"] == "removed"){
+					$this->groupwareDao->del("mailFolder", $folder);
+				}	
+				
+				if($this->isFeatureEnabled("folderACLs")){
+					//checking if ACL has been changed.
+					if($this->mailFolderChanges[$folder]["status"] == "added"){
+						if(isset($memberlist["acls"])){
+							echo "DEBUG HAPE- Changing ACLs Folder".$folder."<br>";
+							
+							//set Default ACLs if not yet set by User
+							$defAcls = GroupwareDefinitions::getDefaultFolderACLs();
+							$memberListToBeSaved = array_merge($defAcls, $memberlist["acls"] );
+						}
+						
+					}
+					else{
+						if(array_differs($memberlist["acls"], $this->mailFolderChanges[$folder]["acls"])){
+							echo "DEBUG HAPE- Changing ACLs Folder".$folder."<br>";
+							$memberListToBeSaved = array_merge($memberlist["acls"]);
+						}
+					}
+					echo "<pre>";
+					print_r($memberListToBeSaved);
+					echo "</pre>";
+					$this->groupwareDao->save("folderACLs", $this->uid, array($memberListToBeSaved));
+				}
+			}
+		}
+		//reset the changes.. we have persisted them.
+		$this->mailFolderChanges = null;
+	}
+	
     /*! \brief  Check given values 
      */
     function check()

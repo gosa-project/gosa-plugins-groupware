@@ -204,7 +204,9 @@ class GroupwareDao{
 		$comp = $this->get("comprehensiveUser", array($uid));
 		$resultArr["primaryMail"] = $comp["primaryMail"];
 		$resultArr["alternateAddresses"] = $comp["alternateAddresses"];
-        $resultArr["forwardingAddresses"] = $comp["forwardingAddresses"];		
+		
+        $resultArr["forwardingAddresses"] = array(key($comp["forwardingAddresses"]));		
+		var_dump($resultArr["forwardingAddresses"]);
 		$resultArr["mailLocation"] = $comp["mailLocation"];
 		//Quota things.
 		$resultArr["quotaSize"] = $comp["quota"]["usage"];

@@ -825,6 +825,7 @@ class Groupware extends plugin
 
         // Save the primary Email Address.
         if($this->isFeatureEnabled("primaryMail")&& $this->hasFeaturebeenChanged("primaryMail")){
+		echo "------MailAddress to be saved: ".$this->mailAddress."<br>";
             $res = $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
             if($res === NULL){
                 $message = _("Setting account mail address failed!");

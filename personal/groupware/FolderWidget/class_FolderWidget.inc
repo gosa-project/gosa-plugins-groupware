@@ -170,6 +170,10 @@ class FolderWidget extends plugin
             $status = $data['status'];
             $this->addPath($path, $name, $acls, $status);
         }  
+		echo "<pre>";
+		print_r($data);
+		echo "</pre>";
+		
     }
     
 

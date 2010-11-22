@@ -103,7 +103,14 @@ class GroupwareDao{
         if(is_array($valueArray)){
             $valueArray = array_merge(array($function, $uid), $valueArray);
         }else{
-            $valueArray = array($function, $uid);
+            if(!empty($valueArray)){
+				//add if single value
+				$valueArray = array($function, $uid, $valueArray);
+			}
+			else{
+				//omit otherwise
+				$valueArray = array($function, $uid);
+			}
         }
 		
         $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
@@ -133,13 +140,26 @@ class GroupwareDao{
      * 
      * NOT YET IMPLEMENTED
      */
-    public function del($feature, $uid, $valueArray = null)
+    public function del($feature, $uid, $valueArray = "")
     {
+		//just debugs
+		echo "Feature:".$feature;
+		echo "uid:".$uid;
+		echo "array:".$valueArray;
+	
         $function = GroupwareDao::$gwFeatures[$feature]["delete"];
         if(is_array($valueArray)){
+			//merge if array
             $valueArray = array_merge(array($function, $uid), $valueArray);
         }else{
-            $valueArray = array($function, $uid);
+			if(!empty($valueArray)){
+				//add if single value
+				$valueArray = array($function, $uid, $valueArray);
+			}
+			else{
+				//omit otherwise
+				$valueArray = array($function, $uid);
+			}
         }
 		
         $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
@@ -382,10 +402,10 @@ class GroupwareDao{
                     "type"=>"user"
 					);
 				if(empty($fAcl)){
-					$resultArr[$fName]["acls"]["acl"] = GROUPWARE_RIGHTS_NONE;
+					$resultArr[$fName]["acls"] = GROUPWARE_RIGHTS_NONE;
 				}
 				else{
-					$resultArr[$fName]["acls"]["acl"] = $folderAclDef[$fAcl];
+					$resultArr[$fName]["acls"] = $folderAclDef[$fAcl];
 				}
 				$resultArr[$fName]["acls"][] = $aclLine;
 			}

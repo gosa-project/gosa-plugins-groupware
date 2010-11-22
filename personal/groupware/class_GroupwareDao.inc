@@ -108,11 +108,15 @@ class GroupwareDao{
 				$valueArray = array($function, $uid, $valueArray);
 			}
 			else{
+
 				//omit otherwise
 				$valueArray = array($function, $uid);
 			}
         }
-		
+		//TODO: Remove the debug output
+		//echo "----call_user_func_array:<pre>";
+		//var_dump($valueArray);
+		//echo "</pre>";
         $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
         return $result;
     }

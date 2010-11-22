@@ -835,10 +835,14 @@ class Groupware extends plugin
 
         // Save alternateAddresses 
         if($this->isFeatureEnabled("alternateAddresses")&& $this->hasFeaturebeenChanged("alternateAddresses")){
-            if(!empty($this->alternateAddresses) 
-                    && isset($this->alternateAddresses) 
-                    && is_array($this->alternateAddresses)){
-                $res = $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
+            if(isset($this->alternateAddresses) && is_array($this->alternateAddresses)){
+				if(!empty($this->alternateAddresses)){
+					$res = $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
+				}
+				else{
+				echo "deleting AltAddresses.";
+					$res = $this->groupwareDao->save("alternateAddresses", $this->uid, array(array()));
+				}
                 if($res === NULL){
                     $message = _("Saving alternate addresses failed!");
                     msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
@@ -851,9 +855,15 @@ class Groupware extends plugin
 
             // Transform simple address array into,  $addresses[address] = ForwardFlag;
             $addresses = array();
-            foreach($this->forwardingAddresses as $address) $addresses[$address] = TRUE;
-
-            $res = $this->groupwareDao->save("forwardingAddresses", $this->uid, array($addresses));
+			if(!empty($this->forwardingAddresses)){
+				foreach($this->forwardingAddresses as $address) $addresses[$address] = TRUE;
+			
+				$res = $this->groupwareDao->save("forwardingAddresses", $this->uid, array($addresses));
+			}
+			else{	
+				$res = $this->groupwareDao->save("forwardingAddresses", $this->uid, array(array()));
+			}
+            
             if($res === NULL){
                 $message = _("Saving forward addresses failed!");
                 msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);

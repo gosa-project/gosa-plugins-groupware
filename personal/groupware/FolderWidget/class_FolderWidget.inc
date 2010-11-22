@@ -169,7 +169,7 @@ class FolderWidget extends plugin
             $acls = $data['acls'];
             $status = $data['status'];
             $this->addPath($path, $name, $acls, $status);
-        }   
+        }  
     }
     
 
@@ -215,7 +215,7 @@ class FolderWidget extends plugin
                     $current[$entryPath] = array();
                     $current[$entryPath]['children'] = array();
                     $current[$entryPath]['name'] = $pathName;
-                    $current[$entryPath]['path'] = $path;
+                    $current[$entryPath]['path'] = $entryPath;
                     $current[$entryPath]['status'] = '';
                     $current[$entryPath]['acls'] = array();
                     $current[$entryPath]['type'] = 'manual';

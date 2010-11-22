@@ -393,7 +393,7 @@ class GroupwareDao{
             $vacArray = $this->get("vacationMessage", array($uid));
             $resultArr["vacationMessage"] = $vacArray["message"];
             $resultArr["vacationEnabled"] = !empty($resultArr["vacationMessage"]);    
-        }   
+        }
         return $resultArr;
     }
 	private function translateGwAclsToGosaAcls($compFolders){
@@ -408,7 +408,7 @@ class GroupwareDao{
                     "type"=>"user"
 					);
 				if(empty($fAcl)){
-					$resultArr[$fName]["acls"] = GROUPWARE_RIGHTS_NONE;
+					$aclLine["acl"] = GROUPWARE_RIGHTS_NONE;
 				}
 				else{
 					$resultArr[$fName]["acls"] = $folderAclDef[$fAcl];

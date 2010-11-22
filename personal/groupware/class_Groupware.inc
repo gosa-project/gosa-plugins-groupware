@@ -331,10 +331,8 @@ class Groupware extends plugin
 				else{
 					$this->mailFolderChanges = $this->FolderWidget->save();
 				}
-				$this->folderSaverLaterObsolete();
-				
+				$this->folderSave();
                 $this->FolderWidget = NULL;
-				
             }
         }
 
@@ -947,9 +945,8 @@ class Groupware extends plugin
                 msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
             }
         }
-
-		$this->folderSaverLaterObsolete($this->uid);
-			
+		//Todo: Remove this 
+		$this->folderSave($this->uid);
 	}
         //checks for feature "quotaUsage"                
         //not to be saved
@@ -969,7 +966,7 @@ class Groupware extends plugin
 	
 	/*! \brief  TODO remove this function later
      */
-	function folderSaverLaterObsolete($id){
+	function folderSave($id){
 		if($this->isFeatureEnabled("mailFolder")&& $this->hasFeaturebeenChanged("mailFolder")){
 			//is sorting necessary? 
 			//Find folders to add
@@ -1000,7 +997,6 @@ class Groupware extends plugin
 							$defAcls = GroupwareDefinitions::getDefaultFolderACLs();
 							$memberListToBeSaved = array_merge($defAcls, $memberlist["acls"] );
 						}
-						
 					}
 					else{
 						if(array_differs($memberlist["acls"], $this->mailFolderChanges[$folder]["acls"])){

@@ -11,8 +11,6 @@ class GroupwareDao{
 
     private $groupwarePluginRef = FALSE;
 	
-	
-
     private static $gwFeatures  = array(
             "primaryMail" => array(	"get"=>"gwAcctGetPrimaryMailAddress", 
                 "save"=>"gwAcctSetPrimaryMailAddress"),
@@ -274,7 +272,10 @@ class GroupwareDao{
 		return($this->translateGwAclsToGosaAcls($compFolders));
 	}
 
-	
+	/* \brief   Returns a list of mail folders for the current folderPrefix. 
+     *          Fetches every feature data chunk seperately
+     * @return  Array   A list of mail folder entries.
+     */   
 	private function getComprehensiverUserSeparate($uid){
         if($this->groupwarePluginRef->isFeatureEnabled("primaryMail")){
             $resultArr["primaryMail"] = $this->get("primaryMail", array($uid));
@@ -307,30 +308,6 @@ class GroupwareDao{
 				$newFolder[$val] = $this->get("private_folderACLS", array($val));
 			}
 			$resultArr["mailFolder"] = $this->translateGwAclsToGosaAcls($newFolder);
-			/*
-			old Stuff
-            $resultArr["mailFolder"] = $this->get("mailFolder", array($prefix));
-
-            // Walk through results an fill in missing values, like name, status and acls.
-            foreach($resultArr["mailFolder"] as $val){
-
-                // Get the folder name, all characters behind the last '/'.
-                $resultArr["mailFolder"][$val]["name"] = preg_replace("/^.*\//","",$val);
-
-                // Query the folder ACLs using RPC to the backend.
-                $curAcl = $this->get("private_folderACLS", array($val));
-                if(is_array($curAcl)){
-                    foreach($curAcl as $aclkey => $aclval){
-
-                        if(empty($aclval)) $aclval = GROUPWARE_RIGHTS_NONE;
-                        $resultArr["mailFolder"][$val]["acls"][] = array( 
-                                "name" => $aclkey, 
-                                "acl"  => $aclval,  
-                                "type"=>"user");
-                    }
-                }
-            }
-			*/
 
             // Add the required status field for each folder.
             foreach($resultArr["mailFolder"] as $id => $folder){
@@ -396,6 +373,11 @@ class GroupwareDao{
         }
         return $resultArr;
     }
+	
+	
+	/* \brief   Translates Groupware folderAcls to Gosa widget Acls.
+     * @return  Array   list of Groupware Members with rights to folders.
+     */  
 	private function translateGwAclsToGosaAcls($compFolders){
 		$resultArr = array();
 		$folderAclDef = GroupwareDefinitions::getPermissions();

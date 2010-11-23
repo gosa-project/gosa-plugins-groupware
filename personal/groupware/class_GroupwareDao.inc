@@ -106,7 +106,6 @@ class GroupwareDao{
 				$valueArray = array($function, $uid, $valueArray);
 			}
 			else{
-
 				//omit otherwise
 				$valueArray = array($function, $uid);
 			}
@@ -203,8 +202,10 @@ class GroupwareDao{
 		$resultArr["primaryMail"] = $comp["primaryMail"];
 		$resultArr["alternateAddresses"] = $comp["alternateAddresses"];
 		
-        $resultArr["forwardingAddresses"] = array(key($comp["forwardingAddresses"]));		
-		var_dump($resultArr["forwardingAddresses"]);
+		//This dao will only accept the first forwardingAddress.
+		$resultArr["forwardingAddresses"] = array(key($comp["forwardingAddresses"]));           
+	    var_dump($resultArr["forwardingAddresses"]);
+					
 		$resultArr["mailLocation"] = $comp["mailLocation"];
 		//Quota things.
 		$resultArr["quotaSize"] = $comp["quota"]["usage"];
@@ -337,7 +338,7 @@ class GroupwareDao{
                 $resultArr["mailBoxSendSizelimitEnabled"] = TRUE;
                 $resultArr["mailBoxSendSizelimitValue"] = $quota["send_limit"];
             }else{
-                $resultArr["mailBoxSendSizelimitEnabled"] = FALSE;
+                $resultArr["mailBoxSendSizelimitEnabled"] = FALSE; 
             }
             if($quota["hard_limit"] > 0){
                 $resultArr["mailBoxHardSizelimitEnabled"] = TRUE;
@@ -372,8 +373,8 @@ class GroupwareDao{
             $resultArr["vacationEnabled"] = !empty($resultArr["vacationMessage"]);    
         }
         return $resultArr;
-    }
 	
+    }
 	
 	/* \brief   Translates Groupware folderAcls to Gosa widget Acls.
      * @return  Array   list of Groupware Members with rights to folders.

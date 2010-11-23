@@ -331,7 +331,8 @@ class Groupware extends plugin
 				else{
 					$this->mailFolderChanges = $this->FolderWidget->save();
 				}
-				$this->folderSave();
+				
+				$this->folderSave($this->uid);
                 $this->FolderWidget = NULL;
             }
         }
@@ -899,9 +900,10 @@ class Groupware extends plugin
             }
         }
 
-        // Save account folders
+        // TODO: Check the following paragraph
+		// Save account folders
         if($this->mailFolder !== NULL && $this->isFeatureEnabled("mailFolder") && $this->hasFeaturebeenChanged("mailFolder")){
-            $res = $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
+            //$res = $this->saveFoldersAndAcls($this->uid, $this->mailFolder);
             if($res === NULL){
                 $message = _("Saving mail folder failed!");
                 msg_dialog::display(_("Error"),$message."<br>".sprintf(_("Error was: '%s'."),$this->rpcErrorMessage),ERROR_DIALOG);
@@ -975,11 +977,11 @@ class Groupware extends plugin
 			}
 			
 			//Remove the root folder - the widget adds it as new 
-			echo "Removing: user/".$this->uid;
 			unset($this->mailFolderChanges["user/".$this->uid]);
 			
 			foreach($this->mailFolderChanges as $folder => $memberlist){
-			echo "Status".$this->mailFolderChanges[$folder]["status"]."<br>";
+				echo "Status: ".$this->mailFolderChanges[$folder]["status"]."<br>";
+				
 				if($this->mailFolderChanges[$folder]["status"] == "added"){
 					$this->groupwareDao->save("mailFolder", $folder);
 				}
@@ -987,27 +989,41 @@ class Groupware extends plugin
 					$this->groupwareDao->del("mailFolder", $folder);
 				}	
 				
+				$memberListToBeSaved = array();
 				if($this->isFeatureEnabled("folderACLs")){
 					//checking if ACL has been changed.
 					if($this->mailFolderChanges[$folder]["status"] == "added"){
 						if(isset($memberlist["acls"])){
-							echo "DEBUG HAPE- Changing ACLs Folder".$folder."<br>";
 							
 							//set Default ACLs if not yet set by User
 							$defAcls = GroupwareDefinitions::getDefaultFolderACLs();
-							$memberListToBeSaved = array_merge($defAcls, $memberlist["acls"] );
+							$memberListToBeSaved = $defAcls;
+							//append all mebers set in Gosa widget.
+							foreach($memberlist["acls"] as $member){
+								$memberListToBeSaved[$member["name"]] = $member["acl"];
+							}
 						}
 					}
 					else{
-						if(array_differs($memberlist["acls"], $this->mailFolderChanges[$folder]["acls"])){
-							echo "DEBUG HAPE- Changing ACLs Folder".$folder."<br>";
-							$memberListToBeSaved = array_merge($memberlist["acls"]);
+						echo "--- Hello1";
+						print_a($memberlist["acls"]);
+						echo "--- Hello2";
+						print_a($this->mailFolderChanges[$folder]["acls"]);
+						
+						if(array_differs($memberlist["acls"], $this->mailFolder[$folder]["acls"])){
+							//append all mebers set in Gosa widget.
+							echo "ACLs have changed.";
+							foreach($memberlist["acls"] as $member){
+								$memberListToBeSaved[$member["name"]] = $member["acl"];
+							}
 						}
 					}
-					echo "<pre>";
-					print_r($memberListToBeSaved);
-					echo "</pre>";
-					$this->groupwareDao->save("folderACLs", $this->uid, array($memberListToBeSaved));
+					if(!empty($memberListToBeSaved)){
+						echo "List To save:<pre>";
+						print_r($memberListToBeSaved);
+						echo "</pre><br>";
+						$this->groupwareDao->save("folderACLs", $folder, array($memberListToBeSaved));
+					}
 				}
 			}
 		}
@@ -1068,8 +1084,8 @@ class Groupware extends plugin
                         $messages[] = _("The primary address cannot be used as forwarding address!");
                     }
                 }
-            }	
-        }			
+            }
+        }
 
         //checks for feature "mailLimit" - integer 
         if ($this->isFeatureEnabled("mailLimit")){
@@ -1131,7 +1147,6 @@ class Groupware extends plugin
 #       //checks for feature "alternateAddresses"        
 #       if ($this->isFeatureEnabled("alternateAddresses")){}
 
-
         return($messages);
     }
 
@@ -1154,6 +1169,7 @@ class Groupware extends plugin
                         "mailLocation"                  => _("Mail location"),
                         "mailFolder"                    => _("Mail folder"),
                         "quotaUsage"                    => _("Quota usage"),
+                        "mailFilter"                    => _("Mail filter"),
                         "mailFilter"                    => _("Mail filter"),
                         "quotaSize"                     => _("Quota size"),
                         "alternateAddresses"            => _("Alternate mail addresses"),
@@ -1216,9 +1232,7 @@ class Groupware extends plugin
 
 
     /*! \brief  This is a feature with many datasets inside which should be 
-     *			cut in slices and saved separately.
-     */
-    //
+   
     function saveFoldersAndAcls($id, $mailFolder)
     {
         // In the tests with the exchange server groupware setting acls is very
@@ -1240,6 +1254,7 @@ class Groupware extends plugin
         }
         return($res);
     }
+	*/
 }
 
 

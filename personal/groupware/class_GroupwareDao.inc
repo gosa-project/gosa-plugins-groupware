@@ -381,10 +381,10 @@ class GroupwareDao{
      */  
 	private function translateGwAclsToGosaAcls($compFolders){
 		$resultArr = array();
-		$folderAclDef = GroupwareDefinitions::getPermissions();
 		foreach ($compFolders as $fName => $fMembers) {
 			$resultArr[$fName]["name"] = preg_replace("/^.*\//","",$fName);
             $resultArr[$fName]["status"] = "";
+			$resultArr[$fName]["acls"] = array();
 			foreach($fMembers as $fMember => $fAcl){
 				 $aclLine = array(
 					"name" => $fMember, 
@@ -394,7 +394,8 @@ class GroupwareDao{
 					$aclLine["acl"] = GROUPWARE_RIGHTS_NONE;
 				}
 				else{
-					$resultArr[$fName]["acls"] = $folderAclDef[$fAcl];
+					$aclLine["acl"] = $fAcl;
+					
 				}
 				$resultArr[$fName]["acls"][] = $aclLine;
 			}

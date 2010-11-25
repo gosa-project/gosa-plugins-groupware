@@ -824,7 +824,7 @@ class Groupware extends plugin
 
         // Save the primary Email Address.
         if($this->isFeatureEnabled("primaryMail")&& $this->hasFeaturebeenChanged("primaryMail")){
-		echo "------MailAddress to be saved: ".$this->mailAddress."<br>";
+		
             $res = $this->groupwareDao->save("primaryMail", $this->uid, $this->mailAddress);
             if($res === NULL){
                 $message = _("Setting account mail address failed!");
@@ -839,7 +839,7 @@ class Groupware extends plugin
 					$res = $this->groupwareDao->save("alternateAddresses", $this->uid, array($this->alternateAddresses));
 				}
 				else{
-				echo "deleting AltAddresses.";
+				
 					$res = $this->groupwareDao->save("alternateAddresses", $this->uid, array(array()));
 				}
                 if($res === NULL){
@@ -980,7 +980,6 @@ class Groupware extends plugin
 			unset($this->mailFolderChanges["user/".$this->uid]);
 			
 			foreach($this->mailFolderChanges as $folder => $memberlist){
-				echo "Status: ".$this->mailFolderChanges[$folder]["status"]."<br>";
 				
 				if($this->mailFolderChanges[$folder]["status"] == "added"){
 					$this->groupwareDao->save("mailFolder", $folder);
@@ -1005,11 +1004,13 @@ class Groupware extends plugin
 						}
 					}
 					else{
+						//Todo: remove debugs
+						/*
 						echo "--- Hello1";
 						print_a($memberlist["acls"]);
 						echo "--- Hello2";
 						print_a($this->mailFolderChanges[$folder]["acls"]);
-						
+						*/
 						if(array_differs($memberlist["acls"], $this->mailFolder[$folder]["acls"])){
 							//append all mebers set in Gosa widget.
 							echo "ACLs have changed.";
@@ -1019,9 +1020,12 @@ class Groupware extends plugin
 						}
 					}
 					if(!empty($memberListToBeSaved)){
+						//Todo: remove debugs
+						/*
 						echo "List To save:<pre>";
 						print_r($memberListToBeSaved);
 						echo "</pre><br>";
+						*/
 						$this->groupwareDao->save("folderACLs", $folder, array($memberListToBeSaved));
 					}
 				}

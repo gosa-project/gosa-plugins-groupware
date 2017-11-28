@@ -28,7 +28,7 @@ class GroupwareDistributionList extends plugin
      */
     function __construct($config, $dn, $attrs = NULL)
     {
-        plugin::plugin($config, $dn, $attrs);
+        plugin::__construct($config, $dn, $attrs);
 
         // Get attributes from parent object
         $this->cn = "";

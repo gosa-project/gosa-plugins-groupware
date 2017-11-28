@@ -96,7 +96,7 @@ class Groupware extends plugin
      */
     function __construct ($config, $dn= NULL)
     {
-        plugin::plugin($config,$dn); 
+        plugin::__construct($config,$dn); 
 
         // Get attributes from parent object 
         if(isset($this->attrs['uid'])){

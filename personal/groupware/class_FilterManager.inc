@@ -7,7 +7,7 @@ class filterManager extends plugin{
 
     function __construct($config,$parent,$rules)
     {
-        plugin::plugin($config);
+        plugin::__construct($config);
         
         $this->parent = &$parent;
 

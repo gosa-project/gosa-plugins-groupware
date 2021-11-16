@@ -1,28 +1,26 @@
-<div id="mainlist">
+<div class="list-head-wrapper">
+  <h2>{$HEADLINE}&nbsp;{$SIZELIMIT}</h2>
+  <input type="hidden" name="ignore">
+  <div class="control-panel">
+    <div class="navigation">
+        {$RELOAD}
+    </div>
+    <div class="ldap-tree valign-wrapper">{$RELEASE}</div>
+    <div class="actions center-align">{$ACTIONS}</div>
+    {$FILTER}
+  </div>
+</div>
 
-  <div class="mainlist-header">
-   <p>{$HEADLINE}&nbsp;{$SIZELIMIT}</p>
-   <div class="mainlist-nav">
-    <table summary="{$HEADLINE}">
-     <tr>
-      <td>{$RELOAD}</td>
-      <td class="left-border">{t}Basis{/t}: {$RELEASE}</td>
-      <td class="left-border">{$ACTIONS}</td>
-      <td class="left-border">{$FILTER}</td>
-     </tr>
-    </table>
-   </div>
+<div class="list-content-wrapper">
+  <div class="plus-actions">
+    {$LIST}
   </div>
 
-  {$LIST}
+  {if $SHOW_BUTTONS}
+  <div class="card-action">
+      <button class="btn-small primary" type="submit" name="ok-save">{msgPool type=okButton}</button>
+      <button class="btn-small primary" type="submit" name="cancel-abort">{msgPool type=cancelButton}</button>
+  </div>
+  {/if}
 </div>
 
-<div class="clear"></div>
-
-{if $SHOW_BUTTONS}
-<hr>
-<div class='plugin-actions'>
-    <button name='FolderWidget_ok'>{msgPool type=okButton}</button>
-    <button name='FolderWidget_cancel'>{msgPool type=cancelButton}</button>
-</div>
-{/if}

@@ -145,10 +145,6 @@ class GroupwareDao
                 $valueArray = array($function, $uid);
             }
         }
-        //TODO: Remove the debug output
-        //echo "----call_user_func_array:<pre>";
-        //var_dump($valueArray);
-        //echo "</pre>";
         $result =  call_user_func_array(array($this->groupwarePluginRef, 'rpcExec'), $valueArray);
         return $result;
     }
@@ -238,7 +234,6 @@ class GroupwareDao
 
         //This dao will only accept the first forwardingAddress.
         $resultArr["forwardingAddresses"] = array(key($comp["forwardingAddresses"]));
-        var_dump($resultArr["forwardingAddresses"]);
 
         $resultArr["mailLocation"] = $comp["mailLocation"];
         //Quota things.

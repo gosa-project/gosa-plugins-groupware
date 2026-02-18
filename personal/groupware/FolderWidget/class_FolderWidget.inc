@@ -48,8 +48,10 @@ class FolderWidget extends plugin
     private $permissions = array();
 
     protected $displayButtons = TRUE;
+    protected $accountPrefix = null;
+    protected $currentlyEditedItem = null;
 
-    
+
     /*! \brief  Constructs the widget and initializes all required sub-widgets.
      */
     function __construct(&$config, $folderList, $accountPrefix)
@@ -60,10 +62,10 @@ class FolderWidget extends plugin
         // e.g.  rootPath is '/'  then is the rootBase 'cn=/'
         // These are just internally used variables and should not have an 
         //  effect on the results.
-        $this->rootBase = $this->fakeCnAttr.$this->rootName;
+        $this->rootBase = $this->fakeCnAttr . $this->rootName;
 
         // Remove trailing / from accountPrefix.
-        $this->accountPrefix = (empty($accountPrefix)) ? "" : rtrim($accountPrefix,$this->pathSeparator);
+        $this->accountPrefix = (empty($accountPrefix)) ? "" : rtrim($accountPrefix, $this->pathSeparator);
         $this->rootBase = $this->pathToDn($accountPrefix);
 
         // Update the folder list, initially.
@@ -78,7 +80,7 @@ class FolderWidget extends plugin
     {
         $this->displayButtons = $bool;
     }
-    
+
 
     /*! \brief  Updates the list of all selectable ACLs
      *  @param  Array   The list of acls to use 
@@ -100,23 +102,23 @@ class FolderWidget extends plugin
      */
     function pathToDn($path)
     {
-        $dn ="cn=/";
-        $list = preg_split("/".preg_quote($this->pathSeparator,'/')."/", $path,0,PREG_SPLIT_NO_EMPTY);
-        foreach($list as $entry){
-            $dn ="cn={$entry},{$dn}"; 
+        $dn = "cn=/";
+        $list = preg_split("/" . preg_quote($this->pathSeparator, '/') . "/", $path, 0, PREG_SPLIT_NO_EMPTY);
+        foreach ($list as $entry) {
+            $dn = "cn={$entry},{$dn}";
         }
-        return($dn);
+        return ($dn);
     }
 
-    
+
     /*! \brief  A function to detect the folderType for a given foldePath
      *          This folderType tells the listing widget hat images has to be used.
      *          See: FolderWidget-list.xml <objectType>
      */
     function getFolderType($item)
     {
-        if(preg_match("/^user\//", $item['path'])) return('userFolder');
-        if(preg_match("/^shared\//", $item['path'])) return('sharedFolder');
+        if (preg_match("/^user\//", $item['path'])) return ('userFolder');
+        if (preg_match("/^shared\//", $item['path'])) return ('sharedFolder');
     }
 
 
@@ -127,11 +129,13 @@ class FolderWidget extends plugin
         $this->buildRecursiveList($arr, $this->pathSeparator);
 
         // Ensure that we've at least the base folder set
-        if(!isset($this->folderList['linear'][$this->accountPrefix])){
-            $this->addPath($this->accountPrefix, preg_replace("/^.*\//","", $this->accountPrefix));
+        if (!isset($this->folderList['linear'][$this->accountPrefix])) {
+            $this->addPath($this->accountPrefix, preg_replace("/^.*\//", "", $this->accountPrefix));
 
-            trigger_error(sprintf("You reuquire at least a folder named '%s'! This time it was added automatically.", 
-                $this->accountPrefix));
+            trigger_error(sprintf(
+                "You reuquire at least a folder named '%s'! This time it was added automatically.",
+                $this->accountPrefix
+            ));
         }
     }
 
@@ -148,7 +152,7 @@ class FolderWidget extends plugin
         $ret = array();
 
         // Add root Entry
-        $data['/'] = array(); 
+        $data['/'] = array();
         $data['/']['name'] = '/';
         $data['/']['status'] = '';
         $data['/']['acls'] = array();
@@ -164,14 +168,14 @@ class FolderWidget extends plugin
         $this->folderList['linear']['/'] = &$data['/'];
         $this->folderList['recursive']['/'] = &$data['/'];
 
-        foreach($arr as $path => $data){
+        foreach ($arr as $path => $data) {
             $name = $data['name'];
             $acls = $data['acls'];
             $status = $data['status'];
             $this->addPath($path, $name, $acls, $status);
-        }  
+        }
     }
-    
+
 
     /*! \brief  Adds a new folder entry to the used folderList.
      */
@@ -182,18 +186,18 @@ class FolderWidget extends plugin
 
         // Only add entries that match the accountPrefix 
         //   e.g.  "/user/admin/"
-        $path = rtrim($path,$this->pathSeparator);
-        if(!preg_match("/^".preg_quote($this->accountPrefix,'/')."/", $path)){
+        $path = rtrim($path, $this->pathSeparator);
+        if (!preg_match("/^" . preg_quote($this->accountPrefix, '/') . "/", $path)) {
             // Skipping not mathing folders.
-        }else{
+        } else {
             $current = &$base;
-            $pathSteps = preg_split("/".preg_quote($this->pathSeparator,'/')."/", $path);
+            $pathSteps = preg_split("/" . preg_quote($this->pathSeparator, '/') . "/", $path);
             $entryPath = "";
             $parentPath = "";
             $entryBase = "";
 
             // Walk through path entries and add missing entries to our folder list
-            foreach($pathSteps as $pathName){
+            foreach ($pathSteps as $pathName) {
 
                 // The parent path is the last path.
                 $parentPath = $entryPath;
@@ -205,13 +209,13 @@ class FolderWidget extends plugin
                 // To not add sub-folders which are not nescessary to be displayed
                 // e.g. We have shared/technik/test
                 // Then do not all sub-folders for shared, it is not selectable in the listing later.
-                if(!preg_match("/".preg_quote($this->accountPrefix,'/')."/", $entryPath)){
+                if (!preg_match("/" . preg_quote($this->accountPrefix, '/') . "/", $entryPath)) {
                     continue;
                 }
 
                 // Add eventually missing subFolders, to enable the navigation 
                 //  into these folders via the management lists.
-                if(!isset($current[$entryPath])){
+                if (!isset($current[$entryPath])) {
                     $current[$entryPath] = array();
                     $current[$entryPath]['children'] = array();
                     $current[$entryPath]['name'] = $pathName;
@@ -240,20 +244,20 @@ class FolderWidget extends plugin
             $last['status'] = $status;
         }
     }
-  
- 
+
+
     /*! \brief  Initiates editing of a folder, a sub dialog will be shown on next
      *          render() call. this sub-dialog allows to edit the ACLs for the folder.
-     */ 
+     */
     function editByBase($base)
     {
         $item = NULL;
-        foreach($this->folderList['linear'] as $item){
-            if($item['base'] == $base){
+        foreach ($this->folderList['linear'] as $item) {
+            if ($item['base'] == $base) {
                 break;
             }
         }
-        if($item){
+        if ($item) {
             $this->currentlyEditedItem = $item;
             $this->dialog = new FolderEditDialog($this->config, $item);
             $this->dialog->setPermissions($this->permissions);
@@ -263,7 +267,7 @@ class FolderWidget extends plugin
 
     function dialogOpened()
     {
-        return($this->dialog != FALSE);
+        return ($this->dialog != FALSE);
     }
 
 
@@ -273,9 +277,9 @@ class FolderWidget extends plugin
     {
         // Do not allow to remove the root base.
         // This would mean the account itself was removed.
-        if($base == $this->rootBase) return;
-   
- 
+        if ($base == $this->rootBase) return;
+
+
         $this->_recursiveRemoveByBase($this->folderList['recursive'], $base);
         $this->_recursiveRemoveByBase($this->folderList['linear'], $base);
         $this->FolderWidgetListing->setFolderList($this->folderList);
@@ -298,28 +302,27 @@ class FolderWidget extends plugin
     private function _recursiveRemoveByBase(&$arr, $base)
     {
         $ret = array();
-        foreach($arr as $path => $item){
-            if($item['base'] == $base){
+        foreach ($arr as $path => $item) {
+            if ($item['base'] == $base) {
 
                 // remove all children too
-                if(isset($item['children']) && count($item['children'])){
-                    foreach($item['children'] as $child){
+                if (isset($item['children']) && count($item['children'])) {
+                    foreach ($item['children'] as $child) {
                         $this->_recursiveRemoveByBase($this->folderList['recursive'], $child['base']);
                     }
                 }
-                
+
                 // Remove the the entry instead of setting its status if it was just added.
-                if($arr[$path]['status'] == "added"){
-                    unset($arr[$path]) ;
-                }else{
+                if ($arr[$path]['status'] == "added") {
+                    unset($arr[$path]);
+                } else {
                     $arr[$path]['status'] = 'removed';
                 }
-            }elseif(isset($item['children']) && count($item['children'])){
+            } elseif (isset($item['children']) && count($item['children'])) {
                 $ret = array_merge($ret, $this->_recursiveRemoveByBase($arr[$path]['children'], $base));
             }
         }
-        return($ret);
-        
+        return ($ret);
     }
 
 
@@ -328,28 +331,28 @@ class FolderWidget extends plugin
     private function _saveRecursive($arr)
     {
         $ret = array();
-        foreach($arr as $path => $item){
-            if($item['type'] == 'real'){ 
+        foreach ($arr as $path => $item) {
+            if ($item['type'] == 'real') {
                 $ret[$path] = array(
-                        'name' => $item['name'],
-                        'status' => $item['status'],
-                        'acls' => $item['acls'],
-                        );
+                    'name' => $item['name'],
+                    'status' => $item['status'],
+                    'acls' => $item['acls'],
+                );
             }
-            if(isset($item['children']) && count($item['children'])){
+            if (isset($item['children']) && count($item['children'])) {
                 $ret = array_merge($ret, $this->_saveRecursive($item['children']));
             }
         }
-        return($ret);
+        return ($ret);
     }
 
-    
+
     /*! \brief  Returns the folder list with all changes made during 
      *           the session. 
      */
     function save()
     {
-        return($this->_saveRecursive($this->folderList['recursive']));
+        return ($this->_saveRecursive($this->folderList['recursive']));
     }
 
 
@@ -366,13 +369,13 @@ class FolderWidget extends plugin
         $smarty->assign("SHOW_BUTTONS", $this->displayButtons);
         $str = $this->FolderWidgetListing->execute();
 
-        if($this->dialog){
+        if ($this->dialog) {
             $this->dialog->save_object();
-            return($this->dialog->execute());
+            return ($this->dialog->execute());
         }
 
         // Return listing HTML
-        return($str);
+        return ($str);
     }
 
 
@@ -384,22 +387,22 @@ class FolderWidget extends plugin
         $this->FolderWidgetListing->save_object();
 
         // Handle dialogs 
-        if(isset($_POST['FolderEditDialog_ok']) && is_object($this->dialog)){
-    
+        if (isset($_POST['FolderEditDialog_ok']) && is_object($this->dialog)) {
+
             $this->dialog->save_object();
             $msgs = $this->dialog->check();
-            if(count($msgs)){
+            if (count($msgs)) {
                 msg_dialog::displayChecks($msgs);
-            }else{
-                if($this->dialog->isNew()){
+            } else {
+                if ($this->dialog->isNew()) {
                     // Detect the current entry
                     $base = $this->FolderWidgetListing->getBase();
-                    if(isset($this->baseEntryMap[$base])){
+                    if (isset($this->baseEntryMap[$base])) {
                         $entry = $this->folderList['linear'][$this->baseEntryMap[$base]];
                         $path = $entry['path'];
                         $newItem = $this->dialog->save();
                         $name = $newItem['name'];
-                        $newPath = rtrim($path,$this->pathSeparator).$this->pathSeparator.$name;
+                        $newPath = rtrim($path, $this->pathSeparator) . $this->pathSeparator . $name;
 
                         $newItem['status'] = 'added';
                         $newItem['type'] = 'real';
@@ -408,24 +411,22 @@ class FolderWidget extends plugin
                         $newItem['parentPath'] = $entry['path'];
                         $newItem['folderType'] = $this->getFolderType($newItem);
                         $newItem['base'] = $this->pathToDn($newPath);
-    
+
                         $this->folderList['linear'][$path]['children'][$newPath] = $newItem;
                         $this->folderList['linear'][$newPath] = &$this->folderList['linear'][$path]['children'][$newPath];
 
                         $this->baseEntryMap[$newItem['base']] = $newPath;
                     }
-                }else{
+                } else {
                     $newItem = $this->dialog->save();
                     $path = $this->currentlyEditedItem['path'];
-                    $this->folderList['linear'][$path]['acls'] = $newItem['acls']; 
+                    $this->folderList['linear'][$path]['acls'] = $newItem['acls'];
                 }
                 $this->dialog = NULL;
             }
         }
-        if(isset($_POST['FolderEditDialog_cancel'])){
+        if (isset($_POST['FolderEditDialog_cancel'])) {
             $this->dialog = NULL;
         }
     }
 }
-
-?>
